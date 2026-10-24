@@ -1,0 +1,19 @@
+{"out":"edit/final.mp4","fonts":"../kit/fonts","sfx_dir":"../kit/sfx",
+ "segments":[
+  {"src":"raw/clip.mp4","in":0.5,"out":2.5,"fit":"crop","zoom":"punch","mute":true},
+  {"src":"raw/photo.jpg","dur":3.0,"fit":"blur","zoom":"kenburns"},
+  {"src":"raw/clip.mp4","in":30,"out":33,"fit":"blur","zoom":"none","mute":true},
+  {"color":"#0e1116","dur":2.0}
+ ],
+ "captions":[
+  {"start":0,"end":2.0,"text":"10년 늦으면/[3억]이 사라진다?","style":"hook"},
+  {"start":2.0,"end":3.5,"text":"30살 vs 40살","style":"top"},
+  {"start":2.0,"end":5.0,"text":"똑같이 [월 30만원]씩","style":"main"},
+  {"start":5.0,"end":8.0,"text":"차이는 돈이 아니라 [시간]","style":"main"},
+  {"start":8.0,"end":10.0,"text":"김신혁FP의/[미라클톡]","style":"hook","anim":"fade"},
+  {"start":5.0,"end":8.0,"text":"연 7% 가정 · 세전 · 수수료 미반영 예시","style":"small","anim":"none"}
+ ],
+ "sfx":[{"t":0,"name":"impact","vol":0.8},{"t":2.0,"name":"whoosh","vol":0.6},{"t":5.0,"name":"pop","vol":0.7},{"t":7.2,"name":"riser","vol":0.4},{"t":8.0,"name":"ding","vol":0.6}],
+ "voice":{"src":"raw/vo.wav","offset":0.3},
+ "bgm":{"src":"raw/bgm.m4a","vol":0.3,"duck":true,"start":10}
+}

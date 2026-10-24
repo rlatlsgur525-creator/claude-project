@@ -1,0 +1,230 @@
+<title>약관 전수조사</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: single reading column (mobile-first, no sideways scroll) — a policy-document feel: clause labels, numbered checks, grade pills */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --surface2:#f0f2f5; --ink:#1a2130; --muted:#5a6373; --line:#dfe3ea;
+  --accent:#0d5c8c; --accent-soft:#e3eef6;
+  --good:#17784a; --good-soft:#e2f2e9; --std:#6a7382; --std-soft:#eceef2; --warn:#b2461c; --warn-soft:#fbe8df;
+  --f-serif:"Noto Serif KR","AppleMyungjo",serif;
+  --f-sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11141a; --surface:#181c24; --surface2:#1f242e; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2b313d;
+  --accent:#6fb3e0; --accent-soft:#1b2e3d;
+  --good:#5cc68f; --good-soft:#18301f; --std:#9aa3b2; --std-soft:#252a34; --warn:#f08b62; --warn-soft:#3a2219; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141a; --surface:#181c24; --surface2:#1f242e; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2b313d;
+  --accent:#6fb3e0; --accent-soft:#1b2e3d;
+  --good:#5cc68f; --good-soft:#18301f; --std:#9aa3b2; --std-soft:#252a34; --warn:#f08b62; --warn-soft:#3a2219; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-sans);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--accent)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;line-height:1.3}
+.brand b{font-family:var(--f-serif);font-size:20px;font-weight:900;letter-spacing:-.3px}
+.brand span{font-size:12.5px;color:var(--muted)}
+.asof{font-size:12.5px;color:var(--muted);text-align:right}
+.asof b{color:var(--ink);font-weight:600}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
+.tab{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 14px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[disabled]{color:var(--muted);cursor:default;background:transparent}
+.tab small{font-weight:500;font-size:11.5px;margin-left:4px}
+.sample{margin-top:14px;font-size:13.5px;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;line-height:1.55}
+section{margin-top:36px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.6px;color:var(--accent);text-transform:uppercase}
+h1{font-family:var(--f-serif);font-weight:900;font-size:clamp(26px,6.4vw,36px);line-height:1.3;margin:6px 0 10px;letter-spacing:-.5px;text-wrap:balance}
+h2{font-family:var(--f-serif);font-weight:700;font-size:21px;line-height:1.4;margin:0 0 6px;letter-spacing:-.3px}
+.lede{font-size:17px;margin:0 0 10px}
+.basis{font-size:13.5px;color:var(--muted);margin:0}
+.sub{color:var(--muted);font-size:14.5px;margin:0 0 14px}
+/* overview */
+.board{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.cells{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:16px}
+@media (max-width:420px){.cells{grid-template-columns:repeat(6,1fr)}}
+.cell{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:10.5px;font-weight:500;max-width:100%}
+.cell.good{background:var(--good);color:#fff}
+.cell.standard{background:var(--std-soft);color:var(--std)}
+.cell.caution{background:var(--warn);color:#fff}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lg{border:0;font:inherit;text-align:left;background:var(--surface2);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--ink)}
+.lg .n{display:block;font-family:var(--f-serif);font-weight:900;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.lg .t{font-size:13px;font-weight:600}
+.lg.good .n{color:var(--good)} .lg.caution .n{color:var(--warn)} .lg.standard .n{color:var(--std)}
+.lg[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:-2px}
+.split{font-size:13px;color:var(--muted);margin-top:12px}
+.takeaway{margin-top:16px;padding:14px 16px;border-radius:10px;background:var(--accent-soft);font-weight:600;line-height:1.6}
+/* selfcheck */
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 14px 56px;position:relative;counter-increment:s}
+.step::before{content:counter(s);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:var(--f-mono);font-size:14px;display:flex;align-items:center;justify-content:center}
+.step b{display:block;font-size:16px;margin-bottom:2px}
+.step p{margin:0;color:var(--muted);font-size:14.5px}
+/* criteria */
+.crit{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.crit-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.crit-hd h3{margin:0;font-size:17px;font-weight:700}
+.clause{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:5px}
+.rows{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:700px){.rows{grid-template-columns:repeat(3,1fr)}}
+.row{border-radius:10px;padding:10px 12px;font-size:14.5px;line-height:1.6;min-width:0}
+.row.good{background:var(--good-soft)} .row.standard{background:var(--surface2)} .row.caution{background:var(--warn-soft)}
+.row.same{opacity:.62}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:99px;padding:1px 9px;margin-bottom:4px}
+.pill.good{background:var(--good);color:#fff} .pill.standard{background:var(--std);color:var(--bg)} .pill.caution{background:var(--warn);color:#fff}
+/* companies */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:4px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.cos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.co{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.co b{display:block;font-family:var(--f-mono);font-size:14px;font-weight:500}
+.co p{margin:4px 0 0;font-size:13px;color:var(--muted);line-height:1.5}
+.count{font-size:13px;color:var(--muted);margin-top:10px}
+/* faq & log */
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+summary{cursor:pointer;padding:13px 16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--muted);font-weight:400}
+details[open] summary::after{content:"−"}
+details p{margin:0;padding:0 16px 14px;color:var(--muted);font-size:15px}
+.log{list-style:none;padding:0;margin:0}
+.log li{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.log time{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);padding-top:2px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.7}
+footer h4{margin:0 0 6px;color:var(--ink);font-size:13.5px}
+footer ul{margin:0 0 14px;padding-left:18px}
+.review{font-family:var(--f-mono);font-size:12px}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.soon{padding:40px 16px;text-align:center;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><b>약관 전수조사</b><span>담보 하나, 전 보험사 약관을 나란히 · 미라클톡</span></div>
+    <div class="asof" id="asof"></div>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="담보 선택"></nav>
+  <div id="sample" class="sample" hidden></div>
+  <main id="main"><p class="soon">불러오는 중…</p></main>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const GL={good:"넓게 보장",standard:"표준",caution:"확인 필요"};
+let D=null,cur=null,fGrade="all",fType="all";
+
+function tabs(){
+  $("#tabs").innerHTML=D.coverages.map(c=>c.status==="live"
+    ?`<button class="tab" role="tab" data-id="${c.id}" aria-selected="${c.id===cur.id}">${esc(c.name)}</button>`
+    :`<button class="tab" role="tab" disabled>${esc(c.name)}<small>준비 중</small></button>`).join("");
+}
+function render(){
+  const c=cur, cnt={good:0,standard:0,caution:0}, life=c.companies.filter(x=>x.type==="생보").length;
+  c.companies.forEach(x=>cnt[x.grade]++);
+  const order=[...c.companies].sort((a,b)=>({good:0,standard:1,caution:2})[a.grade]-({good:0,standard:1,caution:2})[b.grade]);
+  $("#main").innerHTML=`
+  <section style="margin-top:22px">
+    <div class="eyebrow">No.${String(c.issue).padStart(2,"0")} · ${esc(c.name)}</div>
+    <h1>${esc(c.headline)}</h1>
+    <p class="basis">비교 기준: ${esc(c.basis)} · ${c.companies.length}개사</p>
+  </section>
+
+  <section aria-labelledby="ov">
+    <h2 id="ov">한눈에 보기</h2>
+    <p class="sub">칸 하나가 보험사 하나입니다. 회사 이름은 공개하지 않습니다.</p>
+    <div class="board">
+      <div class="cells" aria-hidden="true">${order.map(x=>`<div class="cell ${x.grade}" title="${esc(x.code)}">${esc(x.code.replace(/\s/,""))}</div>`).join("")}</div>
+      <div class="legend">
+        ${["good","standard","caution"].map(g=>`<button class="lg ${g}" data-g="${g}" aria-pressed="${fGrade===g}"><span class="n">${cnt[g]}</span><span class="t">${GL[g]}</span></button>`).join("")}
+      </div>
+      <div class="split">생명보험 ${life}곳 · 손해보험 ${c.companies.length-life}곳 · 숫자를 누르면 아래 회사 목록이 걸러집니다</div>
+    </div>
+    <div class="takeaway">${esc(c.takeaway)}</div>
+  </section>
+
+  <section aria-labelledby="sc">
+    <h2 id="sc">내 약관 30초 셀프체크</h2>
+    <p class="sub">가지고 있는 약관 PDF를 열고 이 순서대로만 보세요.</p>
+    <ol class="steps">${c.selfcheck.map(s=>`<li class="step"><b>${esc(s.q)}</b><p>${esc(s.how)}</p></li>`).join("")}</ol>
+  </section>
+
+  <section aria-labelledby="cr">
+    <h2 id="cr">조항별로 무엇이 다른가</h2>
+    <p class="sub">같은 조항을 세 그룹이 어떻게 적고 있는지 나란히 놓았습니다. 흐리게 표시된 칸은 표준과 같다는 뜻입니다.</p>
+    ${c.criteria.map(k=>`<article class="crit">
+      <div class="crit-hd"><h3>${esc(k.name)}</h3><span class="clause">조항 · ${esc(k.clause)}</span></div>
+      <div class="rows">
+        ${["standard","good","caution"].map(g=>{const t=k[g]||"";const same=g!=="standard"&&/^표준과 같음|^별도 언급 없음/.test(t);
+          return `<div class="row ${g}${same?" same":""}"><span class="pill ${g}">${GL[g]} ${cnt[g]}</span><br>${esc(t)}</div>`}).join("")}
+      </div></article>`).join("")}
+  </section>
+
+  <section aria-labelledby="co">
+    <h2 id="co">회사별 분류</h2>
+    <p class="sub">코드는 이 리포트 안에서만 쓰는 익명 표기입니다. 담보 편마다 바뀝니다.</p>
+    <div class="filters" id="fType">
+      ${[["all","전체"],["손보","손해보험"],["생보","생명보험"]].map(([v,l])=>`<button class="chip" data-t="${v}" aria-pressed="${fType===v}">${l}</button>`).join("")}
+      ${[["all","모든 그룹"],["good","넓게 보장"],["standard","표준"],["caution","확인 필요"]].map(([v,l])=>`<button class="chip" data-g2="${v}" aria-pressed="${fGrade===v}">${l}</button>`).join("")}
+    </div>
+    <div class="cos" id="cos"></div>
+    <div class="count" id="count"></div>
+  </section>
+
+  <section aria-labelledby="fq">
+    <h2 id="fq">자주 묻는 질문</h2>
+    ${c.faq.map(f=>`<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}
+  </section>
+
+  <section aria-labelledby="lg">
+    <h2 id="lg">개정 기록</h2>
+    <p class="sub">약관은 수시로 개정됩니다. 바뀐 내용은 여기에 날짜와 함께 남깁니다.</p>
+    <ul class="log">${D.changelog.map(l=>`<li><time>${esc(l.date)}</time><span>${esc(l.text)}</span></li>`).join("")}</ul>
+  </section>`;
+  companies();
+}
+function companies(){
+  const list=cur.companies.filter(x=>(fType==="all"||x.type===fType)&&(fGrade==="all"||x.grade===fGrade));
+  const card=x=>`<div class="co"><b>${esc(x.code)}</b><span class="pill ${x.grade}">${GL[x.grade]}</span>${x.note?`<p>${esc(x.note)}</p>`:""}</div>`;
+  const plain=list.filter(x=>x.grade==="standard"&&!x.note), rich=list.filter(x=>!(x.grade==="standard"&&!x.note));
+  $("#cos").innerHTML=(rich.map(card).join("")+(plain.length?`<div class="co" style="grid-column:1/-1"><span class="pill standard">표준 ${plain.length}곳</span><p>${plain.map(x=>esc(x.code)).join(" · ")}</p><p>비교한 모든 조항이 표준 문구와 같습니다.</p></div>`:""))||`<p class="sub">조건에 맞는 회사가 없습니다.</p>`;
+  $("#count").textContent=`${list.length}개사 표시 중`;
+  document.querySelectorAll("[data-t]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.t===fType));
+  document.querySelectorAll("[data-g2]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g2===fGrade));
+  document.querySelectorAll(".lg").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g===fGrade));
+}
+function foot(){
+  $("#foot").innerHTML=`
+    <h4>이 리포트를 읽는 법</h4>
+    <ul>
+      <li>각 보험사가 공시한 약관 원문을 같은 기준(조항·문구)으로 비교해 정리한 일반 정보입니다.</li>
+      <li>같은 회사라도 상품·판매 시기·가입 조건에 따라 약관이 다릅니다. 비교 기준월 이후 개정분은 반영되지 않았을 수 있습니다.</li>
+      <li>특정 보험사나 상품의 가입·해지를 권유하지 않습니다. 실제 보장 여부는 본인 약관 원문과 보험사 판단이 우선합니다.</li>
+      <li>기존 보험을 해지하고 새로 가입하면 보장 공백, 나이 증가에 따른 보험료 상승, 해지환급금 손실이 생길 수 있습니다.</li>
+    </ul>
+    <h4>작성</h4>
+    <p style="margin:0 0 6px">미라클톡 · 보험설계사 김신혁</p>
+    <p class="review">${D.reviewNo?`준법감시 심의필 ${esc(D.reviewNo)}`:"준법감시 심의필 번호: 게시 전 입력"}</p>`;
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-id]"); if(t){cur=D.coverages.find(c=>c.id===t.dataset.id);fGrade="all";fType="all";tabs();render();return}
+  const g=e.target.closest(".lg"); if(g){fGrade=fGrade===g.dataset.g?"all":g.dataset.g;companies();document.getElementById("co").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});return}
+  const ft=e.target.closest("[data-t]"); if(ft){fType=ft.dataset.t;companies();return}
+  const fg=e.target.closest("[data-g2]"); if(fg){fGrade=fg.dataset.g2;companies();return}
+});
+fetch("data.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{
+  D=d; cur=d.coverages.find(c=>c.status==="live");
+  $("#asof").innerHTML=`비교 기준월 <b>${esc(d.basisMonth)}</b><br>최종 갱신 ${esc(d.updated)}`;
+  if(d.isSample){const s=$("#sample");s.hidden=false;s.textContent="지금 보이는 회사 분류와 조항 문구는 페이지 구성을 보여주기 위한 예시입니다. 실제 약관 비교 결과가 아닙니다.";}
+  tabs();render();foot();
+}).catch(()=>{$("#main").innerHTML=`<p class="soon">리포트 데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</p>`});
+})();
+</script>

@@ -11,6 +11,10 @@ desktop.ini
 .DS_Store
 .vscode/
 
+# 촬영 원본·렌더 영상 (용량이 커서 GitHub에 올리지 않음)
+*.mp4
+*.mov
+
 # 의존성·빌드 결과
 node_modules/
 __pycache__/
