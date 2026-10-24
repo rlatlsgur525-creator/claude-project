@@ -143,6 +143,9 @@ def build_ass(edl, W, H, path):
              "Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"]
     for n, f, s, al, mv, ol in sty:
         lines.append(f"Style: {n},{f},{s},{tx},{tx},{blk},{shadow},0,0,0,0,100,100,0,0,1,{ol},3,{al},70,70,{mv},1")
+    # boxed variants (BorderStyle 3 = opaque box behind the text) for busy backgrounds, e.g. a talking mascot
+    for n, f, s, al, mv, ol in sty:
+        lines.append(f"Style: {n}box,{f},{s},{tx},{tx},&H30101418,&H00000000,0,0,0,0,100,100,0,0,3,{max(ol, 14)},0,{al},70,70,{mv},1")
     lines += ["", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
     for c in edl.get("captions", []):
         base = ass_color(c["color"]) if c.get("color") else tx
