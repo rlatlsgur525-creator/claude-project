@@ -143,10 +143,35 @@ def map_time(x, maps, end=False):
     return round(x, 3)
 
 # ---------------- 조립 ----------------
+def speech_spans(path):
+    """녹음 파일의 말소리 구간 [(시작, 끝)] — 말하는 마스코트의 말하기/대기 전환용. 파일 수정 시각으로 캐시."""
+    cf = path + ".speech.json"
+    if os.path.exists(cf):
+        c = json.load(open(cf))
+        if c.get("mtime") == os.path.getmtime(path): return c["spans"]
+    p = subprocess.run([gfx.ffmpeg_bin(), "-hide_banner", "-i", path, "-af", "silencedetect=noise=-34dB:d=0.3", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    spans, cur = [], 0.0
+    for line in p.stderr.splitlines():
+        m = re.search(r"silence_start: ([\d.]+)", line)
+        if m and float(m.group(1)) - cur > 0.08: spans.append([round(cur, 3), round(float(m.group(1)), 3)])
+        m = re.search(r"silence_end: ([\d.]+)", line)
+        if m: cur = float(m.group(1))
+    d = probe_dur(path)
+    if d - cur > 0.08: spans.append([round(cur, 3), round(d, 3)])
+    json.dump({"mtime": os.path.getmtime(path), "spans": spans}, open(cf, "w"))
+    return spans
+
 def assemble(full, pid=None, scale=None):
     """→ dict: scenes(그리기 함수), pieces, captions(템플릿), texts, sfx, overlays, voices, small, bgm, total"""
     T = template(full["template"])
-    scenes, captions, sfx, note = T.build(full)
+    v = full.get("voice") or {}
+    if pid and v.get("src"):
+        try: full["_speech"] = speech_spans(media_path(pid, v["src"]))
+        except (ValueError, OSError): full["_speech"] = None
+    out = T.build(full)
+    scenes, captions, sfx, note = out[:4]
+    extras = out[4] if len(out) > 4 else {}
     pieces = [{"kind": "scene", "name": n, "label": f"장면 {i + 1}", "dur": d, "in": 0.0} for i, (n, d, _) in enumerate(scenes)]
     pieces, maps = apply_edits(pieces, full.get("edits") or [])
     total = round(sum(p["dur"] for p in pieces), 3)
@@ -154,7 +179,8 @@ def assemble(full, pid=None, scale=None):
     caps = []
     for i, c in enumerate(captions):
         s, e = map_time(c[0], maps), map_time(c[1], maps, end=True)
-        caps.append({"start": s, "end": e, "text": c[2], "style": "main", **({"anim": c[3]} if len(c) > 3 else {}),
+        caps.append({"start": s, "end": e, "text": c[2], "style": extras.get("cap_style", "main"), **({"anim": c[3]} if len(c) > 3 else {}),
+                     **({"pos": extras["cap_pos"]} if extras.get("cap_pos") else {}),
                      "key": keys[i] if i < len(keys) else None, "idx": i, "gone": e - s < 0.05})
     tl = full.get("tl") or {}
     times = tl.get("cap_times")
@@ -171,16 +197,40 @@ def assemble(full, pid=None, scale=None):
             if any(k == "cut" and a < s["t"] < b for k, a, b in maps): continue
             sfx_out.append({**s, "t": t})
     clamp = lambda items, k0, k1: [dict(o) for o in items if float(o[k0]) < total]
-    small = {"start": 0.0, "end": total, "text": compliance_line(full) + "/" + note, "style": "small", "anim": "none"}
+    small = {"start": 0.0, "end": total, "text": compliance_line(full) + "/" + note, "style": "small", "anim": "none",
+             **({"pos": extras["small_pos"]} if extras.get("small_pos") else {}), **({"size": extras["small_size"]} if extras.get("small_size") else {})}
     bgm = full.get("bgm") or None
     if bgm and not bgm.get("file"): bgm = None
     t = 0.0
     for p in pieces: p["start"] = round(t, 3); t += p["dur"]
+    mascot, t = [], 0.0
+    for name, a, d in extras.get("mascot_track") or []:
+        mascot.append({"clip": name, "in": a, "start": round(t, 3), "dur": d}); t += d
     return {"scenes": scenes, "pieces": pieces, "captions": caps, "texts": clamp(full.get("texts") or [], "start", "end"),
             "sfx": sfx_out, "overlays": clamp(full.get("overlays") or [], "start", "end"),
             "voices": [dict(v) for v in (full.get("voices") or []) if float(v["offset"]) < total],
+            "tvoices": extras.get("voices") or [], "mascot": mascot, "mascot_box": extras.get("mascot_box"),
             "small": small, "bgm": bgm, "total": total, "markers": full.get("markers") or [],
             "custom": {"cap_times": custom_caps, "sfx": tl.get("sfx") is not None}}
+
+ANIM_DIR = os.path.join(LIBRARY, "anim")
+
+def mascot_track_file(pid, track, preview):
+    """마스코트 동작 조각들을 하나의 초록 배경 영상으로 이어 붙인다 (조각 목록이 같으면 재사용)."""
+    clips = json.load(open(os.path.join(ANIM_DIR, "clips.json"), encoding="utf-8"))
+    key = data_hash({"t": [[m["clip"], m["in"], m["dur"]] for m in track], "p": preview, "c": clips})
+    out = os.path.join(PROJECTS, pid, f"mascot_{'p' if preview else 'f'}.mp4"); mf = out + ".key"
+    if os.path.exists(out) and os.path.exists(mf) and open(mf).read() == key: return out
+    inputs, fc = [], []
+    for i, m in enumerate(track):
+        inputs += ["-i", os.path.join(ANIM_DIR, clips[m["clip"]]["file"])]
+        sz = "540:720" if preview else "1080:1440"
+        fc.append(f"[{i}:v]trim=start={m['in']:.3f}:duration={m['dur']:.3f},setpts=PTS-STARTPTS,fps=30,scale={sz},setsar=1[v{i}]")
+    fc.append("".join(f"[v{i}]" for i in range(len(track))) + f"concat=n={len(track)}:v=1:a=0[out]")
+    subprocess.run([gfx.ffmpeg_bin(), "-v", "error", "-y", *inputs, "-filter_complex", ";".join(fc), "-map", "[out]",
+                    "-c:v", "libx264", "-crf", "16" if not preview else "20", "-preset", "veryfast", "-pix_fmt", "yuv420p", out], check=True)
+    open(mf, "w").write(key)
+    return out
 
 def check(data, A):
     """업로드 전 점검 목록 → [(수준, 문구)]"""

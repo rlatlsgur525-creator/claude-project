@@ -1,0 +1,5 @@
+{
+ "idle":   {"file": "idle.mp4",   "in": 0.0, "out": 5.0, "loop": true,  "desc": "말 안 할 때 (입 닫고 미소, 눈 깜빡)"},
+ "talk":   {"file": "talk.mp4",   "in": 0.0, "out": 5.0, "loop": true,  "desc": "말하기 (입 움직임, 가벼운 손짓)"},
+ "finger": {"file": "finger.mp4", "in": 0.0, "out": 3.0, "loop": false, "desc": "손가락 위로 — 포인트 직전"}
+}

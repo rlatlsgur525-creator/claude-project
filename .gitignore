@@ -31,3 +31,7 @@ miracle-shorts/studio/projects/*/scenes_*/
 miracle-shorts/studio/projects/*/thumbnail.png
 miracle-shorts/studio/projects/*/media/*.wav
 miracle-shorts/studio/projects/*/media/*.webm
+
+# 마스코트 동작 클립(초록 배경, 각 2MB 안팎)은 다른 컴퓨터에서도 써야 하므로 올린다
+!miracle-shorts/studio/library/anim/*.mp4
+miracle-shorts/studio/projects/*/mascot_*.mp4.key
