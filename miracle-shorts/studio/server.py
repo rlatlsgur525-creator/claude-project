@@ -2,7 +2,7 @@
 """미라클 쇼츠 스튜디오 — 로컬 웹 툴.  python server.py  →  http://127.0.0.1:8765
 프로젝트는 projects/<id>/data.json 에 저장된다(GitHub로 동기화). 영상(mp4)은 저장소에 올리지 않는다.
 """
-import json, os, re, sys, threading, webbrowser
+import json, mimetypes, os, re, sys, threading, webbrowser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, unquote
 
@@ -58,6 +58,16 @@ class H(SimpleHTTPRequestHandler):
                 return self.send_json({**pipeline.defaults(d["template"]), **d})
             if len(parts) == 3 and parts[0] == "files" and parts[2] in ("final.mp4", "final_preview.mp4"):
                 return self.serve_file(proj_path(parts[1], parts[2]), "video/mp4")
+            if len(parts) == 3 and parts[:2] == ["api", "timeline"]:
+                return self.send_json(pipeline.timeline(parts[2]))
+            if len(parts) == 3 and parts[:2] == ["api", "wave"]:
+                kind = parse_qs(u.query).get("kind", ["preview"])[0]
+                f = proj_path(parts[2], f"wave_{'final' if kind == 'final' else 'preview'}.json")
+                return self.send_json(json.load(open(f)) if os.path.exists(f) else {"step": 0.05, "db": []})
+            if len(parts) == 2 and parts[0] == "sfx" and parts[1][:-4] in pipeline.sfx_names():
+                return self.serve_file(os.path.join(pipeline.SFX_DIR, parts[1]), "audio/wav")
+            if len(parts) == 2 and parts[0] == "music" and parts[1] in pipeline.music_files():
+                return self.serve_file(os.path.join(pipeline.MUSIC, parts[1]), mimetypes.guess_type(parts[1])[0] or "audio/mpeg")
         except (ValueError, FileNotFoundError):
             return self.send_json({"error": "not found"}, 404)
         self.send_json({"error": "not found"}, 404)
@@ -76,6 +86,9 @@ class H(SimpleHTTPRequestHandler):
             if len(parts) == 3 and parts[:2] == ["api", "project"]:
                 d = self.body()
                 json.dump(d, open(proj_path(parts[2], "data.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                return self.send_json({"ok": True})
+            if u.path == "/api/open-music":
+                os.makedirs(pipeline.MUSIC, exist_ok=True); os.startfile(pipeline.MUSIC)
                 return self.send_json({"ok": True})
             if len(parts) == 3 and parts[:2] == ["api", "render"]:
                 preview = parse_qs(u.query).get("preview", ["1"])[0] == "1"
@@ -109,7 +122,7 @@ class H(SimpleHTTPRequestHandler):
                 left -= len(chunk)
 
 if __name__ == "__main__":
-    os.makedirs(pipeline.PROJECTS, exist_ok=True)
+    os.makedirs(pipeline.PROJECTS, exist_ok=True); os.makedirs(pipeline.MUSIC, exist_ok=True)
     srv = ThreadingHTTPServer(("127.0.0.1", PORT), H)
     url = f"http://127.0.0.1:{PORT}"
     print(f"미라클 쇼츠 스튜디오: {url}  (끄려면 이 창을 닫으세요)")

@@ -26,6 +26,8 @@ FIELDS = [
     {"key": "c_rule", "label": "23~30초 기준", "type": "text", "default": "정답은 상품이 아니라/[언제 쓸 돈]인지예요"},
 ]
 
+CAP_KEYS = ["c_hook", "c_start", "c_grow", "c_win", "c_rest", "c_rule"]
+
 def parse(data):
     out = []
     for s in data["options"]:

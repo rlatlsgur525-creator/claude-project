@@ -32,6 +32,8 @@ FIELDS = [
     {"key": "c_cta", "label": "22~25초 행동 촉구", "type": "text", "default": "해지 전에/이 [두 가지]만 확인하세요"},
 ]
 
+CAP_KEYS = ["c_hook", "c_auth", "c_loss", "c_turn", "c_steps", "c_effect", "c_case", "c_result", "c_cta"]
+
 def validate(data):
     errs = []
     if not [s for s in data["losses"] if s.strip()]: errs.append("손해 이유를 하나 이상 넣어 주세요.")

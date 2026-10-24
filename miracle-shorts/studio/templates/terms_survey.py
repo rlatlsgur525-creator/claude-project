@@ -38,6 +38,8 @@ FIELDS = [
     {"key": "c_check", "label": "26~30초 셀프체크", "type": "text", "default": "내 약관에 이 문구가/있는지만 [보세요]"},
 ]
 
+CAP_KEYS = ["c_hook", "c_pdf", "c_std", "c_wide", "c_flip", "c_pause", "c_reveal", "c_check"]
+
 def _vals(data):
     tot = int(data["total"]); nw = int(data["n_wide"]); nc = int(data["n_caution"])
     items = [s for s in data["caution_items"] if s.strip()][:3]

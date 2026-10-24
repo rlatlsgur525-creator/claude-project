@@ -24,3 +24,6 @@ build/
 
 # 스튜디오가 렌더할 때마다 다시 만드는 파일
 miracle-shorts/studio/projects/*/edl.json
+miracle-shorts/studio/projects/*/wave_*.json
+miracle-shorts/studio/projects/*/render.json
+miracle-shorts/studio/music/

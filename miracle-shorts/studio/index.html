@@ -6,195 +6,568 @@
 <title>미라클 쇼츠 스튜디오</title>
 <style>
 :root {
-  --bg: #f4f5f7; --panel: #fff; --ink: #1d2129; --muted: #6b7280; --line: #e3e5e9;
-  --accent: #2f6fed; --green: #1f9d5c; --orange: #e8622f; --yellow: #f2b705;
+  --bg: #15171c; --panel: #1d2027; --panel2: #252932; --line: #323744; --ink: #e8eaef; --muted: #8b93a4;
+  --accent: #4d8dff; --green: #2fbf71; --orange: #ff7a45; --yellow: #ffd23f; --red: #ff4d4f; --purple: #b98cff;
+  --tl-h: 330px; --hdr-h: 52px;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; overflow-x: hidden; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 "Pretendard", "Malgun Gothic", system-ui, sans-serif; }
-header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #12151b; color: #fff; }
-header h1 { font-size: 17px; margin: 0; font-weight: 800; }
-header .sub { color: #9aa3b2; font-size: 13px; }
-main { display: grid; grid-template-columns: 260px minmax(0, 1fr) 380px; gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
-@media (max-width: 1100px) { main { grid-template-columns: minmax(0, 1fr); } }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
-h2 { font-size: 15px; margin: 0 0 12px; }
-.proj { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font: inherit; color: inherit; }
-.proj.active { border-color: var(--accent); box-shadow: 0 0 0 2px #2f6fed22; }
-.proj .t { font-weight: 700; overflow-wrap: anywhere; }
-.proj .m { font-size: 12px; color: var(--muted); }
-.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 4px; }
-.b-ok { background: #e3f6ec; color: var(--green); } .b-warn { background: #fdebe3; color: var(--orange); } .b-exp { background: #fde3e3; color: #c62828; }
-label { display: block; font-weight: 700; font-size: 13px; margin: 12px 0 4px; }
-.help { color: var(--muted); font-size: 12px; margin-top: 2px; }
-input[type=text], input[type=number], input[type=date], textarea, select {
-  width: 100%; border: 1px solid #cfd3da; border-radius: 8px; padding: 8px 10px; font: inherit; background: #fff; color: inherit; }
-textarea { min-height: 90px; resize: vertical; }
-.section { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; font-weight: 800; color: var(--accent); }
-.row { display: flex; gap: 8px; flex-wrap: wrap; }
-.row > * { flex: 1 1 140px; min-width: 0; }
-.check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-weight: 700; font-size: 13px; }
-button.btn { border: 0; border-radius: 10px; padding: 11px 16px; font: inherit; font-weight: 800; cursor: pointer; }
-.btn-primary { background: var(--accent); color: #fff; } .btn-ghost { background: #eef1f6; color: var(--ink); }
-.btn-dark { background: #12151b; color: #fff; }
-button:disabled { opacity: .5; cursor: wait; }
-.phone { position: relative; width: 100%; max-width: 320px; aspect-ratio: 9 / 16; margin: 0 auto; background: #0e1116; border-radius: 18px; overflow: hidden; }
-.phone video { width: 100%; height: 100%; display: block; }
-.phone .empty { position: absolute; inset: 0; display: grid; place-items: center; color: #8a93a3; text-align: center; padding: 20px; font-size: 14px; }
+html, body { margin: 0; height: 100%; overflow-x: hidden; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 "Pretendard", "Malgun Gothic", system-ui, sans-serif; }
+button, input, select, textarea { font: inherit; color: inherit; }
+header { height: var(--hdr-h); display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #0f1115; border-bottom: 1px solid var(--line); }
+header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 800; white-space: nowrap; }
+header select { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-width: 0; max-width: 260px; }
+header .grow { flex: 1; }
+.btn { border: 0; border-radius: 8px; padding: 7px 12px; font-weight: 700; cursor: pointer; background: var(--panel2); white-space: nowrap; }
+.btn:hover { filter: brightness(1.15); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-final { background: var(--green); color: #06120b; }
+.btn-sm { padding: 4px 8px; font-size: 12px; }
+.btn:disabled { opacity: .45; cursor: wait; }
+.pill { font-size: 12px; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.pill.ok { background: #173d29; color: #7be3a8; } .pill.stale { background: #4a2c14; color: #ffb37a; } .pill.busy { background: #1d3157; color: #9cc0ff; }
+label.tg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 400px; height: calc(100vh - var(--hdr-h) - var(--tl-h)); min-height: 0; }
+.side { overflow-y: auto; border-right: 1px solid var(--line); min-width: 0; }
+.tabs { display: flex; gap: 2px; padding: 8px 12px 0; position: sticky; top: 0; background: var(--bg); z-index: 2; border-bottom: 1px solid var(--line); }
+.tab { padding: 8px 12px; border: 0; background: none; color: var(--muted); font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; }
+.tab.on { color: var(--ink); border-color: var(--accent); }
+.pane { padding: 4px 16px 24px; }
+.pane[hidden] { display: none; }
+label.f { display: block; font-weight: 700; font-size: 12px; color: #c4cad6; margin: 12px 0 4px; }
+.help { color: var(--muted); font-size: 12px; margin-top: 3px; }
+input[type=text], input[type=number], textarea, select.in {
+  width: 100%; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+textarea { min-height: 84px; resize: vertical; }
+.section { margin-top: 22px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .02em; }
+.flash { animation: flash 1.2s ease; } @keyframes flash { 0%,40% { box-shadow: 0 0 0 3px var(--yellow); } 100% { box-shadow: none; } }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row > .grow { flex: 1 1 120px; min-width: 0; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.empty-sel { color: var(--muted); padding: 24px 0; }
+
+.viewer { display: flex; flex-direction: column; min-height: 0; padding: 10px 14px; gap: 8px; }
+.phone { position: relative; flex: 1 1 auto; min-height: 0; aspect-ratio: 9 / 16; max-width: 100%; margin: 0 auto; background: #000; border-radius: 12px; overflow: hidden; }
+.phone video { width: 100%; height: 100%; display: block; background: #000; }
+.phone .msg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 20px; font-size: 13px; pointer-events: none; }
+.phone .stale-banner { position: absolute; left: 8px; right: 8px; top: 8px; background: rgba(74, 44, 20, .92); color: #ffcf9e; font-size: 12px; padding: 6px 8px; border-radius: 8px; display: none; }
 .safe { position: absolute; inset: 0; pointer-events: none; display: none; }
 .safe.on { display: block; }
-.safe div { position: absolute; background: rgba(232, 98, 47, .28); border: 1px dashed rgba(232, 98, 47, .9); }
-.safe span { position: absolute; font-size: 10px; color: #fff; background: rgba(0,0,0,.55); padding: 1px 5px; border-radius: 4px; }
-.checks { list-style: none; padding: 0; margin: 12px 0 0; font-size: 13px; }
-.checks li { padding: 6px 8px; border-radius: 8px; margin-bottom: 6px; overflow-wrap: anywhere; }
-.checks .ok { background: #e3f6ec; } .checks .warn { background: #fff4e0; } .checks .err { background: #fde3e3; }
-.status { font-size: 13px; color: var(--muted); min-height: 20px; margin-top: 8px; }
+.safe div { position: absolute; background: rgba(255, 122, 69, .25); border: 1px dashed rgba(255, 122, 69, .9); }
+.vbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+.tc { font-variant-numeric: tabular-nums; font-weight: 700; }
+.checks { list-style: none; padding: 0; margin: 0; font-size: 12px; max-height: 120px; overflow-y: auto; }
+.checks li { padding: 4px 8px; border-radius: 6px; margin-bottom: 4px; overflow-wrap: anywhere; }
+.checks .ok { background: #173d29; } .checks .warn { background: #4a3514; } .checks .err { background: #4d1a1a; }
+
+/* timeline */
+.tl { height: var(--tl-h); border-top: 1px solid var(--line); background: #111318; display: flex; flex-direction: column; min-width: 0; }
+.tl-bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tl-bar .t { font-weight: 800; font-size: 12px; color: var(--muted); }
+.tl-body { position: relative; flex: 1; overflow-y: auto; overflow-x: hidden; user-select: none; }
+.trk { display: grid; grid-template-columns: 104px minmax(0, 1fr); border-bottom: 1px solid #1f232b; }
+.trk .lab { font-size: 11px; color: var(--muted); padding: 4px 8px; border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 4px; background: #14161b; }
+.trk .lane { position: relative; min-width: 0; overflow: hidden; }
+.ruler .lane { height: 24px; cursor: pointer; }
+.tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid #2b303b; }
+.tick span { position: absolute; top: 3px; left: 3px; font-size: 10px; color: var(--muted); }
+.blk { position: absolute; top: 4px; bottom: 4px; border-radius: 6px; padding: 2px 6px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; border: 1px solid transparent; }
+.blk.scene { background: #2a3040; color: #b9c2d6; cursor: default; }
+.blk.cap { background: #2a3a66; color: #dbe6ff; cursor: grab; touch-action: none; }
+.blk.cap.sel, .mk.sel .head, .blk.bgm.sel { outline: 2px solid var(--yellow); }
+.blk.small { background: #2f2a1c; color: #d6c48f; cursor: default; }
+.blk.bgm { background: linear-gradient(180deg, rgba(185, 140, 255, .45), rgba(185, 140, 255, .18)); color: #eadcff; top: auto; }
+.hd { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; }
+.hd.l { left: 0; } .hd.r { right: 0; }
+.mk { position: absolute; bottom: 4px; width: 0; cursor: grab; touch-action: none; }
+.mk .stem { position: absolute; bottom: 0; left: -2px; width: 4px; background: var(--orange); border-radius: 2px; }
+.mk .head { position: absolute; left: -6px; width: 12px; height: 12px; border-radius: 50%; background: var(--orange); }
+.mk .nm { position: absolute; left: 7px; font-size: 10px; color: #ffc6a8; white-space: nowrap; }
+.wave canvas { display: block; width: 100%; height: 100%; }
+.playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); pointer-events: none; z-index: 5; }
+.playhead::before { content: ""; position: absolute; top: 0; left: -5px; border: 6px solid transparent; border-top-color: var(--red); }
+dialog { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 20px; width: min(460px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgba(0,0,0,.6); }
 .tpl { border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; cursor: pointer; }
-.tpl.sel { border-color: var(--accent); background: #f2f6ff; }
+.tpl.sel { border-color: var(--accent); background: #1b2740; }
 .tpl b { display: block; } .tpl small { color: var(--muted); }
-dialog { border: 0; border-radius: 14px; padding: 20px; width: min(460px, calc(100vw - 32px)); }
-dialog::backdrop { background: rgba(0,0,0,.4); }
+
+@media (max-width: 1000px) {
+  :root { --tl-h: auto; }
+  html, body { height: auto; }
+  body { display: flex; flex-direction: column; }
+  header { height: auto; flex-wrap: wrap; padding: 8px 12px; }
+  .work { display: contents; }  /* 영상 → 타임라인 → 입력란 순서로 쌓는다 */
+  .viewer { order: 1; position: sticky; top: 0; z-index: 6; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .tl { order: 2; } .side { order: 3; }
+  .phone { height: 40vh; flex: none; }
+  .side { border-right: 0; overflow: visible; }
+  .tl { height: auto; }
+  .tl-body { overflow: visible; }
+}
 </style>
 </head>
 <body>
-<header><h1>미라클 쇼츠 스튜디오</h1><span class="sub">초안 → 고치기 → 미리보기 → 최종 만들기</span></header>
-<main>
-  <section class="panel">
-    <h2>프로젝트</h2>
-    <button class="btn btn-dark" style="width:100%;margin-bottom:12px" onclick="openNew()">+ 새 쇼츠</button>
-    <div id="plist"></div>
-  </section>
+<header>
+  <h1>미라클 쇼츠 스튜디오</h1>
+  <select id="psel" onchange="openProject(this.value)"></select>
+  <button class="btn btn-sm" onclick="openNew()">+ 새 쇼츠</button>
+  <span class="grow"></span>
+  <span class="pill" id="state"></span>
+  <label class="tg"><input type="checkbox" id="auto" checked> 고치면 자동 미리보기</label>
+  <button class="btn btn-primary" id="bprev" onclick="render(true)">미리보기 만들기</button>
+  <button class="btn btn-final" id="bfinal" onclick="render(false)">최종 만들기</button>
+</header>
 
-  <section class="panel">
-    <h2 id="ftitle">프로젝트를 고르세요</h2>
-    <div id="form"></div>
-  </section>
+<div class="work">
+  <aside class="side">
+    <div class="tabs">
+      <button class="tab on" data-tab="content" onclick="tab('content')">내용</button>
+      <button class="tab" data-tab="item" onclick="tab('item')">선택한 항목</button>
+      <button class="tab" data-tab="check" onclick="tab('check')">점검</button>
+    </div>
+    <div class="pane" id="p-content"></div>
+    <div class="pane" id="p-item" hidden><div class="empty-sel">아래 타임라인에서 자막·효과음·배경음악을 누르면<br>여기서 고칠 수 있어요.</div></div>
+    <div class="pane" id="p-check" hidden><ul class="checks" id="checks2" style="max-height:none"></ul></div>
+  </aside>
 
-  <section class="panel">
-    <h2>미리보기</h2>
-    <div class="phone">
-      <video id="vid" controls playsinline></video>
-      <div class="empty" id="empty">[미리보기]를 누르면<br>여기에 영상이 나와요</div>
+  <section class="viewer">
+    <div class="phone" id="phone">
+      <video id="vid" playsinline preload="auto"></video>
+      <div class="msg" id="vmsg">[미리보기 만들기]를 누르면<br>여기에 영상이 나와요</div>
+      <div class="stale-banner" id="sbanner">고친 내용이 아직 영상에 반영되지 않았어요</div>
       <div class="safe" id="safe">
-        <div style="left:0;right:0;top:0;height:8%"></div><span style="top:2%;left:4px">검색·메뉴</span>
-        <div style="right:0;top:45%;bottom:18%;width:11%"></div><span style="top:46%;right:4px">버튼</span>
-        <div style="left:0;right:0;bottom:0;height:18%"></div><span style="bottom:12%;left:4px">제목·설명</span>
+        <div style="left:0;right:0;top:0;height:8%"></div>
+        <div style="right:0;top:45%;bottom:18%;width:11%"></div>
+        <div style="left:0;right:0;bottom:0;height:18%"></div>
       </div>
     </div>
-    <label class="check"><input type="checkbox" id="safeon" onchange="safe.classList.toggle('on', this.checked)"> 유튜브 화면 가림 영역 보기</label>
-    <div class="row" style="margin-top:12px">
-      <button class="btn btn-ghost" id="bprev" onclick="render(true)" disabled>미리보기 (빠름)</button>
-      <button class="btn btn-primary" id="bfinal" onclick="render(false)" disabled>최종 만들기</button>
+    <div class="vbar">
+      <button class="btn btn-sm" onclick="togglePlay()" id="bplay">▶ 재생</button>
+      <span class="tc" id="tc">0.0 / 0.0초</span>
+      <select class="in" id="vkind" style="width:auto" onchange="loadVideo()"><option value="preview">미리보기</option><option value="final">최종본</option></select>
+      <label class="tg"><input type="checkbox" onchange="safe.classList.toggle('on', this.checked)"> 가림 영역</label>
     </div>
-    <div class="status" id="status"></div>
     <ul class="checks" id="checks"></ul>
   </section>
-</main>
+</div>
+
+<section class="tl">
+  <div class="tl-bar">
+    <span class="t">타임라인</span>
+    <span class="help" style="margin:0">자막 막대를 끌면 시간 이동 · 양 끝을 끌면 길이 조절 · 주황 표시는 효과음(높이 = 소리 크기) · 빈 곳을 누르면 그 시간으로 이동</span>
+  </div>
+  <div class="tl-body" id="tlbody"></div>
+</section>
 
 <dialog id="dnew">
-  <h2>새 쇼츠</h2>
+  <h2 style="margin-top:0">새 쇼츠</h2>
   <div id="tpls"></div>
-  <label>이름 (영문·숫자·한글, 띄어쓰기 대신 -)</label>
-  <input type="text" id="nid" placeholder="예: 02-진단비">
-  <div class="row" style="margin-top:16px">
-    <button class="btn btn-ghost" onclick="dnew.close()">취소</button>
+  <label class="f">이름 (띄어쓰기 대신 -)</label>
+  <input type="text" id="nid" placeholder="예: 04-진단비">
+  <div class="row" style="margin-top:16px;justify-content:flex-end">
+    <button class="btn" onclick="dnew.close()">취소</button>
     <button class="btn btn-primary" onclick="createNew()">만들기</button>
   </div>
 </dialog>
 
 <script>
 const $ = (id) => document.getElementById(id);
-let TEMPLATES = [], cur = null, data = null, selTpl = null;
+const S = { templates: [], cur: null, data: null, tl: null, wave: null, sel: null, busy: false, kind: 'preview' };
+const vid = $('vid');
 
-async function api(path, opt) {
-  const r = await fetch(path, opt);
-  return r.json();
-}
-async function loadProjects() {
+async function api(path, opt) { const r = await fetch(path, opt); return r.json(); }
+const plain = (s) => s.replace(/[\[\]]/g, '').replace(/\//g, ' ');
+const fmt = (t) => (Math.round(t * 10) / 10).toFixed(1);
+
+/* ---------- projects ---------- */
+async function loadProjects(selectId) {
   const ps = await api('/api/projects');
-  $('plist').innerHTML = ps.length ? '' : '<div class="help">아직 없어요</div>';
+  const sel = $('psel'); sel.innerHTML = '';
   for (const p of ps) {
-    const b = document.createElement('button');
-    b.className = 'proj' + (p.id === cur ? ' active' : '');
-    const cls = p.review === '심의 완료' ? 'b-ok' : p.review === '심의 만료' ? 'b-exp' : 'b-warn';
-    b.innerHTML = `<div class="t"></div><div class="m"><span class="tn"></span><span class="badge ${cls}"></span></div>`;
-    b.querySelector('.t').textContent = p.title;
-    b.querySelector('.tn').textContent = p.templateName;
-    b.querySelector('.badge').textContent = p.review + (p.review_exp ? ` ~${p.review_exp}` : '');
-    b.onclick = () => openProject(p.id);
-    $('plist').appendChild(b);
+    const o = document.createElement('option'); o.value = p.id;
+    o.textContent = `${p.title} · ${p.templateName} · ${p.review}`; sel.appendChild(o);
   }
+  if (selectId) sel.value = selectId;
+  return ps;
 }
-function field(f) {
+async function openProject(id) {
+  S.cur = id; S.sel = null;
+  S.data = await api('/api/project/' + encodeURIComponent(id));
+  buildForm(); tab('content'); renderItem();
+  await refreshTimeline();
+  S.kind = S.tl.rendered && S.tl.rendered.final && !S.tl.rendered.preview ? 'final' : 'preview';
+  $('vkind').value = S.kind; loadVideo();
+  $('checks').innerHTML = ''; $('checks2').innerHTML = '';
+}
+
+/* ---------- content form ---------- */
+const COMMON = [
+  { section: '기본 · 준법' },
+  { key: 'title', label: '제목 (목록에 보이는 이름)', type: 'text' },
+  { key: 'review_no', label: '심의필 번호 (비면 화면에 "심의 전 · 게시 불가")', type: 'text' },
+  { key: 'review_exp', label: '심의 유효기간 (예: 2027-10-31)', type: 'text' },
+];
+function fieldEl(f) {
   const wrap = document.createElement('div');
   if (f.section) { wrap.className = 'section'; wrap.textContent = f.section; return wrap; }
-  const lab = document.createElement('label'); lab.textContent = f.label; wrap.appendChild(lab);
+  wrap.id = 'f-' + f.key;
+  const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = f.label; wrap.appendChild(lab);
   let el;
-  if (f.type === 'lines') { el = document.createElement('textarea'); el.value = (data[f.key] || []).join('\n'); }
-  else { el = document.createElement('input'); el.type = f.type === 'number' ? 'number' : 'text'; el.value = data[f.key] ?? '';
+  if (f.type === 'lines') { el = document.createElement('textarea'); el.value = (S.data[f.key] || []).join('\n'); }
+  else { el = document.createElement('input'); el.type = f.type === 'number' ? 'number' : 'text'; el.value = S.data[f.key] ?? '';
          if (f.min != null) el.min = f.min; if (f.max != null) el.max = f.max; }
-  el.oninput = () => { data[f.key] = f.type === 'lines' ? el.value.split('\n') : f.type === 'number' ? Number(el.value) : el.value; dirty(); };
+  el.oninput = () => { S.data[f.key] = f.type === 'lines' ? el.value.split('\n') : f.type === 'number' ? Number(el.value) : el.value; changed(); };
   wrap.appendChild(el);
   if (f.help) { const h = document.createElement('div'); h.className = 'help'; h.textContent = f.help; wrap.appendChild(h); }
   return wrap;
 }
-const COMMON = [
-  { section: '기본 · 준법' },
-  { key: 'title', label: '제목 (목록에 보이는 이름)', type: 'text' },
-  { key: 'review_no', label: '심의필 번호 (비어 있으면 화면에 "심의 전 · 게시 불가")', type: 'text' },
-  { key: 'review_exp', label: '심의 유효기간 (예: 2027-10-31)', type: 'text' },
-];
-async function openProject(id) {
-  cur = id; data = await api('/api/project/' + encodeURIComponent(id));
-  const t = TEMPLATES.find(t => t.key === data.template);
-  $('ftitle').textContent = `${data.title} · ${t.name}`;
-  const form = $('form'); form.innerHTML = '';
-  for (const f of COMMON) form.appendChild(field(f));
-  const ck = document.createElement('label'); ck.className = 'check';
+function buildForm() {
+  const t = S.templates.find(t => t.key === S.data.template);
+  const p = $('p-content'); p.innerHTML = '';
+  for (const f of COMMON) p.appendChild(fieldEl(f));
+  const ck = document.createElement('label'); ck.className = 'tg'; ck.style.marginTop = '12px';
   ck.innerHTML = '<input type="checkbox"> 예시 데이터 (실제 데이터로 바꾸면 끄세요)';
-  ck.querySelector('input').checked = data.is_sample !== false;
-  ck.querySelector('input').onchange = (e) => { data.is_sample = e.target.checked; dirty(); };
-  form.appendChild(ck);
-  for (const f of t.fields) form.appendChild(field(f));
-  $('bprev').disabled = $('bfinal').disabled = false;
-  $('checks').innerHTML = ''; $('status').textContent = '';
-  showVideo(null);
-  loadProjects();
+  ck.querySelector('input').checked = S.data.is_sample !== false;
+  ck.querySelector('input').onchange = (e) => { S.data.is_sample = e.target.checked; changed(); };
+  p.appendChild(ck);
+  for (const f of t.fields) p.appendChild(fieldEl(f));
 }
-let saveTimer = null;
-function dirty() { clearTimeout(saveTimer); $('status').textContent = '저장 중…'; saveTimer = setTimeout(save, 500); }
+function tab(name) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+  for (const n of ['content', 'item', 'check']) $('p-' + n).hidden = n !== name;
+}
+function focusField(key) {
+  tab('content'); const w = $('f-' + key); if (!w) return;
+  w.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  const el = w.querySelector('input,textarea'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); el.focus();
+}
+
+/* ---------- save / state ---------- */
+let saveTimer = null, autoTimer = null;
+function changed() {
+  setState('stale');
+  clearTimeout(saveTimer); saveTimer = setTimeout(async () => { await save(); await refreshTimeline(); scheduleAuto(); }, 450);
+}
 async function save() {
-  await api('/api/project/' + encodeURIComponent(cur), { method: 'POST', body: JSON.stringify(data) });
-  $('status').textContent = '저장됨';
+  await api('/api/project/' + encodeURIComponent(S.cur), { method: 'POST', body: JSON.stringify(S.data) });
 }
-function showVideo(src) {
-  const v = $('vid');
-  if (src) { v.src = src + '?t=' + Date.now(); v.style.display = 'block'; $('empty').style.display = 'none'; v.play().catch(() => {}); }
-  else { v.removeAttribute('src'); v.load(); $('empty').style.display = 'grid'; }
+function scheduleAuto() {
+  clearTimeout(autoTimer);
+  if ($('auto').checked) autoTimer = setTimeout(() => { if (!S.busy) render(true); }, 2000);
 }
+function setState(kind, text) {
+  const el = $('state'); el.className = 'pill ' + kind;
+  el.textContent = text || { ok: '영상 최신', stale: '고친 내용 미반영', busy: '만드는 중…' }[kind];
+  $('sbanner').style.display = kind === 'stale' && vid.getAttribute('src') ? 'block' : 'none';
+}
+async function refreshTimeline() {
+  const tl = await api('/api/timeline/' + encodeURIComponent(S.cur));
+  if (!tl.ok) { showChecks((tl.errors || []).map(e => ['err', e])); return; }
+  S.tl = tl;
+  const w = await api(`/api/wave/${encodeURIComponent(S.cur)}?kind=${S.kind}`); S.wave = w;
+  if (!S.busy) setState(tl.rendered && tl.rendered[S.kind] === tl.hash ? 'ok' : 'stale');
+  drawTimeline(); renderItem();
+}
+
+/* ---------- render ---------- */
 async function render(preview) {
-  clearTimeout(saveTimer); await save();
-  $('bprev').disabled = $('bfinal').disabled = true;
-  $('status').textContent = preview ? '미리보기 만드는 중… (20초 안팎)' : '최종본 만드는 중… (1분 안팎)';
-  const t0 = Date.now();
-  const r = await api(`/api/render/${encodeURIComponent(cur)}?preview=${preview ? 1 : 0}`, { method: 'POST' });
-  $('bprev').disabled = $('bfinal').disabled = false;
-  const ul = $('checks'); ul.innerHTML = '';
-  if (!r.ok) {
-    $('status').textContent = '만들지 못했어요';
-    for (const e of r.errors || []) { const li = document.createElement('li'); li.className = 'err'; li.textContent = e; ul.appendChild(li); }
-    return;
-  }
-  $('status').textContent = `${preview ? '미리보기' : '최종본'} 완료 (${Math.round((Date.now() - t0) / 1000)}초)` +
-    (preview ? '' : ` · 파일: studio/projects/${cur}/final.mp4`);
-  for (const [lv, msg] of r.checks) { const li = document.createElement('li'); li.className = lv; li.textContent = (lv === 'ok' ? '✓ ' : '! ') + msg; ul.appendChild(li); }
-  showVideo(r.video);
-  loadProjects();
+  if (S.busy) return;
+  clearTimeout(autoTimer); clearTimeout(saveTimer); await save();
+  S.busy = true; $('bprev').disabled = $('bfinal').disabled = true;
+  setState('busy', preview ? '미리보기 만드는 중… (15초 안팎)' : '최종본 만드는 중… (1분 안팎)');
+  const t = vid.currentTime || 0;
+  const r = await api(`/api/render/${encodeURIComponent(S.cur)}?preview=${preview ? 1 : 0}`, { method: 'POST' });
+  S.busy = false; $('bprev').disabled = $('bfinal').disabled = false;
+  if (!r.ok) { setState('stale', '만들지 못했어요'); showChecks((r.errors || []).map(e => ['err', e])); tab('check'); return; }
+  S.kind = r.kind; $('vkind').value = r.kind;
+  showChecks(r.checks);
+  await refreshTimeline(); loadVideo(t);
+  loadProjects(S.cur);
 }
+function showChecks(list) {
+  for (const id of ['checks', 'checks2']) {
+    const ul = $(id); ul.innerHTML = '';
+    for (const [lv, msg] of list) { const li = document.createElement('li'); li.className = lv; li.textContent = (lv === 'ok' ? '✓ ' : '! ') + msg; ul.appendChild(li); }
+  }
+}
+
+/* ---------- video ---------- */
+function loadVideo(t) {
+  S.kind = $('vkind').value;
+  const has = S.tl && S.tl.rendered && S.tl.rendered[S.kind];
+  if (!has) { vid.removeAttribute('src'); vid.load(); $('vmsg').style.display = 'grid';
+    $('vmsg').innerHTML = S.kind === 'final' ? '아직 최종본이 없어요' : '[미리보기 만들기]를 누르면<br>여기에 영상이 나와요'; }
+  else {
+    $('vmsg').style.display = 'none';
+    vid.src = `/files/${encodeURIComponent(S.cur)}/${S.kind === 'final' ? 'final.mp4' : 'final_preview.mp4'}?v=${Date.now()}`;
+    vid.onloadedmetadata = () => { if (t) vid.currentTime = Math.min(t, vid.duration - 0.05); };
+  }
+  if (S.cur) api(`/api/wave/${encodeURIComponent(S.cur)}?kind=${S.kind}`).then(w => { S.wave = w; drawWave(); });
+  if (S.tl) setState(S.tl.rendered && S.tl.rendered[S.kind] === S.tl.hash ? 'ok' : 'stale');
+}
+function togglePlay() { if (!vid.getAttribute('src')) return; vid.paused ? vid.play() : vid.pause(); }
+vid.onplay = () => $('bplay').textContent = '❚❚ 정지';
+vid.onpause = () => $('bplay').textContent = '▶ 재생';
+vid.ontimeupdate = vid.onseeked = () => tick(true);  // 창이 뒤에 있어 화면 갱신이 느려도 위치선은 맞춘다
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); togglePlay(); }
+});
+function seek(t) {
+  t = Math.max(0, Math.min(t, S.tl ? S.tl.total : 0));
+  if (vid.getAttribute('src') && vid.readyState) vid.currentTime = t; else S.fakeT = t;
+  tick(true);
+}
+function curT() { return vid.getAttribute('src') ? vid.currentTime : (S.fakeT || 0); }
+function tick(once) {
+  if (S.tl) {
+    const x = curT(); $('tc').textContent = `${fmt(x)} / ${fmt(S.tl.total)}초`;
+    const ph = $('playhead'); if (ph) ph.style.left = `calc(104px + (100% - 104px) * ${x / S.tl.total})`;
+  }
+  if (!once) requestAnimationFrame(() => tick());
+}
+tick();
+
+/* ---------- timeline ---------- */
+const pct = (t) => (t / S.tl.total * 100) + '%';
+function lane(label, h, extra) {
+  const trk = document.createElement('div'); trk.className = 'trk';
+  const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = label;
+  if (extra) lab.appendChild(extra);
+  const ln = document.createElement('div'); ln.className = 'lane'; ln.style.height = h + 'px';
+  ln.addEventListener('pointerdown', (e) => { if (e.target === ln) { seek(xToT(e, ln)); select(null); } });
+  trk.append(lab, ln); return [trk, ln];
+}
+function xToT(e, ln) { const r = ln.getBoundingClientRect(); return (e.clientX - r.left) / r.width * S.tl.total; }
+function drawTimeline() {
+  const body = $('tlbody'); body.innerHTML = ''; const tl = S.tl;
+  // ruler
+  const [rt, rl] = lane('', 24); rt.classList.add('ruler');
+  const step = tl.total > 40 ? 5 : tl.total > 15 ? 2 : 1;
+  for (let s = 0; s <= tl.total; s += 1) {
+    const tk = document.createElement('div'); tk.className = 'tick'; tk.style.left = pct(s);
+    if (s % step === 0) tk.innerHTML = `<span>${s}s</span>`; else tk.style.top = '16px';
+    rl.appendChild(tk);
+  }
+  rl.addEventListener('pointerdown', (e) => seek(xToT(e, rl)));
+  body.appendChild(rt);
+  // scenes
+  const [st, sl] = lane('장면', 30);
+  for (const sc of tl.scenes) {
+    const b = document.createElement('div'); b.className = 'blk scene'; b.style.left = pct(sc.start); b.style.width = `calc(${pct(sc.dur)} - 2px)`;
+    b.textContent = `${sc.label} · ${sc.dur}초`; b.title = b.textContent; sl.appendChild(b);
+  }
+  body.appendChild(st);
+  // captions
+  const reset = document.createElement('button'); reset.className = 'btn btn-sm'; reset.textContent = '↺'; reset.title = '자막 시간 기본값으로';
+  reset.onclick = () => { if (S.data.tl) delete S.data.tl.cap_times; changed(); };
+  reset.style.display = tl.custom.cap_times ? '' : 'none';
+  const [ct, cl] = lane('자막', 40, reset);
+  tl.captions.forEach((c, i) => {
+    const b = document.createElement('div'); b.className = 'blk cap' + (S.sel && S.sel.type === 'cap' && S.sel.i === i ? ' sel' : '');
+    b.style.left = pct(c.start); b.style.width = `calc(${pct(c.end - c.start)} - 2px)`;
+    b.textContent = plain(c.text); b.title = `${fmt(c.start)}~${fmt(c.end)}초  ${plain(c.text)}`;
+    b.innerHTML += '<div class="hd l"></div><div class="hd r"></div>';
+    b.addEventListener('pointerdown', (e) => dragCap(e, i, cl, e.target.classList.contains('l') ? 'l' : e.target.classList.contains('r') ? 'r' : 'm'));
+    cl.appendChild(b);
+  });
+  body.appendChild(ct);
+  // compliance small
+  const [mt, ml] = lane('준법 표기', 22);
+  const sb = document.createElement('div'); sb.className = 'blk small'; sb.style.left = '0'; sb.style.width = 'calc(100% - 2px)'; sb.style.top = '2px'; sb.style.bottom = '2px';
+  sb.textContent = plain(tl.small.text) + '  (항상 표시 · 끌 수 없음)'; ml.appendChild(sb); body.appendChild(mt);
+  // sfx
+  const tools = document.createElement('span');
+  const add = document.createElement('button'); add.className = 'btn btn-sm'; add.textContent = '+'; add.title = '재생 위치에 효과음 추가';
+  add.onclick = () => { const l = sfxList(); l.push({ t: Math.round(curT() * 10) / 10, name: 'pop', vol: 0.6 }); l.sort((a, b) => a.t - b.t); setSfx(l); select({ type: 'sfx', i: l.findIndex(s => s.name === 'pop' && Math.abs(s.t - Math.round(curT() * 10) / 10) < 0.01) }); };
+  const rs = document.createElement('button'); rs.className = 'btn btn-sm'; rs.textContent = '↺'; rs.title = '효과음 기본값으로';
+  rs.onclick = () => { if (S.data.tl) delete S.data.tl.sfx; select(null); changed(); };
+  rs.style.display = tl.custom.sfx ? '' : 'none';
+  tools.append(add, rs);
+  const [xt, xl] = lane('효과음', 60, tools);
+  tl.sfx.forEach((s, i) => {
+    const m = document.createElement('div'); m.className = 'mk' + (S.sel && S.sel.type === 'sfx' && S.sel.i === i ? ' sel' : '');
+    const h = 10 + 40 * Math.min(1, s.vol ?? 0.7);
+    m.style.left = pct(s.t);
+    m.innerHTML = `<div class="stem" style="height:${h}px"></div><div class="head" style="bottom:${h - 6}px"></div><div class="nm" style="bottom:${h - 6}px">${s.name}</div>`;
+    m.title = `${s.name} · ${fmt(s.t)}초 · 크기 ${Math.round((s.vol ?? 0.7) * 100)}%`;
+    m.addEventListener('pointerdown', (e) => dragSfx(e, i, xl));
+    xl.appendChild(m);
+  });
+  body.appendChild(xt);
+  // bgm
+  const [bt, bl] = lane('배경음악', 34);
+  if (tl.bgm) {
+    const b = document.createElement('div'); b.className = 'blk bgm' + (S.sel && S.sel.type === 'bgm' ? ' sel' : '');
+    const v = Math.min(1, (tl.bgm.vol ?? 0.22) / 0.6);
+    b.style.left = '0'; b.style.width = 'calc(100% - 2px)'; b.style.height = (8 + 20 * v) + 'px'; b.style.bottom = '3px';
+    b.textContent = `♪ ${tl.bgm.file} · 크기 ${Math.round((tl.bgm.vol ?? 0.22) * 100)}%` + (tl.bgm.duck ? ' · 말·효과음 나오면 자동으로 작아짐' : '');
+    b.onclick = () => select({ type: 'bgm' }); bl.appendChild(b);
+  } else {
+    const b = document.createElement('button'); b.className = 'btn btn-sm'; b.style.margin = '5px'; b.textContent = '+ 배경음악 넣기';
+    b.onclick = () => { S.data.bgm = { file: '', vol: 0.22, duck: true, start: 0 }; select({ type: 'bgm' }); };
+    bl.appendChild(b);
+  }
+  body.appendChild(bt);
+  // wave
+  const [wt, wl] = lane('실제 음량', 64); wt.classList.add('wave');
+  wl.innerHTML = '<canvas id="wcv"></canvas>'; body.appendChild(wt);
+  const ph = document.createElement('div'); ph.className = 'playhead'; ph.id = 'playhead'; body.appendChild(ph);
+  drawWave(); tick(true);
+}
+function drawWave() {
+  const cv = $('wcv'); if (!cv || !S.tl) return;
+  const r = cv.getBoundingClientRect(); const dpr = window.devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr; const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  const W = r.width, H = r.height; g.clearRect(0, 0, W, H);
+  const y = (db) => H - (db + 60) / 60 * H;
+  g.font = '10px sans-serif'; g.textBaseline = 'middle';
+  for (const [db, c] of [[-6, '#ff4d4f55'], [-20, '#2fbf7155'], [-40, '#ffffff22']]) {
+    g.strokeStyle = c; g.beginPath(); g.moveTo(0, y(db)); g.lineTo(W, y(db)); g.stroke();
+    g.fillStyle = '#8b93a4'; g.fillText(`${db}dB`, W - 34, y(db) - 6);
+  }
+  const w = S.wave; if (!w || !w.db.length) { g.fillStyle = '#8b93a4'; g.fillText('영상을 만들면 실제 소리 크기가 여기 나와요', 8, H / 2); return; }
+  const bw = W / (S.tl.total / w.step);
+  w.db.forEach((d, i) => {
+    const hgt = Math.max(0, H - y(d)); g.fillStyle = d > -6 ? '#ff4d4f' : d > -20 ? '#2fbf71' : '#3f6b55';
+    g.fillRect(i * bw, H - hgt, Math.max(1, bw - 0.5), hgt);
+  });
+}
+window.addEventListener('resize', () => S.tl && drawWave());
+
+/* drag captions */
+function capTimes() { return S.tl.captions.map(c => [c.start, c.end]); }
+function dragCap(e, i, ln, mode) {
+  e.preventDefault(); select({ type: 'cap', i }, false);  // 다시 그리면 ln이 문서에서 빠져 폭이 0이 된다
+  const r = ln.getBoundingClientRect(); const x0 = e.clientX; const [s0, e0] = [S.tl.captions[i].start, S.tl.captions[i].end];
+  const blk = ln.children[i]; blk.classList.add('sel'); let moved = false;
+  const mv = (ev) => {
+    const dt = Math.round((ev.clientX - x0) / r.width * S.tl.total * 10) / 10; if (dt) moved = true;
+    let s = s0, en = e0;
+    if (mode === 'm') { s = Math.max(0, Math.min(S.tl.total - (e0 - s0), s0 + dt)); en = s + (e0 - s0); }
+    if (mode === 'l') s = Math.max(0, Math.min(e0 - 0.3, s0 + dt));
+    if (mode === 'r') en = Math.min(S.tl.total, Math.max(s0 + 0.3, e0 + dt));
+    S.tl.captions[i].start = Math.round(s * 10) / 10; S.tl.captions[i].end = Math.round(en * 10) / 10;
+    blk.style.left = pct(S.tl.captions[i].start); blk.style.width = `calc(${pct(S.tl.captions[i].end - S.tl.captions[i].start)} - 2px)`;
+    renderItem();
+  };
+  const up = () => {
+    removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
+    if (moved) { S.data.tl = S.data.tl || {}; S.data.tl.cap_times = capTimes(); changed(); } else seek(S.tl.captions[i].start + 0.05);
+  };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up);
+}
+/* drag sfx */
+function sfxList() { return S.tl.sfx.map(s => ({ t: s.t, name: s.name, vol: s.vol ?? 0.7 })); }
+function setSfx(list) { S.data.tl = S.data.tl || {}; S.data.tl.sfx = list; S.tl.sfx = list; changed(); drawTimeline(); }
+function dragSfx(e, i, ln) {
+  e.preventDefault(); select({ type: 'sfx', i }, false);
+  const r = ln.getBoundingClientRect(); const x0 = e.clientX; const t0 = S.tl.sfx[i].t; let moved = false;
+  const m = ln.querySelectorAll('.mk')[i]; m.classList.add('sel');
+  const mv = (ev) => {
+    const dt = Math.round((ev.clientX - x0) / r.width * S.tl.total * 10) / 10; if (dt) moved = true;
+    S.tl.sfx[i].t = Math.max(0, Math.min(S.tl.total - 0.1, Math.round((t0 + dt) * 10) / 10)); m.style.left = pct(S.tl.sfx[i].t); renderItem();
+  };
+  const up = () => {
+    removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
+    if (moved) setSfx(sfxList()); else { seek(Math.max(0, S.tl.sfx[i].t - 0.3)); new Audio('/sfx/' + S.tl.sfx[i].name + '.wav').play(); }
+  };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up);
+}
+
+/* ---------- inspector ---------- */
+function select(sel, redraw = true) {
+  S.sel = sel;
+  if (redraw && S.tl) drawTimeline();
+  else document.querySelectorAll('.blk.sel, .mk.sel').forEach(el => el.classList.remove('sel'));
+  renderItem(); if (sel) tab('item');
+}
+function num(label, val, step, on) {
+  const w = document.createElement('div'); w.className = 'grow';
+  w.innerHTML = `<label class="f">${label}</label><input type="number" step="${step}">`;
+  const el = w.querySelector('input'); el.value = val; el.onchange = () => on(Number(el.value)); return w;
+}
+function slider(label, val, max, on) {
+  const w = document.createElement('div');
+  w.innerHTML = `<label class="f">${label} <span></span></label><input type="range" min="0" max="${max}" step="0.01">`;
+  const el = w.querySelector('input'), sp = w.querySelector('span'); el.value = val; sp.textContent = Math.round(val * 100) + '%';
+  el.oninput = () => sp.textContent = Math.round(el.value * 100) + '%'; el.onchange = () => on(Number(el.value)); return w;
+}
+function renderItem() {
+  const p = $('p-item'); const sel = S.sel;
+  if (!sel || !S.tl) { p.innerHTML = '<div class="empty-sel">아래 타임라인에서 자막·효과음·배경음악을 누르면<br>여기서 고칠 수 있어요.</div>'; return; }
+  p.innerHTML = '';
+  const h = document.createElement('div'); h.className = 'section'; p.appendChild(h);
+  if (sel.type === 'cap') {
+    const c = S.tl.captions[sel.i]; if (!c) return;
+    h.textContent = `자막 ${sel.i + 1}`;
+    const f = S.templates.find(t => t.key === S.data.template).fields.find(f => f.key === c.key);
+    if (f) {
+      const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = '문구 ([단어] = 노란 강조, / = 줄바꿈)';
+      const el = document.createElement('input'); el.type = 'text'; el.value = S.data[c.key];
+      el.oninput = () => { S.data[c.key] = el.value; const m = $('f-' + c.key); if (m) m.querySelector('input').value = el.value; changed(); };
+      const hp = document.createElement('div'); hp.className = 'help'; hp.textContent = `화면에 나오는 글: ${plain(c.text)}`;
+      p.append(lab, el, hp);
+    }
+    const row = document.createElement('div'); row.className = 'row';
+    const setT = (s, e) => { S.tl.captions[sel.i].start = s; S.tl.captions[sel.i].end = e; S.data.tl = S.data.tl || {}; S.data.tl.cap_times = capTimes(); changed(); drawTimeline(); };
+    row.append(num('시작 (초)', fmt(c.start), 0.1, v => setT(Math.max(0, Math.min(v, c.end - 0.3)), c.end)),
+               num('끝 (초)', fmt(c.end), 0.1, v => setT(c.start, Math.min(S.tl.total, Math.max(v, c.start + 0.3)))));
+    p.appendChild(row);
+    const b = document.createElement('button'); b.className = 'btn btn-sm'; b.style.marginTop = '12px'; b.textContent = '▶ 이 자막부터 재생';
+    b.onclick = () => { seek(c.start); if (vid.getAttribute('src')) vid.play(); }; p.appendChild(b);
+  } else if (sel.type === 'sfx') {
+    const s = S.tl.sfx[sel.i]; if (!s) return;
+    h.textContent = `효과음 · ${fmt(s.t)}초`;
+    const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = '소리';
+    const row0 = document.createElement('div'); row0.className = 'row';
+    const se = document.createElement('select'); se.className = 'in grow';
+    for (const n of S.tl.sfx_names) { const o = document.createElement('option'); o.value = o.textContent = n; se.appendChild(o); }
+    se.value = s.name; se.onchange = () => { const l = sfxList(); l[sel.i].name = se.value; setSfx(l); new Audio('/sfx/' + se.value + '.wav').play(); };
+    const play = document.createElement('button'); play.className = 'btn btn-sm'; play.textContent = '▶ 들어보기';
+    play.onclick = () => { const a = new Audio('/sfx/' + s.name + '.wav'); a.volume = Math.min(1, s.vol ?? 0.7); a.play(); };
+    row0.append(se, play); p.append(lab, row0);
+    p.appendChild(num('시간 (초)', fmt(s.t), 0.1, v => { const l = sfxList(); l[sel.i].t = Math.max(0, Math.min(S.tl.total - 0.1, v)); setSfx(l); }));
+    p.appendChild(slider('크기', s.vol ?? 0.7, 1, v => { const l = sfxList(); l[sel.i].vol = v; setSfx(l); }));
+    const del = document.createElement('button'); del.className = 'btn btn-sm'; del.style.marginTop = '12px'; del.textContent = '이 효과음 빼기';
+    del.onclick = () => { const l = sfxList(); l.splice(sel.i, 1); S.sel = null; setSfx(l); renderItem(); }; p.appendChild(del);
+  } else if (sel.type === 'bgm') {
+    h.textContent = '배경음악';
+    const b = S.data.bgm || { file: '', vol: 0.22, duck: true, start: 0 };
+    const set = (k, v) => { S.data.bgm = { ...b, [k]: v }; changed(); renderItem(); };
+    const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = '음악 파일 (studio/music 폴더)';
+    const row0 = document.createElement('div'); row0.className = 'row';
+    const se = document.createElement('select'); se.className = 'in grow';
+    se.innerHTML = '<option value="">— 선택 —</option>';
+    for (const n of S.tl.music) { const o = document.createElement('option'); o.value = o.textContent = n; se.appendChild(o); }
+    se.value = b.file; se.onchange = () => set('file', se.value);
+    const of = document.createElement('button'); of.className = 'btn btn-sm'; of.textContent = '음악 폴더 열기';
+    of.onclick = () => api('/api/open-music', { method: 'POST' });
+    const rf = document.createElement('button'); rf.className = 'btn btn-sm'; rf.textContent = '새로고침';
+    rf.onclick = () => refreshTimeline();
+    row0.append(se, of, rf); p.append(lab, row0);
+    const hp = document.createElement('div'); hp.className = 'help';
+    hp.textContent = '유튜브 오디오 보관함 등 저작권 걱정 없는 음원을 음악 폴더에 넣고 새로고침하세요. 비워 두면 업로드할 때 유튜브 앱에서 붙여도 돼요.';
+    p.appendChild(hp);
+    if (b.file) { const a = document.createElement('audio'); a.controls = true; a.src = '/music/' + encodeURIComponent(b.file); a.style.width = '100%'; a.style.marginTop = '8px'; p.appendChild(a); }
+    p.appendChild(slider('크기 (말소리보다 작게: 15~30% 추천)', b.vol ?? 0.22, 0.6, v => set('vol', v)));
+    const dk = document.createElement('label'); dk.className = 'tg'; dk.style.marginTop = '10px';
+    dk.innerHTML = '<input type="checkbox"> 효과음·말소리가 나올 때 음악 자동으로 줄이기 (덕킹)';
+    dk.querySelector('input').checked = b.duck !== false; dk.querySelector('input').onchange = (e) => set('duck', e.target.checked);
+    p.appendChild(dk);
+    p.appendChild(num('음악 시작 위치 (초, 곡의 몇 초부터 쓸지)', b.start ?? 0, 0.5, v => set('start', Math.max(0, v))));
+    const del = document.createElement('button'); del.className = 'btn btn-sm'; del.style.marginTop = '12px'; del.textContent = '배경음악 빼기';
+    del.onclick = () => { delete S.data.bgm; S.sel = null; changed(); renderItem(); }; p.appendChild(del);
+  }
+}
+
+/* ---------- new project ---------- */
+let selTpl = null;
 function openNew() {
-  selTpl = TEMPLATES[0].key;
-  $('tpls').innerHTML = '';
-  for (const t of TEMPLATES) {
+  selTpl = S.templates[0].key; $('tpls').innerHTML = '';
+  for (const t of S.templates) {
     const d = document.createElement('div'); d.className = 'tpl' + (t.key === selTpl ? ' sel' : '');
     d.innerHTML = '<b></b><small></small>'; d.querySelector('b').textContent = t.name; d.querySelector('small').textContent = t.desc;
     d.onclick = () => { selTpl = t.key; [...$('tpls').children].forEach(c => c.classList.remove('sel')); d.classList.add('sel'); };
@@ -203,13 +576,17 @@ function openNew() {
   $('nid').value = ''; $('dnew').showModal();
 }
 async function createNew() {
-  const id = $('nid').value.trim().replace(/\s+/g, '-');
-  if (!id) return;
+  const id = $('nid').value.trim().replace(/\s+/g, '-'); if (!id) return;
   const r = await api('/api/projects', { method: 'POST', body: JSON.stringify({ id, template: selTpl, title: id }) });
   if (r.error) { alert(r.error); return; }
-  $('dnew').close(); openProject(r.id);
+  $('dnew').close(); await loadProjects(r.id); openProject(r.id);
 }
-(async () => { TEMPLATES = await api('/api/templates'); loadProjects(); })();
+
+(async () => {
+  S.templates = await api('/api/templates');
+  const ps = await loadProjects();
+  if (ps.length) openProject(ps[0].id);
+})();
 </script>
 </body>
 </html>
