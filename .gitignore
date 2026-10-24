@@ -27,3 +27,7 @@ miracle-shorts/studio/projects/*/edl.json
 miracle-shorts/studio/projects/*/wave_*.json
 miracle-shorts/studio/projects/*/render.json
 miracle-shorts/studio/music/
+miracle-shorts/studio/projects/*/scenes_*/
+miracle-shorts/studio/projects/*/thumbnail.png
+miracle-shorts/studio/projects/*/media/*.wav
+miracle-shorts/studio/projects/*/media/*.webm
