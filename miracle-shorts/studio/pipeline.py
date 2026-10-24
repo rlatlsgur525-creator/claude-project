@@ -32,7 +32,8 @@ AUDIO_EXT = (".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".webm")
 IMG_EXT = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
 VID_EXT = (".mp4", ".mov", ".m4v", ".webm")
 # 장면 그림에 영향을 주지 않는 키 → 바뀌어도 장면 클립을 다시 그리지 않는다
-NON_SCENE = {"title", "review_no", "review_exp", "tl", "bgm", "edits", "texts", "overlays", "voices", "markers", "upload"}
+NON_SCENE = {"title", "review_no", "review_exp", "tl", "bgm", "edits", "texts", "overlays", "voices", "markers", "upload",
+             "shots", "shot_order", "schema_version", "voice", "_speech"}  # is_sample은 그림의 "(예시)"에도 쓰여 제외하지 않는다
 
 def template(key):
     return importlib.import_module("templates." + key)
@@ -172,13 +173,23 @@ def assemble(full, pid=None, scale=None):
     out = T.build(full)
     scenes, captions, sfx, note = out[:4]
     extras = out[4] if len(out) > 4 else {}
-    pieces = [{"kind": "scene", "name": n, "label": f"장면 {i + 1}", "dur": d, "in": 0.0} for i, (n, d, _) in enumerate(scenes)]
+    shots = shot_layout(full, scenes)
+    smap = shot_time_map(shots)  # 템플릿 시간 → 장면 배치 반영 시간 (배치가 기본이면 그대로)
+    captions = [(*smap.span(c[0], c[1]), *c[2:]) for c in captions]
+    sfx = [{**s, "t": smap.point(s["t"])} for s in sfx]
+    pieces = []
+    for s in shots:
+        if s["hidden"]: continue
+        p = {"kind": s["kind"], "name": s["id"], "shot": s["id"], "label": s["label"], "dur": s["dur"], "in": float(s.get("in") or 0)}
+        if s["kind"] != "scene": p.update({k: s[k] for k in ("src", "color", "fit", "vol") if s.get(k) is not None})
+        pieces.append(p)
     pieces, maps = apply_edits(pieces, full.get("edits") or [])
     total = round(sum(p["dur"] for p in pieces), 3)
     keys = list(getattr(T, "CAP_KEYS", []))
     caps = []
     for i, c in enumerate(captions):
-        s, e = map_time(c[0], maps), map_time(c[1], maps, end=True)
+        if c[0] is None: s = e = 0.0  # 숨긴 장면에 있던 자막
+        else: s, e = map_time(c[0], maps), map_time(c[1], maps, end=True)
         caps.append({"start": s, "end": e, "text": c[2], "style": extras.get("cap_style", "main"), **({"anim": c[3]} if len(c) > 3 else {}),
                      **({"pos": extras["cap_pos"]} if extras.get("cap_pos") else {}),
                      "key": keys[i] if i < len(keys) else None, "idx": i, "gone": e - s < 0.05})
@@ -193,6 +204,7 @@ def assemble(full, pid=None, scale=None):
     else:
         sfx_out = []
         for s in sfx:
+            if s["t"] is None: continue  # 숨긴 장면의 효과음
             t = map_time(s["t"], maps)
             if any(k == "cut" and a < s["t"] < b for k, a, b in maps): continue
             sfx_out.append({**s, "t": t})
@@ -210,8 +222,67 @@ def assemble(full, pid=None, scale=None):
             "sfx": sfx_out, "overlays": clamp(full.get("overlays") or [], "start", "end"),
             "voices": [dict(v) for v in (full.get("voices") or []) if float(v["offset"]) < total],
             "tvoices": extras.get("voices") or [], "mascot": mascot, "mascot_box": extras.get("mascot_box"),
-            "small": small, "bgm": bgm, "total": total, "markers": full.get("markers") or [],
+            "small": small, "bgm": bgm, "total": total, "markers": full.get("markers") or [], "shots": shots,
             "custom": {"cap_times": custom_caps, "sfx": tl.get("sfx") is not None}}
+
+# ---------------- 장면(Shot) 층 ----------------
+SHOT_KINDS = ("scene", "image", "video", "color")
+
+def shot_layout(full, scenes):
+    """템플릿 장면 + 장면 덮어쓰기(data.shots, data.shot_order) → 순서대로 장면 목록(숨긴 장면 포함).
+    shots[ID] 키: dur, kind(scene|image|video|color), src, color, fit, in, vol, purpose, desc, hidden, keyframes, user"""
+    info = getattr(template(full["template"]), "SHOTS", {})
+    ov = full.get("shots") or {}
+    out, t = [], 0.0
+    for i, (n, d, fn) in enumerate(scenes):
+        o = ov.get(n) or {}
+        out.append({"id": n, "user": False, "label": f"장면 {i + 1}", "tstart": round(t, 3), "tdur": d,
+                    "dur": round(float(o.get("dur") or d), 3), "kind": o.get("kind") or "scene", "fn": fn,
+                    "src": o.get("src"), "color": o.get("color"), "fit": o.get("fit"), "in": o.get("in"), "vol": o.get("vol"),
+                    "purpose": o.get("purpose") or info.get(n, {}).get("purpose", ""), "desc": o.get("desc") or info.get(n, {}).get("desc", ""),
+                    "hidden": bool(o.get("hidden")), "keyframes": o.get("keyframes") or []})
+        t += d
+    for k, o in ov.items():
+        if not o.get("user"): continue
+        out.append({"id": k, "user": True, "label": o.get("label") or "추가 장면", "tstart": None, "tdur": 0.0,
+                    "dur": round(float(o.get("dur") or 2.0), 3), "kind": o.get("kind") or "color", "fn": None,
+                    "src": o.get("src"), "color": o.get("color") or "#0e1116", "fit": o.get("fit"), "in": o.get("in"), "vol": o.get("vol"),
+                    "purpose": o.get("purpose") or "", "desc": o.get("desc") or "", "hidden": bool(o.get("hidden")),
+                    "keyframes": o.get("keyframes") or []})
+    order = [i for i in (full.get("shot_order") or []) if any(s["id"] == i for s in out)]
+    seq = [next(s for s in out if s["id"] == i) for i in order] + [s for s in out if s["id"] not in order]
+    t = 0.0
+    for k, s in enumerate(seq):
+        s["index"] = k + 1; s["start"] = None if s["hidden"] else round(t, 3)
+        if not s["hidden"]: t += s["dur"]
+    return seq
+
+class ShotTimeMap:
+    """템플릿 시간 → 장면 순서·길이가 바뀐 뒤의 시간. 항목은 '시작 시각이 속한 장면'을 따라가고 그 장면 길이 안으로 잘린다.
+    숨긴 장면에 속하면 None. 배치가 템플릿 기본(순서·길이 같음, 사용자 장면 없음)이면 그대로 돌려준다."""
+    def __init__(self, shots):
+        self.tmpl = sorted([s for s in shots if not s["user"]], key=lambda s: s["tstart"])  # 템플릿 원래 순서
+        self.default = [s["id"] for s in shots if not s["hidden"]] == [s["id"] for s in self.tmpl] and \
+            all(abs(s["dur"] - s["tdur"]) < 1e-6 for s in self.tmpl)
+    def shot_of(self, x):
+        for s in self.tmpl:
+            if s["tstart"] - 1e-6 <= x < s["tstart"] + s["tdur"] - 1e-6: return s
+        return self.tmpl[-1] if self.tmpl else None
+    def point(self, x):
+        if self.default: return x
+        s = self.shot_of(x)
+        if s is None or s["hidden"]: return None
+        return round(s["start"] + max(0.0, min(x - s["tstart"], s["dur"] - 0.05)), 3)
+    def span(self, a, b):
+        if self.default: return a, b
+        s = self.shot_of(a)
+        if s is None or s["hidden"]: return None, None
+        a2 = s["start"] + max(0.0, min(a - s["tstart"], s["dur"] - 0.05))
+        b2 = s["start"] + max(0.05, min(b - s["tstart"], s["dur"]))
+        return round(a2, 3), round(max(a2 + 0.05, b2), 3)
+
+def shot_time_map(shots):
+    return ShotTimeMap(shots)
 
 ANIM_DIR = os.path.join(LIBRARY, "anim")
 
@@ -288,7 +359,9 @@ def timeline(pid):
     pdir = os.path.join(PROJECTS, pid)
     rf = os.path.join(pdir, "render.json")
     st = json.load(open(rf, encoding="utf-8")) if os.path.exists(rf) else {}
-    view = {k: v for k, v in A.items() if k != "scenes"}
+    view = {k: v for k, v in A.items() if k not in ("scenes", "shots")}
+    view["shots"] = [{k: v for k, v in s.items() if k != "fn"} for s in A["shots"]]
+    view["has_edits"] = bool(full.get("edits"))
     view.update(ok=True, hash=data_hash(full), rendered=st, sfx_names=sfx_names(), music=music_files(),
                 media=media_list(pid), checks=check(full, A))
     return view
@@ -308,18 +381,13 @@ def render(pid, preview=True):
     A = assemble(full, pid)
     scale = 2 if preview else 1
     sdir = os.path.join(pdir, "scenes_preview" if preview else "scenes_final")
-    key = scene_key(full, scale); mf = os.path.join(sdir, "manifest.json")
-    cached = os.path.exists(mf) and json.load(open(mf)).get("key") == key and \
-        all(os.path.exists(os.path.join(sdir, f"{n}.mp4")) for n, _, _ in A["scenes"])
-    if not cached:
-        for name, dur, fn in A["scenes"]:
-            gfx.write_clip(os.path.join(sdir, f"{name}.mp4"), dur, fn, scale)
-        json.dump({"key": key}, open(mf, "w"))
+    drawn, reused = ensure_shot_clips(full, A, sdir, scale)
+    cached = not drawn
     segs = []
     for p in A["pieces"]:
         if p["kind"] == "scene":
-            segs.append({"src": os.path.join(sdir, f"{p['name']}.mp4"), "in": round(p["in"], 3), "out": round(p["in"] + p["dur"], 3),
-                         "fit": "crop", "zoom": "none", "mute": True})
+            segs.append({"src": shot_clip_path(full, A, sdir, scale, p["name"]), "in": round(p["in"], 3),
+                         "out": round(p["in"] + p["dur"], 3), "fit": "crop", "zoom": "none", "mute": True})
         elif p["kind"] == "color":
             segs.append({"color": p.get("color", "#0e1116"), "dur": p["dur"]})
         elif p["kind"] == "image":
@@ -362,7 +430,72 @@ def render(pid, preview=True):
         ok = -15.5 <= lu <= -12.5 and (pk is None or pk <= -0.5)
         checks.insert(1, ("ok" if ok else "warn", f"음량 {lu:.1f} LUFS · 최고 {pk:.1f} dB (목표 -14 LUFS 근처)"))
     checks.insert(1, ("ok", "1080×1920 · 30fps · H.264/AAC"))
-    return {"ok": True, "video": f"/files/{pid}/{out}", "kind": kind, "checks": checks, "wave": wave, "cached": cached}
+    return {"ok": True, "video": f"/files/{pid}/{out}", "kind": kind, "checks": checks, "wave": wave, "cached": cached,
+            "shots_drawn": drawn, "shots_reused": reused}
+
+# ---------------- 스토리보드용: 장면 썸네일·장면 단독 미리보기 ----------------
+def shot_thumb(pid, shot_id):
+    """장면 대표 이미지(270×480 PNG). 그린 장면은 장면 길이 70% 지점을 바로 그린다. 키가 같으면 재사용."""
+    from PIL import Image, ImageDraw
+    full = load(pid); A = assemble(full, pid)
+    s = next(x for x in A["shots"] if x["id"] == shot_id)
+    key = data_hash({"k": shot_key(full, A, 4, shot_id) if s["kind"] == "scene" and not s["user"] else
+                     [s["kind"], s.get("src"), s.get("color"), s.get("in")], "v": 2})
+    tdir = os.path.join(PROJECTS, pid, "thumbs"); os.makedirs(tdir, exist_ok=True)
+    out = os.path.join(tdir, f"{shot_id}__{key}.png")
+    if os.path.exists(out): return out
+    for f in os.listdir(tdir):
+        if f.startswith(shot_id + "__"): os.remove(os.path.join(tdir, f))
+    W, H = 270, 480
+    if s["kind"] == "scene" and not s["user"]:
+        im = Image.new("RGB", (gfx.W, gfx.H), gfx.BG); d = ImageDraw.Draw(im)
+        s["fn"](d, min(s["dur"] * 0.7, max(0.0, s["dur"] - 0.1))); im = im.resize((W, H), Image.BILINEAR)
+    elif s["kind"] == "image" and s.get("src"):
+        src = Image.open(media_path(pid, s["src"])).convert("RGB"); im = Image.new("RGB", (W, H), (14, 17, 22))
+        src.thumbnail((W, H)); im.paste(src, ((W - src.width) // 2, (H - src.height) // 2))
+    elif s["kind"] == "video" and s.get("src"):
+        subprocess.run([gfx.ffmpeg_bin(), "-v", "error", "-y", "-ss", f"{float(s.get('in') or 0) + 0.3:.2f}", "-i", media_path(pid, s["src"]),
+                        "-frames:v", "1", "-vf", f"scale={W}:{H}:force_original_aspect_ratio=decrease,pad={W}:{H}:(ow-iw)/2:(oh-ih)/2", out])
+        return out
+    else:
+        im = Image.new("RGB", (W, H), s.get("color") or "#0e1116")
+    im.save(out)
+    return out
+
+def shot_preview_clip(pid, shot_id):
+    """그린 장면 하나만 미리보기 배율로 렌더(이미 있으면 재사용) → 파일 경로, 새로 그렸는지"""
+    full = load(pid); A = assemble(full, pid)
+    sdir = os.path.join(PROJECTS, pid, "scenes_preview")
+    drawn, _ = ensure_shot_clips(full, A, sdir, 2, only=shot_id)
+    return shot_clip_path(full, A, sdir, 2, shot_id), bool(drawn)
+
+# ---------------- 장면별 클립 캐시 ----------------
+def shot_key(full, A, scale, name):
+    """장면 하나의 캐시 키 = 템플릿 그림 데이터 전체(장면별 의존을 코드에서 알 수 없어 보수적으로) + 장면 이름 + 길이 + 배율 + 코드 수정 시각"""
+    s = next(x for x in A["shots"] if x["id"] == name)
+    return data_hash({"g": scene_key(full, scale), "n": name, "d": s["dur"]})
+
+def shot_clip_path(full, A, sdir, scale, name):
+    return os.path.join(sdir, f"{name}__{shot_key(full, A, scale, name)}.mp4")
+
+def ensure_shot_clips(full, A, sdir, scale, only=None):
+    """보이는 '그린 장면'의 클립이 없으면 그리고, 있으면 재사용한다. → (그린 장면 ID 목록, 재사용한 장면 ID 목록)
+    현재 배치에서 쓰지 않는 옛 클립 파일은 지운다(only가 없을 때)."""
+    os.makedirs(sdir, exist_ok=True)
+    fns = {n: fn for n, _, fn in A["scenes"]}
+    drawn, reused, keep = [], [], set()
+    for s in A["shots"]:
+        if s["hidden"] or s["kind"] != "scene" or s["user"]: continue
+        if only and s["id"] != only: continue
+        path = shot_clip_path(full, A, sdir, scale, s["id"]); keep.add(os.path.basename(path))
+        if os.path.exists(path) and os.path.getsize(path) > 0: reused.append(s["id"]); continue
+        tmp = path + ".part.mp4"
+        gfx.write_clip(tmp, s["dur"], fns[s["id"]], scale); os.replace(tmp, path)
+        drawn.append(s["id"])
+    if not only:
+        for f in os.listdir(sdir):
+            if f.endswith(".mp4") and f not in keep: os.remove(os.path.join(sdir, f))
+    return drawn, reused
 
 # ---------------- 내보내기 ----------------
 def srt(pid):

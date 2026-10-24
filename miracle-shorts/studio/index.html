@@ -116,6 +116,25 @@ dialog::backdrop { background: rgba(0,0,0,.6); }
 .tpl.sel { border-color: var(--accent); background: #1b2740; }
 .tpl b { display: block; } .tpl small { color: var(--muted); }
 kbd { background: #2a2f3a; border-radius: 4px; padding: 0 4px; font-size: 11px; }
+.board-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 10px; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+.shot { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; cursor: pointer; min-width: 0; }
+.shot.sel { outline: 2px solid var(--yellow); }
+.shot.hid { opacity: .45; }
+.shot img { width: 100%; aspect-ratio: 9 / 16; object-fit: cover; display: block; background: #0b0d10; max-height: 220px; }
+.shot .b { padding: 6px 8px; font-size: 12px; }
+.shot .t { display: flex; justify-content: space-between; gap: 4px; font-weight: 800; }
+.shot .d { color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 2px; }
+.shot .cap { color: #dbe6ff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-top: 3px; }
+.badges { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.bd { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: #2a2f3a; color: #c4cad6; }
+.bd.warn { background: #4a3514; color: #ffcf9e; } .bd.ok { background: #173d29; color: #7be3a8; } .bd.blue { background: #1b2740; color: #9cc0ff; }
+.shot-edit { margin-top: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #191c22; }
+.shot-edit video { width: 100%; max-width: 240px; aspect-ratio: 9/16; background: #000; border-radius: 8px; display: block; margin-top: 8px; }
+.kfs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.kfs .kf { width: 72px; text-align: center; font-size: 10px; }
+.kfs img { width: 72px; height: 96px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: #0b0d10; }
+.notice { background: #4a3514; color: #ffcf9e; border-radius: 8px; padding: 6px 10px; font-size: 12px; margin-top: 8px; }
 .toast { position: fixed; left: 50%; bottom: calc(var(--tl-h) + 14px); transform: translateX(-50%); background: #2b3f66; color: #fff; padding: 7px 14px; border-radius: 99px; font-size: 12px; z-index: 50; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .toast.on { opacity: 1; }
 
@@ -148,6 +167,7 @@ kbd { background: #2a2f3a; border-radius: 4px; padding: 0 4px; font-size: 11px; 
 <div class="work">
   <aside class="side">
     <div class="tabs">
+      <button class="tab" data-tab="board" onclick="tab('board')">스토리보드</button>
       <button class="tab on" data-tab="content" onclick="tab('content')">내용</button>
       <button class="tab" data-tab="item" onclick="tab('item')">선택한 항목</button>
       <button class="tab" data-tab="media" onclick="tab('media')">미디어</button>
@@ -155,6 +175,7 @@ kbd { background: #2a2f3a; border-radius: 4px; padding: 0 4px; font-size: 11px; 
       <button class="tab" data-tab="check" onclick="tab('check')">점검</button>
       <button class="tab" data-tab="keys" onclick="tab('keys')">단축키</button>
     </div>
+    <div class="pane" id="p-board" hidden></div>
     <div class="pane" id="p-content"></div>
     <div class="pane" id="p-item" hidden></div>
     <div class="pane" id="p-media" hidden></div>
@@ -331,8 +352,9 @@ function buildForm() {
 }
 function tab(name) {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
-  for (const n of ['content', 'item', 'media', 'upload', 'check', 'keys']) $('p-' + n).hidden = n !== name;
+  for (const n of ['board', 'content', 'item', 'media', 'upload', 'check', 'keys']) $('p-' + n).hidden = n !== name;
   if (name === 'media') buildMedia();
+  if (name === 'board') buildBoard();
 }
 function focusField(key) {
   tab('content'); const w = $('f-' + key); if (!w) return;
@@ -366,6 +388,7 @@ async function refreshTimeline() {
   if (!S.wave) S.wave = await api(`/api/wave/${encodeURIComponent(S.cur)}?kind=${S.kind}`);
   drawTimeline(); renderItem(); drawGuide();
   if ($('p-media').hidden === false) buildMedia();
+  if ($('p-board').hidden === false) buildBoard();
 }
 
 /* ================= render ================= */
@@ -964,6 +987,168 @@ function dragGuide(g, apply, getBase) {
     const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); if (moved) changed(false); };
     addEventListener('pointermove', mv); addEventListener('pointerup', up);
   });
+}
+
+/* ================= storyboard (장면 카드) ================= */
+const PURPOSES = ['훅', '설명', '증거', '반전', '결론', '기타'];
+const VIS_NAME = { scene: '템플릿 그림', image: '이미지', video: '영상', color: '빈 화면' };
+S.shotSel = null; S.model = null;
+async function buildBoard() {
+  if (!S.cur) return;
+  const m = await api('/api/model/' + encodeURIComponent(S.cur)); S.model = m;
+  const p = $('p-board'); p.innerHTML = '';
+  const vis = m.shots.filter(s => !s.hidden);
+  const head = document.createElement('div'); head.className = 'board-head';
+  head.innerHTML = `<b>장면 ${vis.length}개 · ${fmt(m.project.total)}초</b>`;
+  const add = btn('+ 장면 추가', () => addShot()); add.style.marginTop = '0'; head.appendChild(add);
+  p.appendChild(head);
+  for (const e of m.validation.errors) { const d = document.createElement('div'); d.className = 'notice'; d.style.background = '#4d1a1a'; d.textContent = '오류: ' + e; p.appendChild(d); }
+  for (const w of m.validation.warnings) { const d = document.createElement('div'); d.className = 'notice'; d.textContent = w; p.appendChild(d); }
+  if (m.project.has_edits) { const d = document.createElement('div'); d.className = 'notice';
+    d.textContent = '이 프로젝트에는 타임라인 끼워넣기·구간 삭제가 있어서 장면 순서·길이·추가·숨김은 막아 두었어요. (내용·소스·설명 수정은 돼요)'; p.appendChild(d); }
+  const grid = document.createElement('div'); grid.className = 'shots'; p.appendChild(grid);
+  for (const s of m.shots) {
+    const c = document.createElement('div'); c.className = 'shot' + (S.shotSel === s.id ? ' sel' : '') + (s.hidden ? ' hid' : '');
+    const caps = m.timeline_items.filter(it => it.shot_id === s.id && (it.track === 'caption' || it.track === 'text'));
+    c.innerHTML = `<img loading="lazy"><div class="b"><div class="t"><span></span><span></span></div><div class="d"></div><div class="cap"></div><div class="badges"></div></div>`;
+    c.querySelector('img').src = `/api/shot-thumb/${encodeURIComponent(S.cur)}/${s.id}?v=${encodeURIComponent(JSON.stringify([s.dur, s.source, s.status.render, m.project.total]))}`;
+    c.querySelector('.t span').textContent = `#${s.index} ${s.id}`;
+    c.querySelector('.t span:last-child').textContent = s.hidden ? '숨김' : `${fmt(s.dur)}초`;
+    c.querySelector('.d').textContent = s.desc || '(설명 없음)';
+    c.querySelector('.cap').textContent = caps.length ? plain(caps[0].props.text) : '';
+    const bd = c.querySelector('.badges');
+    const badge = (t, cls = '') => { const b = document.createElement('span'); b.className = 'bd ' + cls; b.textContent = t; bd.appendChild(b); };
+    if (s.purpose) badge(s.purpose, 'blue');
+    badge(VIS_NAME[s.visual] || s.visual);
+    if (s.visual === 'scene') badge(s.status.render === 'cached' ? '렌더됨' : '렌더 전', s.status.render === 'cached' ? 'ok' : 'warn');
+    if (s.status.changed) badge('수정됨', 'warn');
+    if (s.keyframes.length) badge(`키프레임 ${s.keyframes.length}`);
+    c.onclick = () => { S.shotSel = s.id; buildBoard(); };
+    grid.appendChild(c);
+  }
+  const sel = m.shots.find(s => s.id === S.shotSel);
+  if (sel) p.appendChild(shotEditor(sel, m));
+}
+function shotOv(id) { S.data.shots = S.data.shots || {}; S.data.shots[id] = S.data.shots[id] || {}; return S.data.shots[id]; }
+function fullOrder() { return S.model.shots.map(s => s.id); }
+function blockedLayout() { if (S.model.project.has_edits) { toast('끼워넣기·구간 삭제가 있어 장면 배치는 바꿀 수 없어요'); return true; } return false; }
+// 장면 배치(순서·길이·숨김·추가)를 바꾸면 '최종 시간'으로 저장된 사용자 항목을 소속 장면을 따라 옮긴다
+function applyShotChange(mutate) {
+  const old = S.model.shots.map(s => ({ id: s.id, start: s.start, dur: s.dur, hidden: s.hidden }));
+  snapshot(); mutate();
+  S.data.schema_version = 2;
+  const order = S.data.shot_order && S.data.shot_order.length ? S.data.shot_order : fullOrder();
+  const all = {}; for (const s of S.model.shots) all[s.id] = { tdur: s.template_dur || s.dur };
+  for (const [k, o] of Object.entries(S.data.shots || {})) if (o.user && !all[k]) all[k] = { tdur: o.dur || 2 };
+  const ids = order.filter(i => all[i]).concat(Object.keys(all).filter(i => !order.includes(i)));
+  let t = 0; const nu = {};
+  for (const id of ids) { const o = (S.data.shots || {})[id] || {}; const dur = Number(o.dur) || all[id].tdur; const hid = !!o.hidden;
+    nu[id] = { start: hid ? null : t, dur, hidden: hid }; if (!hid) t += dur; }
+  const mapT = (x) => {
+    const s = old.find(s => !s.hidden && x >= s.start - 1e-6 && x < s.start + s.dur - 1e-6) || old.filter(s => !s.hidden).slice(-1)[0];
+    if (!s) return x; const n = nu[s.id]; if (!n || n.hidden) return null;
+    return r2(n.start + Math.max(0, Math.min(x - s.start, n.dur - 0.01)));
+  };
+  const span = (a, b) => { const a2 = mapT(a); if (a2 == null) return null; return [a2, r2(Math.max(a2 + 0.05, a2 + (b - a)))]; };
+  S.data.texts = S.data.texts.filter(o => { const r = span(o.start, o.end); if (!r) return false; [o.start, o.end] = r; return true; });
+  S.data.overlays = S.data.overlays.filter(o => { const r = span(o.start, o.end); if (!r) return false; [o.start, o.end] = r; return true; });
+  S.data.voices = S.data.voices.filter(v => { const x = mapT(v.offset); if (x == null) return false; v.offset = x; return true; });
+  S.data.markers = S.data.markers.filter(mk => { const x = mapT(mk.t); if (x == null) return false; mk.t = x; return true; });
+  if (S.data.tl.cap_times) S.data.tl.cap_times = S.data.tl.cap_times.map(([a, b]) => span(a, b) || [0, 0]);
+  if (S.data.tl.sfx) S.data.tl.sfx = S.data.tl.sfx.map(s => ({ ...s, t: mapT(s.t) })).filter(s => s.t != null);
+  changed(false);
+}
+function moveShot(id, d) {
+  if (blockedLayout()) return;
+  const order = fullOrder(); const i = order.indexOf(id), j = i + d; if (j < 0 || j >= order.length) return;
+  applyShotChange(() => { [order[i], order[j]] = [order[j], order[i]]; S.data.shot_order = order; });
+}
+function addShot() {
+  if (blockedLayout()) return;
+  const id = 'u' + uid().slice(0, 5); const order = fullOrder(); const at = S.shotSel ? order.indexOf(S.shotSel) + 1 : order.length;
+  applyShotChange(() => { S.data.shots = S.data.shots || {}; S.data.shots[id] = { user: true, kind: 'color', color: '#0e1116', dur: 2.0, purpose: '설명', desc: '추가한 장면' };
+    order.splice(at, 0, id); S.data.shot_order = order; });
+  S.shotSel = id; toast('장면을 추가했어요 — 소스를 고르세요');
+}
+function shotEditor(s, m) {
+  const box = document.createElement('div'); box.className = 'shot-edit';
+  const h = document.createElement('div'); h.style.fontWeight = '800'; h.textContent = `#${s.index} ${s.id} 편집` + (s.user ? ' (추가한 장면)' : ''); box.appendChild(h);
+  const ov = () => shotOv(s.id);
+  box.appendChild(chips('목적', PURPOSES.map(x => [x, x]), s.purpose, v => { ov().purpose = v; S.data.schema_version = 2; changed(false); }));
+  const dl = document.createElement('label'); dl.className = 'f'; dl.textContent = '장면 설명 (화면 구성 메모)';
+  const de = document.createElement('input'); de.type = 'text'; de.value = s.desc; de.onfocus = () => snapshot();
+  de.oninput = () => { ov().desc = de.value; S.data.schema_version = 2; changed(false); }; box.append(dl, de);
+  const row = document.createElement('div'); row.className = 'row';
+  row.append(num('길이 (초, 0.01 단위)', fmt(s.dur), 0.01, v => { if (blockedLayout()) return; S.hist.pop(); applyShotChange(() => { ov().dur = Math.max(0.2, r2(v)); }); }, 0.2));
+  box.appendChild(row);
+  if (!s.user && Math.abs(s.dur - s.template_dur) > 1e-6) box.appendChild(btn(`길이 기본값(${fmt(s.template_dur)}초)으로`, () => { if (blockedLayout()) return; applyShotChange(() => { delete ov().dur; }); }));
+  // 소스
+  const srcOpts = (s.user ? [] : [['scene', '템플릿 그림']]).concat([['image', '이미지'], ['video', '영상'], ['color', '빈 화면']]);
+  box.appendChild(chips('시각 자료 (소스) — 바꿔도 자막·다른 장면은 그대로', srcOpts, s.visual, v => {
+    const o = ov(); if (v === 'scene') { for (const k of ['kind', 'src', 'fit', 'in', 'vol', 'color']) delete o[k]; } else { o.kind = v; if (v === 'color') o.color = o.color || '#0e1116'; }
+    S.data.schema_version = 2; changed(false); }));
+  if (s.visual === 'image' || s.visual === 'video') {
+    const items = (S.tl.media || []).filter(x => x.type === s.visual);
+    const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = items.length ? '파일 (미디어 탭에 올린 것)' : '미디어 탭에서 먼저 파일을 올려 주세요';
+    const se = document.createElement('select'); se.className = 'in'; se.innerHTML = '<option value="">— 선택 —</option>';
+    for (const x of items) { const o = document.createElement('option'); o.value = x.path; o.textContent = (x.where === 'library' ? '[공용] ' : '') + x.name; se.appendChild(o); }
+    se.value = (S.data.shots[s.id] || {}).src || ''; se.onchange = () => { snapshot(); ov().src = se.value; ov().fit = ov().fit || (s.visual === 'image' ? 'blur' : 'crop'); changed(false); };
+    box.append(lab, se);
+    box.appendChild(chips('채우기', [['blur', '전체 보이게(흐린 배경)'], ['crop', '화면 가득(잘림)']], ov().fit || 'blur', v => { snapshot(); ov().fit = v; changed(false); buildBoard(); }));
+  }
+  if (s.visual === 'color') box.appendChild(chips('색', [['#0e1116', '어두운 배경'], ['#ffffff', '흰색'], ['#000000', '검정'], ['#EEF0F4', '밝은 회색']], ov().color || '#0e1116', v => { snapshot(); ov().color = v; changed(false); buildBoard(); }));
+  // 키프레임 (시각 기준 이미지 — 생성 연동은 Phase 5)
+  const kl = document.createElement('label'); kl.className = 'f'; kl.textContent = `키프레임 ${s.keyframes.length}개 (장면의 시각 기준 이미지 · 자동 생성은 아직 없음)`; box.appendChild(kl);
+  const kfs = document.createElement('div'); kfs.className = 'kfs'; box.appendChild(kfs);
+  (ov().keyframes || []).forEach((k, i) => {
+    const d = document.createElement('div'); d.className = 'kf'; d.innerHTML = '<img><div></div>';
+    d.querySelector('img').src = mediaUrl(k.src); d.querySelector('div').textContent = k.approved ? '승인' : '검토 전';
+    const b1 = btn('소스로', () => { snapshot(); Object.assign(ov(), { kind: 'image', src: k.src, fit: 'blur' }); changed(false); }); b1.style.marginTop = '2px';
+    const b2 = btn(k.approved ? '승인 취소' : '승인', () => { snapshot(); k.approved = !k.approved; changed(false); }); b2.style.marginTop = '2px';
+    const b3 = btn('빼기', () => { snapshot(); ov().keyframes.splice(i, 1); changed(false); }); b3.style.marginTop = '2px';
+    d.append(b1, b2, b3); kfs.appendChild(d);
+  });
+  const imgs = (S.tl.media || []).filter(x => x.type === 'image');
+  if (imgs.length) {
+    const se = document.createElement('select'); se.className = 'in'; se.innerHTML = '<option value="">+ 키프레임 추가 (미디어 이미지)</option>';
+    for (const x of imgs) { const o = document.createElement('option'); o.value = x.path; o.textContent = (x.where === 'library' ? '[공용] ' : '') + x.name; se.appendChild(o); }
+    se.onchange = () => { if (!se.value) return; snapshot(); const o = ov(); o.keyframes = o.keyframes || []; o.keyframes.push({ id: `${s.id}-kf${uid().slice(0, 4)}`, src: se.value, approved: false, role: 'reference', gen_status: 'uploaded' }); changed(false); };
+    box.appendChild(se);
+  }
+  const pl = document.createElement('label'); pl.className = 'f'; pl.textContent = '생성 프롬프트 (메모 — 이미지·영상 생성 연결은 Phase 5)';
+  const pe = document.createElement('textarea'); pe.value = (S.data.shots || {})[s.id]?.prompt || ''; pe.style.minHeight = '56px'; pe.onfocus = () => snapshot();
+  pe.oninput = () => { ov().prompt = pe.value; changed(false); }; box.append(pl, pe);
+  // 이 장면의 자막
+  const caps = m.timeline_items.filter(it => it.shot_id === s.id && (it.track === 'caption' || it.track === 'text'));
+  const cl = document.createElement('label'); cl.className = 'f'; cl.textContent = caps.length ? '이 장면의 자막' : '이 장면에 자막 없음'; box.appendChild(cl);
+  for (const it of caps) {
+    const r = document.createElement('div'); r.className = 'row'; r.style.alignItems = 'center';
+    const e = document.createElement('input'); e.type = 'text'; e.className = 'grow'; e.onfocus = () => snapshot();
+    if (it.track === 'caption' && it.props.field) { e.value = S.data[it.props.field]; e.oninput = () => { S.data[it.props.field] = e.value; const f = $('f-' + it.props.field); if (f) f.querySelector('input').value = e.value; changed(false); }; }
+    else if (it.track === 'text') { const o = S.data.texts.find(t => t.id === it.id); e.value = o ? o.text : it.props.text; e.oninput = () => { if (o) { o.text = e.value; changed(false); } }; }
+    else { e.value = it.props.text; e.disabled = true; }
+    const tt = document.createElement('span'); tt.className = 'help'; tt.textContent = `${fmt(it.start)}~${fmt(it.end)}초`;
+    r.append(e, tt); box.appendChild(r);
+  }
+  // 동작
+  const acts = document.createElement('div'); acts.className = 'row';
+  acts.append(btn('↑ 앞으로', () => moveShot(s.id, -1)), btn('↓ 뒤로', () => moveShot(s.id, 1)));
+  if (s.user) acts.append(btn('장면 삭제', () => { if (blockedLayout()) return; applyShotChange(() => { delete S.data.shots[s.id]; S.data.shot_order = fullOrder().filter(i => i !== s.id); }); S.shotSel = null; }));
+  else acts.append(btn(s.hidden ? '다시 보이기' : '숨기기', () => { if (blockedLayout()) return; applyShotChange(() => { ov().hidden = !s.hidden; }); }));
+  acts.append(btn('▶ 타임라인에서 반복 재생', () => { if (s.start == null) return; S.inP = s.start; S.outP = r2(s.start + s.dur); drawTimeline(); if (!S.loop) toggleLoop(); else if (hasVid()) { vid.currentTime = S.inP; vid.play(); } }));
+  box.appendChild(acts);
+  if (s.visual === 'scene' && !s.hidden) {
+    const v = document.createElement('video'); v.controls = true; v.loop = true; v.playsInline = true; v.style.display = 'none';
+    const b = btn('이 장면만 렌더해서 보기', async () => {
+      b.disabled = true; b.textContent = '렌더 중…';
+      const r = await api(`/api/shot-render/${encodeURIComponent(S.cur)}/${s.id}`, { method: 'POST' });
+      b.disabled = false; b.textContent = '이 장면만 렌더해서 보기';
+      if (!r.ok) return toast((r.errors || ['실패'])[0]);
+      v.src = r.url; v.style.display = 'block'; v.play(); toast(r.drawn ? '이 장면만 새로 그렸어요' : '이미 렌더된 장면을 재사용했어요');
+    });
+    box.append(b, v);
+  }
+  return box;
 }
 
 /* ================= media tab ================= */

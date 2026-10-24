@@ -40,6 +40,13 @@ FIELDS = [
 ]
 
 CAP_KEYS = ["c_hook", "c_pdf", "c_std", "c_wide", "c_flip", "c_pause", "c_reveal", "c_check"]
+# 스토리보드용 장면 정보 (장면 ID = build()의 장면 이름)
+SHOTS = {"s1": {"purpose": "훅", "desc": "익명 카드 N장 중 확인 필요만 빨강"},
+         "s2": {"purpose": "증거", "desc": "회사별 약관 PDF가 쌓이며 개수 카운트"},
+         "s3": {"purpose": "설명", "desc": "표준 / 넓게 / 확인 필요로 정렬"},
+         "s4": {"purpose": "설명", "desc": "넓게 보장 카드 뒤집기"},
+         "s5": {"purpose": "반전", "desc": "멈춤 → 확인 필요 카드 뒤집기"},
+         "s6": {"purpose": "결론", "desc": "비교 기준 조항 짚기 (셀프체크)"}}
 
 def _vals(data):
     tot = int(data["total"]); nw = int(data["n_wide"]); nc = int(data["n_caution"])

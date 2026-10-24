@@ -1,6 +1,14 @@
-# 미라클 쇼츠 프로젝트 — 인수인계 (2026-10-24)
+# 미라클 쇼츠 프로젝트 — 인수인계 (최종 갱신 2026-10-25)
 
-이 폴더는 김신혁(신혁)의 유튜브 쇼츠 프로젝트다. claude.ai 클라우드 작업 세션에서 Claude와 진행한 내용을 그대로 넘겨받은 것이다. 이 문서를 먼저 읽고 이어서 작업한다.
+이 폴더는 김신혁(신혁)의 유튜브 쇼츠 프로젝트다. 이 문서를 먼저 읽고, 이어서 **`docs/STATUS.md`(진행 상황·다음 할 일)**를 읽은 뒤 작업한다.
+
+## 이어서 작업할 때 (먼저 읽기)
+
+1. `git pull` → `docs/STATUS.md` → `docs/upgrade-guide.md`(사용자의 고도화 지침서 요약) → `docs/phase0-audit.md`
+2. 지금 진행 중인 큰 흐름: **고도화 지침서 Phase 1~2 완료 → 다음은 실제 사용성 평가 후 Phase 4(AI 장면 계획)**. 지침서 원칙: 작은 단위로, 기존 렌더 엔진 재작성 금지, 미구현을 구현됐다고 말하지 않기, 태블릿 가로 스크롤 금지.
+3. 검증: `cd studio && python tests/test_scenes.py` (최종 MP4까지: `--final`). 32개 검사.
+4. 실행: 바탕화면 "미라클 쇼츠 스튜디오" 또는 `studio/start.bat` → http://127.0.0.1:8765
+5. 새 컴퓨터: Python 3.12 + `pip install numpy pillow` + ffmpeg(`winget install Gyan.FFmpeg`). 마스코트 동작 클립(`studio/library/anim/*.mp4`)은 저장소에 들어 있다.
 
 ## 사용자
 

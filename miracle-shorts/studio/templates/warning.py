@@ -34,6 +34,14 @@ FIELDS = [
 ]
 
 CAP_KEYS = ["c_hook", "c_auth", "c_loss", "c_turn", "c_steps", "c_effect", "c_case", "c_result", "c_cta"]
+SHOTS = {"w1": {"purpose": "훅", "desc": "하지 말아야 할 행동 + X"},
+         "w2": {"purpose": "증거", "desc": "권위 출처 카드"},
+         "w3": {"purpose": "설명", "desc": "손해 이유"},
+         "w4": {"purpose": "반전", "desc": "행동에 줄 긋기 (전환)"},
+         "w5": {"purpose": "설명", "desc": "대안 단계"},
+         "w6": {"purpose": "설명", "desc": "효과"},
+         "w7": {"purpose": "증거", "desc": "상담 사례 → 결과 (각색)"},
+         "w8": {"purpose": "결론", "desc": "체크리스트 (행동 촉구)"}}
 
 def validate(data):
     errs = []

@@ -1,6 +1,6 @@
 {
  "coverage": "수술비",
- "total": 24,
+ "total": 23,
  "n_wide": 4,
  "n_caution": 2,
  "criterion": "수술의 정의",
@@ -11,6 +11,7 @@
   "티눈",
   "사마귀"
  ],
+ "mascot": true,
  "clause_title": "제○조 (수술의 정의)",
  "clause_lines": [
   "① '수술'이란 의사가 치료를 직접",
@@ -32,7 +33,57 @@
  "template": "terms_survey",
  "title": "약관 전수조사 #1 수술비",
  "is_sample": true,
- "review_no": "",
+ "review_no": " ",
  "review_exp": "",
- "tl": {}
+ "tl": {
+  "cap_times": [
+   [
+    0,
+    2
+   ],
+   [
+    2,
+    5
+   ],
+   [
+    5,
+    8.5
+   ],
+   [
+    8.5,
+    12
+   ],
+   [
+    12,
+    12.9
+   ],
+   [
+    20,
+    22.8
+   ],
+   [
+    22.8,
+    26
+   ],
+   [
+    26,
+    30
+   ]
+  ]
+ },
+ "texts": [
+  {
+   "id": "ybc888s",
+   "start": 12.9,
+   "end": 20,
+   "text": "'수술'에서 빼는 항목이/더 [적어요]",
+   "style": "main",
+   "anim": "none"
+  }
+ ],
+ "overlays": [],
+ "voices": [],
+ "markers": [],
+ "edits": [],
+ "upload": {}
 }

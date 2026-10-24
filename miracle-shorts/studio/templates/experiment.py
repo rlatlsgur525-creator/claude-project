@@ -28,6 +28,12 @@ FIELDS = [
 ]
 
 CAP_KEYS = ["c_hook", "c_start", "c_grow", "c_win", "c_rest", "c_rule"]
+SHOTS = {"e1": {"purpose": "훅", "desc": "방법 N가지를 한 화면에 (결과는 ?)"},
+         "e2": {"purpose": "설명", "desc": "같은 조건으로 동시에 시작"},
+         "e3": {"purpose": "증거", "desc": "기간 동안 막대가 자람 (계산값)"},
+         "e4": {"purpose": "반전", "desc": "가장 큰 금액 공개"},
+         "e5": {"purpose": "설명", "desc": "나머지 방법의 특징"},
+         "e6": {"purpose": "결론", "desc": "상황별 기준 (추천 아님)"}}
 
 def parse(data):
     out = []

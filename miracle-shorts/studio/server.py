@@ -8,7 +8,7 @@ from urllib.parse import urlparse, parse_qs, unquote, quote
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import pipeline
+import pipeline, model
 
 PORT = 8765
 LOCK = threading.Lock()  # 렌더는 한 번에 하나
@@ -69,6 +69,12 @@ class H(SimpleHTTPRequestHandler):
                 self.send_header("Content-Length", str(len(b))); self.end_headers(); return self.wfile.write(b)
             if len(parts) == 3 and parts[:2] == ["api", "timeline"]:
                 return self.send_json(pipeline.timeline(parts[2]))
+            if len(parts) == 3 and parts[:2] == ["api", "model"]:
+                proj_path(parts[2]); return self.send_json(model.build(parts[2]))
+            if len(parts) == 4 and parts[:2] == ["api", "shot-thumb"]:
+                proj_path(parts[2]); return self.serve_file(pipeline.shot_thumb(parts[2], parts[3]), "image/png")
+            if len(parts) == 4 and parts[0] == "shotclip" and re.match(r"^[0-9A-Za-z_]+__[0-9a-f]{12}\.mp4$", parts[3]):
+                return self.serve_file(proj_path(parts[1], "scenes_preview", parts[3]), "video/mp4")
             if len(parts) == 3 and parts[:2] == ["api", "wave"]:
                 kind = parse_qs(u.query).get("kind", ["preview"])[0]
                 f = proj_path(parts[2], f"wave_{'final' if kind == 'final' else 'preview'}.json")
@@ -117,6 +123,12 @@ class H(SimpleHTTPRequestHandler):
                 rel = "media/" + os.path.basename(f)
                 dur = pipeline.probe_dur(f) if not f.lower().endswith(pipeline.IMG_EXT) else 0
                 return self.send_json({"path": rel, "dur": dur})
+            if len(parts) == 4 and parts[:2] == ["api", "shot-render"]:  # 이 장면만 미리보기로 렌더
+                if not LOCK.acquire(blocking=False): return self.send_json({"ok": False, "errors": ["다른 영상을 만드는 중이에요."]})
+                try:
+                    path, drawn = pipeline.shot_preview_clip(parts[2], parts[3])
+                    return self.send_json({"ok": True, "url": f"/shotclip/{parts[2]}/{os.path.basename(path)}", "drawn": drawn})
+                finally: LOCK.release()
             if len(parts) == 3 and parts[:2] == ["api", "thumb"]:
                 t = float(parse_qs(u.query).get("t", ["0"])[0]); pipeline.thumbnail(parts[2], t)
                 return self.send_json({"url": f"/files/{parts[2]}/thumbnail.png"})
