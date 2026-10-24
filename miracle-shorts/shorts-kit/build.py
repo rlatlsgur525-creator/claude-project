@@ -208,6 +208,9 @@ def render(edl_path, preview=False):
             if float(o.get("vol", 0)) > 0 and probe(src)["audio"]:
                 ov_audio.append(f"[{idx}:a]atrim=start={a:.3f}:duration={e - s:.3f},asetpts=PTS-STARTPTS,aresample=48000,"
                                 f"aformat=channel_layouts=stereo,adelay={int(s * 1000)}|{int(s * 1000)},volume={o['vol']}")
+        if o.get("chroma"):  # green-screen clip → transparent background (e.g. AI-generated mascot animation)
+            ck = o["chroma"].lstrip("#")
+            chain = chain.replace(",format=rgba", f",colorkey=0x{ck}:{o.get('similarity', 0.32)}:{o.get('blend', 0.08)},despill=type=green,format=rgba")
         if fd > 0:
             chain += f",fade=t=in:st={s:.3f}:d={fd:.3f}:alpha=1,fade=t=out:st={e - fd:.3f}:d={fd:.3f}:alpha=1"
         fc.append(chain + f"[ov{n}]")
