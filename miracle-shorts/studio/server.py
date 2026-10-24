@@ -2,9 +2,9 @@
 """미라클 쇼츠 스튜디오 — 로컬 웹 툴.  python server.py  →  http://127.0.0.1:8765
 프로젝트는 projects/<id>/data.json 에 저장된다(GitHub로 동기화). 영상(mp4)은 저장소에 올리지 않는다.
 """
-import json, mimetypes, os, re, sys, threading, webbrowser
+import json, mimetypes, os, re, subprocess, sys, threading, webbrowser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs, unquote
+from urllib.parse import urlparse, parse_qs, unquote, quote
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -56,8 +56,17 @@ class H(SimpleHTTPRequestHandler):
             if len(parts) == 3 and parts[:2] == ["api", "project"]:
                 d = json.load(open(proj_path(parts[2], "data.json"), encoding="utf-8"))
                 return self.send_json({**pipeline.defaults(d["template"]), **d})
-            if len(parts) == 3 and parts[0] == "files" and parts[2] in ("final.mp4", "final_preview.mp4"):
-                return self.serve_file(proj_path(parts[1], parts[2]), "video/mp4")
+            if len(parts) == 3 and parts[0] == "files" and parts[2] in ("final.mp4", "final_preview.mp4", "thumbnail.png"):
+                return self.serve_file(proj_path(parts[1], parts[2]), mimetypes.guess_type(parts[2])[0])
+            if len(parts) >= 4 and parts[0] == "media":  # /media/<pid>/media|library/<파일>
+                rel = "/".join(parts[2:]); proj_path(parts[1])
+                f = pipeline.media_path(parts[1], rel)
+                return self.serve_file(f, mimetypes.guess_type(f)[0] or "application/octet-stream")
+            if len(parts) == 3 and parts[:2] == ["api", "srt"]:
+                b = pipeline.srt(parts[2]).encode("utf-8")
+                self.send_response(200); self.send_header("Content-Type", "application/x-subrip; charset=utf-8")
+                self.send_header("Content-Disposition", "attachment; filename*=UTF-8''" + quote(parts[2] + ".srt"))
+                self.send_header("Content-Length", str(len(b))); self.end_headers(); return self.wfile.write(b)
             if len(parts) == 3 and parts[:2] == ["api", "timeline"]:
                 return self.send_json(pipeline.timeline(parts[2]))
             if len(parts) == 3 and parts[:2] == ["api", "wave"]:
@@ -90,6 +99,27 @@ class H(SimpleHTTPRequestHandler):
             if u.path == "/api/open-music":
                 os.makedirs(pipeline.MUSIC, exist_ok=True); os.startfile(pipeline.MUSIC)
                 return self.send_json({"ok": True})
+            if len(parts) == 3 and parts[:2] == ["api", "open-media"]:
+                d = proj_path(parts[2], "media"); os.makedirs(d, exist_ok=True); os.startfile(d)
+                return self.send_json({"ok": True})
+            if len(parts) == 3 and parts[:2] == ["api", "upload"]:  # 본문 = 파일 바이트, ?name=파일이름
+                name = os.path.basename(parse_qs(u.query).get("name", ["file"])[0]).replace(" ", "_")
+                if not re.match(r"^[0-9A-Za-z가-힣_.\-()]{1,120}$", name): return self.send_json({"error": "파일 이름에 쓸 수 없는 글자가 있어요"}, 400)
+                d = proj_path(parts[2], "media"); os.makedirs(d, exist_ok=True)
+                n = int(self.headers.get("Content-Length", 0)); data = self.rfile.read(n)
+                stem, ext = os.path.splitext(name); f = os.path.join(d, name); k = 1
+                while os.path.exists(f): f = os.path.join(d, f"{stem}_{k}{ext}"); k += 1
+                open(f, "wb").write(data)
+                if ext.lower() == ".webm":  # 브라우저 녹음 → wav
+                    wav = os.path.splitext(f)[0] + ".wav"
+                    subprocess.run([pipeline.gfx.ffmpeg_bin(), "-v", "error", "-y", "-i", f, "-ar", "48000", "-ac", "2", wav], check=True)
+                    os.remove(f); f = wav
+                rel = "media/" + os.path.basename(f)
+                dur = pipeline.probe_dur(f) if not f.lower().endswith(pipeline.IMG_EXT) else 0
+                return self.send_json({"path": rel, "dur": dur})
+            if len(parts) == 3 and parts[:2] == ["api", "thumb"]:
+                t = float(parse_qs(u.query).get("t", ["0"])[0]); pipeline.thumbnail(parts[2], t)
+                return self.send_json({"url": f"/files/{parts[2]}/thumbnail.png"})
             if len(parts) == 3 and parts[:2] == ["api", "render"]:
                 preview = parse_qs(u.query).get("preview", ["1"])[0] == "1"
                 if not LOCK.acquire(blocking=False): return self.send_json({"ok": False, "errors": ["다른 영상을 만드는 중이에요. 잠시 뒤 다시 눌러 주세요."]})

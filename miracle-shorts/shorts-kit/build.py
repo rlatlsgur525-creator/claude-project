@@ -18,6 +18,11 @@ edl.json:
                                              # style: hook (big, center) | main (lower-center) | top (label at top) | small
  "sfx":   [ {"t":0.0,"name":"impact","vol":0.8}, {"t":2.0,"src":"my.wav"} ],
  "voice": {"src":"vo.wav","vol":1.0,"offset":0},   # optional narration replacing nothing (mixed on top)
+ "voices": [ {"src":"vo1.wav","offset":2.5,"vol":1.0} ],   # more narration clips (same as voice)
+ "overlays": [ {"src":"logo.png","start":1.17,"end":3.0,"x":40,"y":300,"w":400,"fade":0.15},
+               {"src":"clip.mp4","in":0,"start":5,"end":8,"x":0,"y":600,"w":1080,"vol":0.5} ],
+                                             # image/video on top of the base (full-res px), drawn under captions
+ # captions may also carry "pos":[x,y] (centre), "size":px, "color":"#RRGGBB", "layer":n
  "bgm":   {"src":"bgm.mp3","vol":0.22,"duck":true,"start":0,"fade_in":0.5,"fade_out":1.5},
  "highlight":"#FFD23F", "text":"#FFFFFF"
 }
@@ -140,13 +145,23 @@ def build_ass(edl, W, H, path):
         lines.append(f"Style: {n},{f},{s},{tx},{tx},{blk},{shadow},0,0,0,0,100,100,0,0,1,{ol},3,{al},70,70,{mv},1")
     lines += ["", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
     for c in edl.get("captions", []):
+        base = ass_color(c["color"]) if c.get("color") else tx
         txt = c["text"].replace("{", "(").replace("}", ")")
-        txt = re.sub(r"\[(.+?)\]", lambda m: "{\\c" + hl + "}" + m.group(1) + "{\\c" + tx + "}", txt)
+        txt = re.sub(r"\[(.+?)\]", lambda m: "{\\c" + hl + "}" + m.group(1) + "{\\c" + base + "}", txt)
         txt = txt.replace("/", "\\N")
         anim = c.get("anim", "pop")
         pre = {"pop": "{\\fscx82\\fscy82\\t(0,110,\\fscx100\\fscy100)}",
                "fade": "{\\fad(120,80)}", "none": ""}.get(anim, "")
-        lines.append(f"Dialogue: 0,{ts(c['start'])},{ts(c['end'])},{c.get('style','main')},,0,0,0,,{pre}{txt}")
+        # optional per-caption overrides (full-res coords): pos [x, y] = text centre, size px, color #RRGGBB
+        ov = ""
+        if c.get("pos"): ov += "\\an5\\pos(%d,%d)" % (int(c["pos"][0]), int(c["pos"][1]))
+        if c.get("size"): ov += "\\fs%d" % int(c["size"])
+        if c.get("color"):
+            ov += "\\c" + base
+            h = c["color"].lstrip("#"); lum = (0.299 * int(h[0:2], 16) + 0.587 * int(h[2:4], 16) + 0.114 * int(h[4:6], 16)) / 255
+            if lum < 0.4: ov += "\\3c&H00FFFFFF&\\4c&H64FFFFFF&"  # dark text → light outline/shadow so it stays readable
+        if ov: pre = "{" + ov + "}" + pre
+        lines.append(f"Dialogue: {int(c.get('layer', 0))},{ts(c['start'])},{ts(c['end'])},{c.get('style','main')},,0,0,0,,{pre}{txt}")
     open(path, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 
 # ---------------- render ----------------
@@ -178,13 +193,39 @@ def render(edl_path, preview=False):
     build_ass(e2, int(edl.get("w", 1080)), int(edl.get("h", 1920)), assf)  # full-res coords; libass scales for preview
     inputs = ["-i", joined]; fc = []; mix = ["[base]"]; idx = 1
     def fpath(p): return p.replace("\\", "/").replace(":", "\\:")  # Windows paths inside a filter graph
-    fc.append(f"[0:v]ass='{fpath(assf)}':fontsdir='{fpath(fonts)}'[v]")
+    # overlays (image / video on top of the base, before captions). x, y, w in full-res coords
+    k = W / int(edl.get("w", 1080)); vcur = "0:v"; ov_audio = []
+    for n, o in enumerate(edl.get("overlays", [])):
+        src = P(o["src"]); s, e = float(o["start"]), float(o["end"]); fd = min(float(o.get("fade", 0.15)), (e - s) / 2)
+        w = max(2, int(float(o.get("w", 400)) * k) // 2 * 2); x, y = int(float(o.get("x", 0)) * k), int(float(o.get("y", 0)) * k)
+        if src.lower().endswith(IMG):
+            inputs += ["-loop", "1", "-t", f"{total:.3f}", "-i", src]
+            chain = f"[{idx}:v]scale={w}:-2,format=rgba"
+        else:
+            a = float(o.get("in", 0))
+            inputs += ["-i", src]
+            chain = f"[{idx}:v]trim=start={a:.3f}:duration={e - s:.3f},setpts=PTS-STARTPTS+{s:.3f}/TB,scale={w}:-2,format=rgba"
+            if float(o.get("vol", 0)) > 0 and probe(src)["audio"]:
+                ov_audio.append(f"[{idx}:a]atrim=start={a:.3f}:duration={e - s:.3f},asetpts=PTS-STARTPTS,aresample=48000,"
+                                f"aformat=channel_layouts=stereo,adelay={int(s * 1000)}|{int(s * 1000)},volume={o['vol']}")
+        if fd > 0:
+            chain += f",fade=t=in:st={s:.3f}:d={fd:.3f}:alpha=1,fade=t=out:st={e - fd:.3f}:d={fd:.3f}:alpha=1"
+        fc.append(chain + f"[ov{n}]")
+        fc.append(f"[{vcur}][ov{n}]overlay={x}:{y}:eof_action=pass:enable='between(t,{s:.3f},{e:.3f})'[vo{n}]")
+        vcur = f"vo{n}"; idx += 1
+    fc.append(f"[{vcur}]ass='{fpath(assf)}':fontsdir='{fpath(fonts)}'[v]")
     fc.append("[0:a]aformat=channel_layouts=stereo,aresample=48000[base0]")
-    if edl.get("voice"):
-        vo = edl["voice"]; inputs += ["-i", P(vo["src"])]
-        ms = int(float(vo.get("offset", 0)) * 1000)
-        fc.append(f"[{idx}:a]aresample=48000,aformat=channel_layouts=stereo,adelay={ms}|{ms},volume={vo.get('vol',1.0)}[vo]")
-        fc.append("[base0][vo]amix=inputs=2:normalize=0[base1]"); idx += 1; basen = "base1"
+    # narration: legacy single "voice" or a list "voices" [{src, offset, vol}], plus overlay-video sound
+    voices = ([edl["voice"]] if edl.get("voice") else []) + list(edl.get("voices", []))
+    vlabels = []
+    for n, vo in enumerate(voices):
+        inputs += ["-i", P(vo["src"])]; ms = int(float(vo.get("offset", 0)) * 1000)
+        fc.append(f"[{idx}:a]aresample=48000,aformat=channel_layouts=stereo,adelay={ms}|{ms},volume={vo.get('vol',1.0)}[vc{n}]")
+        vlabels.append(f"[vc{n}]"); idx += 1
+    for n, ch in enumerate(ov_audio):
+        fc.append(ch + f"[oa{n}]"); vlabels.append(f"[oa{n}]")
+    if vlabels:
+        fc.append("[base0]" + "".join(vlabels) + f"amix=inputs={len(vlabels) + 1}:normalize=0:duration=first[base1]"); basen = "base1"
     else:
         basen = "base0"
     bg = edl.get("bgm")

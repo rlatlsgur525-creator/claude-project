@@ -1,11 +1,19 @@
-"""프로젝트(data.json) → 타임라인 조립 → 장면 클립 → edl.json → build.py 렌더 → 점검·음량 파형.
+"""프로젝트(data.json) → 타임라인 조립 → 장면 클립(캐시) → edl.json → build.py 렌더 → 점검·음량.
 템플릿 모듈 규약: NAME, DESC, FIELDS, CAP_KEYS, validate(data) -> [오류], build(data) -> (scenes, captions, sfx, note)
   scenes: [(이름, 초, draw_fn(d, t))]   captions: [(시작, 끝, 문구[, anim])]   note: 준법 표기 둘째 줄
-  CAP_KEYS: captions 순서대로 그 문구를 만드는 FIELDS 키 (타임라인에서 자막을 누르면 해당 칸으로 이동)
-타임라인에서 고친 값은 data.json에 따로 저장된다:
-  tl.cap_times: [[시작, 끝], …] 자막 시간 (자막 개수가 같을 때만 적용)
-  tl.sfx: [{t, name, vol}, …] 효과음 전체 (있으면 템플릿 기본값 대신 씀)
-  bgm: {file, vol, duck, start} 배경음악 (studio/music/ 안의 파일)
+  CAP_KEYS: captions 순서대로 그 문구를 만드는 FIELDS 키
+
+시간 규칙
+  - 템플릿이 만든 자막·효과음은 '원래 시간'이고, edits(끼워넣기·구간 삭제)를 차례로 적용해 '최종 시간'으로 옮긴다.
+  - 사용자가 넣거나 고친 것(tl.cap_times, tl.sfx, texts, overlays, voices, markers)은 모두 '최종 시간'으로 저장한다.
+    끼워넣기·구간 삭제를 할 때 화면(UI)이 이 값들도 함께 민다(프리미어의 리플 편집과 같다).
+data.json 편집 키
+  edits:    [{type:"insert", at, dur, kind:"image|video|color", src, in, color, fit, vol} | {type:"cut", a, b}]
+  texts:    [{start, end, text, style, pos:[x,y], size, color, anim}]   직접 넣은 글자
+  overlays: [{src, start, end, x, y, w, fade, in, vol}]                 이미지·영상·마스코트를 위에 얹기
+  voices:   [{src, offset, vol, dur}]                                   내레이션 녹음·파일
+  markers:  [{t, label}]   tl.cap_times / tl.sfx   bgm: {file, vol, duck, start, fade_in, fade_out}
+미디어 경로: "media/파일"(프로젝트 폴더) 또는 "library/파일"(studio/library, 마스코트 등 공용)
 """
 import hashlib, importlib, json, os, re, subprocess, sys
 from datetime import date
@@ -17,9 +25,14 @@ BUILD = os.path.join(HERE, "..", "shorts-kit", "build.py")
 SFX_DIR = os.path.join(HERE, "..", "shorts-kit", "sfx")
 PROJECTS = os.path.join(HERE, "projects")
 MUSIC = os.path.join(HERE, "music")
+LIBRARY = os.path.join(HERE, "library")
 TEMPLATES = ["terms_survey", "warning", "experiment"]
 MAX_SEC = 60  # 1분 초과 쇼츠는 음악 저작권 신고 시 차단될 수 있어 기본 상한으로 둔다
-AUDIO_EXT = (".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac")
+AUDIO_EXT = (".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".webm")
+IMG_EXT = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
+VID_EXT = (".mp4", ".mov", ".m4v", ".webm")
+# 장면 그림에 영향을 주지 않는 키 → 바뀌어도 장면 클립을 다시 그리지 않는다
+NON_SCENE = {"title", "review_no", "review_exp", "tl", "bgm", "edits", "texts", "overlays", "voices", "markers", "upload"}
 
 def template(key):
     return importlib.import_module("templates." + key)
@@ -41,6 +54,34 @@ def music_files():
     if not os.path.isdir(MUSIC): return []
     return sorted(f for f in os.listdir(MUSIC) if f.lower().endswith(AUDIO_EXT))
 
+def media_path(pid, rel):
+    """'media/x.png' → 프로젝트 폴더, 'library/x.png' → 공용 라이브러리. 폴더 밖 경로는 거부."""
+    if rel.startswith("library/"): base, sub = LIBRARY, rel[len("library/"):]
+    elif rel.startswith("media/"): base, sub = os.path.join(PROJECTS, pid, "media"), rel[len("media/"):]
+    else: raise ValueError("bad media path")
+    base = os.path.normpath(base); p = os.path.normpath(os.path.join(base, sub))
+    if not p.startswith(base + os.sep): raise ValueError("bad media path")
+    return p
+
+def media_list(pid):
+    out = []
+    for kind, folder, prefix in [("project", os.path.join(PROJECTS, pid, "media"), "media/"), ("library", LIBRARY, "library/")]:
+        if not os.path.isdir(folder): continue
+        for root, _, files in os.walk(folder):
+            for f in sorted(files):
+                ext = os.path.splitext(f)[1].lower()
+                typ = "image" if ext in IMG_EXT else "video" if ext in VID_EXT and ext != ".webm" else "audio" if ext in AUDIO_EXT else None
+                if not typ: continue
+                rel = os.path.relpath(os.path.join(root, f), folder).replace("\\", "/")
+                out.append({"path": prefix + rel, "name": rel, "type": typ, "where": kind})
+    return out
+
+def probe_dur(path):
+    p = subprocess.run([gfx.ffmpeg_bin("ffprobe"), "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+                       capture_output=True, text=True)
+    try: return round(float(p.stdout.strip()), 3)
+    except ValueError: return 0.0
+
 def compliance_line(data):
     """화면 하단 small 자막. 심의필이 없으면 '게시 불가' 표기를 강제한다."""
     first = []
@@ -55,55 +96,121 @@ def review_status(data):
     if exp and exp < date.today().isoformat(): return "심의 만료"
     return "심의 완료"
 
-def assemble(full):
-    """템플릿 결과 + 타임라인 수정값 → (scenes, edl 뼈대, 타임라인 표시용 dict)"""
+# ---------------- 리플 편집 ----------------
+def apply_edits(pieces, edits):
+    """pieces: [{kind, dur, ...}] 연속 배치. edits 순서대로 끼워넣기·구간 삭제 → (pieces, 시간 변환 함수 목록)"""
+    maps = []
+    for ed in edits:
+        total = sum(p["dur"] for p in pieces)
+        if ed.get("type") == "insert":
+            t = min(max(0.0, float(ed["at"])), total); d = max(0.05, float(ed["dur"]))
+            out, acc, done = [], 0.0, False
+            for p in pieces:
+                if not done and acc <= t < acc + p["dur"] - 1e-6 and t > acc + 1e-6:
+                    a, b = dict(p), dict(p); cut = t - acc
+                    a["dur"] = cut; b["dur"] = p["dur"] - cut; b["in"] = p.get("in", 0) + cut
+                    out += [a, {**ed, "kind": ed.get("kind", "color"), "dur": d, "insert": True}, b]; done = True
+                elif not done and abs(acc - t) < 1e-6:
+                    out += [{**ed, "kind": ed.get("kind", "color"), "dur": d, "insert": True}, p]; done = True
+                else:
+                    out.append(p)
+                acc += p["dur"]
+            if not done: out.append({**ed, "kind": ed.get("kind", "color"), "dur": d, "insert": True})
+            pieces = out
+            maps.append(("insert", t, d))
+        elif ed.get("type") == "cut":
+            a, b = sorted([float(ed["a"]), float(ed["b"])]); a = max(0.0, a); b = min(total, b)
+            if b - a < 0.02: continue
+            out, acc = [], 0.0
+            for p in pieces:
+                s, e = acc, acc + p["dur"]; acc = e
+                if e <= a or s >= b: out.append(p); continue
+                if s < a:  # 앞부분 남김
+                    q = dict(p); q["dur"] = a - s; out.append(q)
+                if e > b:  # 뒷부분 남김
+                    q = dict(p); q["dur"] = e - b; q["in"] = p.get("in", 0) + (b - s); out.append(q)
+            pieces = out
+            maps.append(("cut", a, b))
+    return pieces, maps
+
+def map_time(x, maps, end=False):
+    for kind, a, b in maps:
+        if kind == "insert":
+            if x > a + 1e-6 or (not end and abs(x - a) < 1e-6): x += b
+        else:
+            if x >= b: x -= (b - a)
+            elif x > a: x = a
+    return round(x, 3)
+
+# ---------------- 조립 ----------------
+def assemble(full, pid=None, scale=None):
+    """→ dict: scenes(그리기 함수), pieces, captions(템플릿), texts, sfx, overlays, voices, small, bgm, total"""
     T = template(full["template"])
     scenes, captions, sfx, note = T.build(full)
-    total = round(sum(d for _, d, _ in scenes), 3)
+    pieces = [{"kind": "scene", "name": n, "label": f"장면 {i + 1}", "dur": d, "in": 0.0} for i, (n, d, _) in enumerate(scenes)]
+    pieces, maps = apply_edits(pieces, full.get("edits") or [])
+    total = round(sum(p["dur"] for p in pieces), 3)
     keys = list(getattr(T, "CAP_KEYS", []))
-    caps = [{"start": c[0], "end": c[1], "text": c[2], "style": "main", **({"anim": c[3]} if len(c) > 3 else {}),
-             "key": keys[i] if i < len(keys) else None} for i, c in enumerate(captions)]
+    caps = []
+    for i, c in enumerate(captions):
+        s, e = map_time(c[0], maps), map_time(c[1], maps, end=True)
+        caps.append({"start": s, "end": e, "text": c[2], "style": "main", **({"anim": c[3]} if len(c) > 3 else {}),
+                     "key": keys[i] if i < len(keys) else None, "idx": i, "gone": e - s < 0.05})
     tl = full.get("tl") or {}
     times = tl.get("cap_times")
-    if times and len(times) == len(caps):
+    custom_caps = bool(times and len(times) == len(caps))
+    if custom_caps:
         for c, (s, e) in zip(caps, times):
-            c["start"], c["end"] = max(0.0, float(s)), min(total, float(e))
-    default_sfx = sfx
-    if tl.get("sfx") is not None: sfx = tl["sfx"]
+            c["start"], c["end"] = max(0.0, float(s)), min(total, float(e)); c["gone"] = c["end"] - c["start"] < 0.05
+    if tl.get("sfx") is not None:
+        sfx_out = tl["sfx"]
+    else:
+        sfx_out = []
+        for s in sfx:
+            t = map_time(s["t"], maps)
+            if any(k == "cut" and a < s["t"] < b for k, a, b in maps): continue
+            sfx_out.append({**s, "t": t})
+    clamp = lambda items, k0, k1: [dict(o) for o in items if float(o[k0]) < total]
     small = {"start": 0.0, "end": total, "text": compliance_line(full) + "/" + note, "style": "small", "anim": "none"}
     bgm = full.get("bgm") or None
     if bgm and not bgm.get("file"): bgm = None
-    view = {"total": total, "captions": caps, "small": small, "sfx": sfx, "bgm": bgm,
-            "custom": {"cap_times": bool(times and len(times) == len(caps)), "sfx": tl.get("sfx") is not None},
-            "scenes": [], "default_sfx": default_sfx}
     t = 0.0
-    for i, (name, dur, _) in enumerate(scenes):
-        view["scenes"].append({"name": name, "label": f"장면 {i + 1}", "start": round(t, 3), "dur": dur}); t += dur
-    return scenes, caps, small, sfx, bgm, total, view
+    for p in pieces: p["start"] = round(t, 3); t += p["dur"]
+    return {"scenes": scenes, "pieces": pieces, "captions": caps, "texts": clamp(full.get("texts") or [], "start", "end"),
+            "sfx": sfx_out, "overlays": clamp(full.get("overlays") or [], "start", "end"),
+            "voices": [dict(v) for v in (full.get("voices") or []) if float(v["offset"]) < total],
+            "small": small, "bgm": bgm, "total": total, "markers": full.get("markers") or [],
+            "custom": {"cap_times": custom_caps, "sfx": tl.get("sfx") is not None}}
 
-def check(data, caps, total):
+def check(data, A):
     """업로드 전 점검 목록 → [(수준, 문구)]"""
-    out = []
+    out, total = [], A["total"]
     out.append(("ok" if total <= MAX_SEC else "warn",
-                f"길이 {total:.1f}초" + ("" if total <= MAX_SEC else f" — {MAX_SEC}초를 넘으면 음악 저작권 신고 시 차단될 수 있어요")))
-    out.append(("ok", "1080×1920 · 30fps · H.264/AAC · 음량 -14 LUFS 자동 맞춤"))
+                f"길이 {total:.2f}초" + ("" if total <= MAX_SEC else f" — {MAX_SEC}초를 넘으면 음악 저작권 신고 시 차단될 수 있어요")))
     st = review_status(data)
     out.append(("ok" if st == "심의 완료" else "warn", {"심의 전": "심의필 번호가 없어요 → 화면에 '심의 전 · 게시 불가'가 표시돼요",
                                                       "심의 만료": "심의 유효기간이 지났어요 → 게시 중이면 내리고 재심의를 받으세요",
                                                       "심의 완료": "심의필 표기 들어감"}[st]))
     if data.get("is_sample", True): out.append(("warn", "예시 데이터로 표시돼요. 실제 데이터로 바꾼 뒤 '예시 데이터' 체크를 끄세요"))
-    if data.get("bgm", {}).get("file"):
-        out.append(("warn", "BGM은 저작권 걱정 없는 음원인지 확인하세요 (유튜브 오디오 보관함 등)"))
+    if A["bgm"]: out.append(("warn", "BGM은 저작권 걱정 없는 음원인지 확인하세요 (유튜브 오디오 보관함 등)"))
     banned = ["무조건", "확정", "보장합니다", "100%", "최고", "1등", "유일"]
+    caps = [c for c in A["captions"] if not c["gone"]] + A["texts"]
     for c in caps:
         for b in banned:
             if b in c["text"]: out.append(("warn", f"단정·과장 표현 의심: '{b}' ({c['text']})"))
-        for line in c["text"].split("/"):
-            plain = re.sub(r"[\[\]]", "", line)
-            if len(plain) > 16: out.append(("warn", f"자막 한 줄이 길어요({len(plain)}자): {plain} — '/'로 나눠 주세요"))
+        if c.get("style", "main") in ("main", "hook"):
+            for line in c["text"].split("/"):
+                plain = re.sub(r"[\[\]]", "", line)
+                if len(plain) > 16: out.append(("warn", f"자막 한 줄이 길어요({len(plain)}자): {plain} — '/'로 나눠 주세요"))
         if c["text"].count("[") > 1: out.append(("warn", f"강조는 한 자막에 한 단어만: {c['text']}"))
-    for a, b in zip(caps, caps[1:]):
-        if b["start"] < a["end"] - 0.01: out.append(("warn", f"자막이 겹쳐요: {a['end']:.1f}초 / {b['start']:.1f}초"))
+    mains = sorted([c for c in caps if c.get("style", "main") == "main" and not c.get("pos")], key=lambda c: c["start"])
+    for a, b in zip(mains, mains[1:]):
+        if b["start"] < a["end"] - 0.01: out.append(("warn", f"아래 자막이 겹쳐요: {a['end']:.2f}초 / {b['start']:.2f}초"))
+    last_change, gap = 0.0, 0.0
+    edges = sorted({p["start"] for p in A["pieces"]} | {c["start"] for c in caps} | {o["start"] for o in A["overlays"]})
+    for x in edges + [A["total"]]:
+        gap = max(gap, x - last_change); last_change = x
+    if gap > 8: out.append(("warn", f"화면 변화 없이 {gap:.1f}초가 지나는 구간이 있어요 (8초 규칙)"))
     return out
 
 def waveform(path, step=0.05):
@@ -117,34 +224,75 @@ def waveform(path, step=0.05):
     db = np.maximum(20 * np.log10(np.maximum(rms, 1e-6)), -60)
     return {"step": step, "db": [round(float(v), 1) for v in db]}
 
+def loudness(path):
+    p = subprocess.run([gfx.ffmpeg_bin(), "-hide_banner", "-i", path, "-af", "ebur128=peak=true", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    i = re.findall(r"I:\s+(-?[\d.]+) LUFS", p.stderr); pk = re.findall(r"Peak:\s+(-?[\d.]+) dBFS", p.stderr)
+    return (float(i[-1]) if i else None), (float(pk[-1]) if pk else None)
+
 def timeline(pid):
     full = load(pid)
     errs = template(full["template"]).validate(full)
     if errs: return {"ok": False, "errors": errs}
-    *_, view = assemble(full)
+    A = assemble(full, pid)
     pdir = os.path.join(PROJECTS, pid)
-    st = json.load(open(os.path.join(pdir, "render.json"), encoding="utf-8")) if os.path.exists(os.path.join(pdir, "render.json")) else {}
-    view.update(ok=True, hash=data_hash(full), rendered=st, sfx_names=sfx_names(), music=music_files())
+    rf = os.path.join(pdir, "render.json")
+    st = json.load(open(rf, encoding="utf-8")) if os.path.exists(rf) else {}
+    view = {k: v for k, v in A.items() if k != "scenes"}
+    view.update(ok=True, hash=data_hash(full), rendered=st, sfx_names=sfx_names(), music=music_files(),
+                media=media_list(pid), checks=check(full, A))
     return view
+
+def scene_key(full, scale):
+    """장면 그림에 영향을 주는 값 + 템플릿·그리기 코드 수정 시각"""
+    T = template(full["template"])
+    src = {k: v for k, v in full.items() if k not in NON_SCENE and not k.startswith("c_")}
+    mt = [os.path.getmtime(T.__file__), os.path.getmtime(gfx.__file__)]
+    return data_hash({"d": src, "s": scale, "m": mt})
 
 def render(pid, preview=True):
     pdir = os.path.join(PROJECTS, pid)
     full = load(pid)
     errs = template(full["template"]).validate(full)
     if errs: return {"ok": False, "errors": errs}
-    scenes, caps, small, sfx, bgm, total, _ = assemble(full)
+    A = assemble(full, pid)
     scale = 2 if preview else 1
+    sdir = os.path.join(pdir, "scenes_preview" if preview else "scenes_final")
+    key = scene_key(full, scale); mf = os.path.join(sdir, "manifest.json")
+    cached = os.path.exists(mf) and json.load(open(mf)).get("key") == key and \
+        all(os.path.exists(os.path.join(sdir, f"{n}.mp4")) for n, _, _ in A["scenes"])
+    if not cached:
+        for name, dur, fn in A["scenes"]:
+            gfx.write_clip(os.path.join(sdir, f"{name}.mp4"), dur, fn, scale)
+        json.dump({"key": key}, open(mf, "w"))
     segs = []
-    for name, dur, fn in scenes:
-        gfx.write_clip(os.path.join(pdir, "scenes", f"{name}.mp4"), dur, fn, scale)
-        segs.append({"src": f"scenes/{name}.mp4", "fit": "crop", "zoom": "none", "mute": True})
-    edl_caps = [{k: v for k, v in c.items() if k != "key"} for c in caps] + [small]
+    for p in A["pieces"]:
+        if p["kind"] == "scene":
+            segs.append({"src": os.path.join(sdir, f"{p['name']}.mp4"), "in": round(p["in"], 3), "out": round(p["in"] + p["dur"], 3),
+                         "fit": "crop", "zoom": "none", "mute": True})
+        elif p["kind"] == "color":
+            segs.append({"color": p.get("color", "#0e1116"), "dur": p["dur"]})
+        elif p["kind"] == "image":
+            segs.append({"src": media_path(pid, p["src"]), "dur": p["dur"], "fit": p.get("fit", "blur"), "zoom": p.get("zoom", "kenburns")})
+        elif p["kind"] == "video":
+            a = float(p.get("in", 0))
+            segs.append({"src": media_path(pid, p["src"]), "in": a, "out": a + p["dur"], "fit": p.get("fit", "crop"),
+                         "zoom": "none", "mute": float(p.get("vol", 1)) == 0})
+    caps = [{k: v for k, v in c.items() if k in ("start", "end", "text", "style", "anim")} for c in A["captions"] if not c["gone"]]
+    for t in A["texts"]:
+        caps.append({k: t[k] for k in ("start", "end", "text", "style", "anim", "pos", "size", "color") if t.get(k) not in (None, "")})
+        caps[-1]["layer"] = 1
+    caps.append(A["small"])
     # build.py --preview 는 결과 이름에 _preview를 붙인다 → final_preview.mp4
-    edl = {"out": "final.mp4", "w": 1080, "h": 1920, "fps": 30, "segments": segs, "captions": edl_caps,
-           "sfx": [{"t": s["t"], "name": s["name"], "vol": s.get("vol", 0.7)} for s in sfx]}
-    if bgm:
-        edl["bgm"] = {"src": os.path.join(MUSIC, bgm["file"]), "vol": float(bgm.get("vol", 0.22)),
-                      "duck": bool(bgm.get("duck", True)), "start": float(bgm.get("start", 0))}
+    edl = {"out": "final.mp4", "w": 1080, "h": 1920, "fps": 30, "segments": segs, "captions": caps,
+           "sfx": [{"t": s["t"], "name": s["name"], "vol": s.get("vol", 0.7)} for s in A["sfx"]],
+           "overlays": [{**{k: o[k] for k in ("start", "end", "x", "y", "w", "fade", "in", "vol") if k in o},
+                         "src": media_path(pid, o["src"])} for o in A["overlays"]],
+           "voices": [{"src": media_path(pid, v["src"]), "offset": v["offset"], "vol": v.get("vol", 1.0)} for v in A["voices"]]}
+    if A["bgm"]:
+        b = A["bgm"]
+        edl["bgm"] = {"src": os.path.join(MUSIC, b["file"]), "vol": float(b.get("vol", 0.22)), "duck": bool(b.get("duck", True)),
+                      "start": float(b.get("start", 0)), "fade_in": float(b.get("fade_in", 0.5)), "fade_out": float(b.get("fade_out", 1.5))}
     json.dump(edl, open(os.path.join(pdir, "edl.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     env = dict(os.environ); env["PATH"] = os.path.dirname(gfx.ffmpeg_bin()) + os.pathsep + env.get("PATH", "")
     p = subprocess.run([sys.executable, BUILD, "render", os.path.join(pdir, "edl.json")] + (["--preview"] if preview else []),
@@ -158,4 +306,29 @@ def render(pid, preview=True):
     st = json.load(open(rf, encoding="utf-8")) if os.path.exists(rf) else {}
     st[kind] = data_hash(full)
     json.dump(st, open(rf, "w", encoding="utf-8"))
-    return {"ok": True, "video": f"/files/{pid}/{out}", "kind": kind, "checks": check(full, caps, total), "wave": wave}
+    checks = check(full, A)
+    lu, pk = loudness(os.path.join(pdir, out))
+    if lu is not None:
+        ok = -15.5 <= lu <= -12.5 and (pk is None or pk <= -0.5)
+        checks.insert(1, ("ok" if ok else "warn", f"음량 {lu:.1f} LUFS · 최고 {pk:.1f} dB (목표 -14 LUFS 근처)"))
+    checks.insert(1, ("ok", "1080×1920 · 30fps · H.264/AAC"))
+    return {"ok": True, "video": f"/files/{pid}/{out}", "kind": kind, "checks": checks, "wave": wave, "cached": cached}
+
+# ---------------- 내보내기 ----------------
+def srt(pid):
+    full = load(pid); A = assemble(full, pid)
+    items = [c for c in A["captions"] if not c["gone"]] + [t for t in A["texts"] if t.get("style", "main") != "small"]
+    items.sort(key=lambda c: c["start"])
+    def ts(t): ms = int(round(t * 1000)); return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
+    out = []
+    for i, c in enumerate(items, 1):
+        txt = re.sub(r"[\[\]]", "", c["text"]).replace("/", "\n")
+        out.append(f"{i}\n{ts(c['start'])} --> {ts(c['end'])}\n{txt}\n")
+    return "\n".join(out)
+
+def thumbnail(pid, t):
+    pdir = os.path.join(PROJECTS, pid)
+    src = os.path.join(pdir, "final.mp4") if os.path.exists(os.path.join(pdir, "final.mp4")) else os.path.join(pdir, "final_preview.mp4")
+    out = os.path.join(pdir, "thumbnail.png")
+    subprocess.run([gfx.ffmpeg_bin(), "-v", "error", "-y", "-ss", f"{max(0.0, t):.3f}", "-i", src, "-frames:v", "1", out], check=True)
+    return out
