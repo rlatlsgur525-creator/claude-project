@@ -1,9 +1,4 @@
 {
- "template": "terms_survey",
- "title": "약관 전수조사 #1 수술비",
- "is_sample": true,
- "review_no": "",
- "review_exp": "",
  "coverage": "수술비",
  "total": 24,
  "n_wide": 4,
@@ -33,5 +28,10 @@
  "c_flip": "'수술'에서 빼는 항목이/더 [적어요]",
  "c_pause": "그런데 이 {caution}곳은…",
  "c_reveal": "[{items}]를/수술로 안 봅니다",
- "c_check": "내 약관에 이 문구가/있는지만 [보세요]"
+ "c_check": "내 약관에 이 문구가/있는지만 [보세요]",
+ "template": "terms_survey",
+ "title": "약관 전수조사 #1 수술비",
+ "is_sample": true,
+ "review_no": "",
+ "review_exp": ""
 }
