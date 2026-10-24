@@ -300,6 +300,13 @@ function fieldEl(f) {
   const wrap = document.createElement('div');
   if (f.section) { wrap.className = 'section'; wrap.textContent = f.section; return wrap; }
   wrap.id = 'f-' + f.key;
+  if (f.type === 'bool') {
+    const lab = document.createElement('label'); lab.className = 'tg'; lab.style.marginTop = '12px';
+    lab.innerHTML = '<input type="checkbox"> <span></span>'; lab.querySelector('span').textContent = f.label;
+    const el = lab.querySelector('input'); el.checked = S.data[f.key] !== false;
+    el.onchange = () => { snapshot(); S.data[f.key] = el.checked; changed(false); };
+    wrap.appendChild(lab); return wrap;
+  }
   const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = f.label; wrap.appendChild(lab);
   let el;
   if (f.type === 'lines') { el = document.createElement('textarea'); el.value = (S.data[f.key] || []).join('\n'); }

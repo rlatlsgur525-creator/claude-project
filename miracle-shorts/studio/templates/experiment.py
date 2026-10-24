@@ -17,6 +17,7 @@ FIELDS = [
         "S&P500 ETF|7|원금 손실 가능 · 오래 둘 때"]},
     {"key": "rules", "label": "상황별 기준 (줄마다 하나, 최대 3개)", "type": "lines", "default": [
         "1년 안에 쓸 돈 → 꺼내기 쉬운 곳", "만기까지 안 쓸 돈 → 확정 이자", "10년 넘게 둘 돈 → 변동을 견딜 수 있을 때만"]},
+    {"key": "mascot", "label": "마스코트 진행자 넣기 (셋업 고민 · 기준 정리 가리키기)", "type": "bool", "default": True},
     {"section": "자막 ([단어] = 노란 강조, / = 줄바꿈)"},
     {"key": "c_hook", "label": "0~3초 훅", "type": "text", "default": "같은 [{principal}],/{years}년 뒤 얼마 될까?"},
     {"key": "c_start", "label": "3~5초 동시 시작", "type": "text", "default": "같은 조건으로/[동시에] 계산했어요"},
@@ -67,10 +68,14 @@ def build(data):
             text_c(d, (x + w / 2, y + h - 45), o["name"], fit_font(d, o["name"], w, 36), GRAY_T if dim else WHITE)
             text_c(d, (x + w / 2, y + h - 120 - bh), won(val), fit_font(d, won(val), w + 20, 40, "Black"), GRAY_T if dim else WHITE)
 
+    M = data.get("mascot", True)  # 마스코트: 셋업에서 고민, 기준 정리에서 가리키기 (1등 화면엔 넣지 않는다 — 상품 추천처럼 보이지 않게)
+    slots1 = grid(len(ops), 40, 420, 760, 1010, cols=len(ops), gap=20) if M else slots
+
     def e1(d, t):
         label_top(d, f"같은 {won(P)} · {Y}년 · 연 수익률 가정")
+        if M: draw_mascot(d, "think", 910, 400, 720, t, appear=0.1)
         for k, o in enumerate(ops):
-            x, y, w, h = slots[k]; a = ease((t - k * 0.15) / 0.3)
+            x, y, w, h = slots1[k]; a = ease((t - k * 0.15) / 0.3)
             card(d, x, y + (1 - a) * 50, w, h - 40, (28, 32, 40))
             text_c(d, (x + w / 2, y + 120), o["name"], fit_font(d, o["name"], w - 30, 46, "Black"), o["col"])
             text_c(d, (x + w / 2, y + 220), f"연 {o['rate']:g}%", font(44, "ExtraBold"), WHITE)
@@ -105,14 +110,16 @@ def build(data):
     rules = [s for s in data["rules"] if s.strip()][:3]
     def e6(d, t):
         label_top(d, "상황별 기준", YELLOW)
+        bw = 700 if M else 900
         for k, s in enumerate(rules):
             a = ease((t - 0.3 - k * 0.9) / 0.3)
             if a <= 0: continue
-            y = 440 + k * 210; x = 90 + (1 - a) * 60
-            d.rounded_rectangle([x, y, x + 900, y + 170], radius=18, fill=(28, 32, 40), outline=YELLOW, width=4)
-            lines = wrap(d, s, font(42, "ExtraBold"), 820)[:2]
+            y = 440 + k * 210; x = (50 if M else 90) + (1 - a) * 60
+            d.rounded_rectangle([x, y, x + bw, y + 170], radius=18, fill=(28, 32, 40), outline=YELLOW, width=4)
+            lines = wrap(d, s, font(42, "ExtraBold"), bw - 80)[:2]
             for j, ln in enumerate(lines):
-                text_c(d, (x + 450, y + 85 + (j - (len(lines) - 1) / 2) * 52), ln, font(42, "ExtraBold"), WHITE)
+                text_c(d, (x + bw / 2, y + 85 + (j - (len(lines) - 1) / 2) * 52), ln, font(42, "ExtraBold"), WHITE)
+        if M: draw_mascot(d, "point", 910, 400, 720, t, mirror=True)
 
     scenes = [("e1", 3.0, e1), ("e2", 2.0, e2), ("e3", 5.0, e3), ("e4", 6.0, e4), ("e5", 7.0, e5), ("e6", 7.0, e6)]
     v = dict(principal=won(P), years=Y, w_name=win["name"], w_amount=won(win["final"]))

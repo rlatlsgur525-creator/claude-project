@@ -21,6 +21,7 @@ FIELDS = [
     {"key": "wide_value", "label": "넓게 보장 카드 뒷면 결과", "type": "text", "default": "적음"},
     {"key": "caution_label", "label": "확인 필요 카드 뒷면 제목", "type": "text", "default": "수술로 안 보는 것"},
     {"key": "caution_items", "label": "확인 필요 항목 (줄마다 하나, 최대 3개)", "type": "lines", "default": ["티눈", "사마귀"]},
+    {"key": "mascot", "label": "마스코트 진행자 넣기 (훅 놀람 · 넓게 엄지척 · 확인 필요 고민→놀람)", "type": "bool", "default": True},
     {"section": "셀프체크 조항 화면"},
     {"key": "clause_title", "label": "조항 제목", "type": "text", "default": "제○조 (수술의 정의)"},
     {"key": "clause_lines", "label": "조항 문구 (줄마다 하나, 최대 7줄)", "type": "lines", "default": [
@@ -61,7 +62,8 @@ def build(data):
     order = list(range(N)); random.Random(7).shuffle(order)
     RED_IDX = sorted(order[:v["caution"]]); GREEN_IDX = sorted(order[v["caution"]:v["caution"] + v["wide"]])
     GRAY_IDX = [i for i in range(N) if i not in RED_IDX + GREEN_IDX]
-    G = grid(N, 60, 330, 1020, 1130, cols=6, gap=22, aspect=180 / 140)
+    M = data.get("mascot", True)  # 마스코트: 훅 놀람(첫 화면 = 썸네일에 얼굴), 넓게 엄지척, 확인 필요 고민 → 놀람
+    G = grid(N, 40, 330, 760 if M else 1020, 1130, cols=6, gap=14 if M else 22, aspect=180 / 140)
     big = font(min(58, G[0][2] * 0.42), "ExtraBold")
 
     def s1(d, t):
@@ -72,6 +74,7 @@ def build(data):
             red = i in RED_IDX
             card(d, x, y + (1 - a) * 40, w, h, RED if red else GRAY, C[i], big, WHITE if red else GRAY_T,
                  glow=(255, 160, 130) if red and pulse > 0.4 else None)
+        if M: draw_mascot(d, "surprised", 915, 390, 740, t, appear=0.0)
 
     def s2(d, t):
         label_top(d, "회사별 약관 PDF")
@@ -137,9 +140,11 @@ def build(data):
             text_c(d, (cx, y + h * 0.2), f"{C[i]}사", font(44, "Black"), GREEN)
             text_c(d, (cx, y + h * 0.47), data["wide_label"], fit_font(d, data["wide_label"], w - 40, 40), (60, 66, 78))
             text_c(d, (cx, y + h * 0.72), data["wide_value"], fit_font(d, data["wide_value"], w - 40, 78, "Black"), GREEN)
-        flip_cards(d, t, WIDE_SHOW, GREEN, 0.6, 0.8, back, (90, 360, 990, 1100), 2 if len(WIDE_SHOW) > 1 else 1)
+        flip_cards(d, t, WIDE_SHOW, GREEN, 0.6, 0.8, back, (40, 360, 750, 1100) if M else (90, 360, 990, 1100),
+                   2 if len(WIDE_SHOW) > 1 else 1)
         if v["wide"] > len(WIDE_SHOW):
-            text_c(d, (W / 2, 1125), f"+ {v['wide'] - len(WIDE_SHOW)}곳 더", font(40, "Bold"), GREEN)
+            text_c(d, (395 if M else W / 2, 1125), f"+ {v['wide'] - len(WIDE_SHOW)}곳 더", font(40, "Bold"), GREEN)
+        if M: draw_mascot(d, "thumbsup", 905, 400, 720, t, appear=3.6)  # 뒤집기가 끝날 무렵 등장
 
     items = [s for s in data["caution_items"] if s.strip()][:3]
     RED_SHOW = RED_IDX[:4]
@@ -153,8 +158,11 @@ def build(data):
             for k, s in enumerate(items):
                 text_c(d, (cx, y + h * 0.42 + (k + 0.5) * h * 0.5 / len(items)), s, fit_font(d, s, w - 40, fs, "Black"), RED)
             if sample: text_c(d, (cx, y + h * 0.95), "(예시)", font(34, "Bold"), MUTED)
-        area = (90 + shake, 420, 990 + shake, 1100)
+        area = (40 + shake, 420, 750 + shake, 1100) if M else (90 + shake, 420, 990 + shake, 1100)
         flip_cards(d, t, RED_SHOW, RED, 2.8, 0.12, back, area, min(2, len(RED_SHOW)))
+        if M:  # 멈춤 동안 고민하다가, 카드가 뒤집히면 놀란다
+            if t < 2.8: draw_mascot(d, "think", 905, 410, 720, t, appear=0.0)
+            else: draw_mascot(d, "surprised", 905, 400, 730, t, appear=2.8)
 
     lines = data["clause_lines"][:7]
     hl = next((k for k, s in enumerate(lines) if data["clause_highlight"] and data["clause_highlight"] in s), len(lines) - 1)

@@ -101,6 +101,43 @@ def grid(n, x0, y0, x1, y1, cols=None, gap=20, aspect=None):
         out.append((ox + shift + c * (w + gap), oy + r * (h + gap), w, h))
     return out
 
+# ---------------- 마스코트 (brand/mascot/README.md, studio/library/mascot/*.png) ----------------
+MASCOT_DIR = os.path.join(HERE, "library", "mascot")
+_mc = {}
+def mascot_img(name, h, mirror=False):
+    k = (name, int(h), mirror)
+    if k not in _mc:
+        im = Image.open(os.path.join(MASCOT_DIR, name + ".png")).convert("RGBA")
+        im = im.resize((max(1, round(im.width * h / im.height)), int(h)), Image.LANCZOS)
+        if mirror: im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        _mc[k] = im
+    return _mc[k]
+
+def draw_mascot(d, name, cx, top, h, t, appear=0.0, mirror=False, enter="right"):
+    """전신 포즈를 (cx 가운데, top 위쪽, 높이 h)에 그린다. appear초에 옆에서 미끄러져 들어오고, 이후 살짝 숨쉬듯 움직인다."""
+    if t < appear: return
+    im = mascot_img(name, h, mirror); p = ease((t - appear) / 0.3)
+    dx = (1 - p) * (140 if enter == "right" else -140); dy = 5 * math.sin((t - appear) * 2.6)
+    if p < 1:
+        im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * p)))
+    d._image.paste(im, (int(cx - im.width / 2 + dx), int(top + dy)), im)
+
+def mascot_avatar(name, size):
+    """포즈 그림에서 얼굴 부분을 동그랗게 잘라낸 아바타 (권위 카드·말풍선용)"""
+    k = ("avatar", name, size)
+    if k not in _mc:
+        im = Image.open(os.path.join(MASCOT_DIR, name + ".png")).convert("RGBA")
+        a = im.getchannel("A"); H = im.height
+        top = a.crop((0, 0, im.width, int(H * 0.15))).getbbox()
+        cx = (top[0] + top[2]) // 2 if top else im.width // 2
+        side = int(H * 0.2); y0 = max(0, (top[1] if top else 0) - int(side * 0.05))
+        face = Image.new("RGBA", (side, side), (255, 255, 255, 255))
+        face.alpha_composite(im.crop((cx - side // 2, y0, cx + side // 2, y0 + side)))
+        face = face.resize((size, size), Image.LANCZOS)
+        mask = Image.new("L", (size * 4, size * 4), 0); ImageDraw.Draw(mask).ellipse([0, 0, size * 4 - 1, size * 4 - 1], fill=255)
+        face.putalpha(mask.resize((size, size), Image.LANCZOS)); _mc[k] = face
+    return _mc[k]
+
 def write_clip(path, dur, draw_fn, scale=1):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     w, h = W // scale, H // scale

@@ -20,6 +20,7 @@ FIELDS = [
     {"key": "effect", "label": "효과 한 줄", "type": "text", "default": "보장 공백 없이 정리"},
     {"key": "case", "label": "사례 (익명·각색)", "type": "text", "default": "보험료가 부담돼 해지하려던 30대 고객"},
     {"key": "case_result", "label": "사례 결과", "type": "text", "default": "감액으로 보장은 남기고 보험료는 줄임"},
+    {"key": "mascot", "label": "마스코트 진행자 넣기 (훅 X팔 · 권위 얼굴 · 놀람 · 엄지척 · 가리키기)", "type": "bool", "default": True},
     {"section": "자막 ([단어] = 노란 강조, / = 줄바꿈)"},
     {"key": "c_hook", "label": "0~2초 훅", "type": "text", "default": "보험 해지,/절대 [바로] 하지 마세요"},
     {"key": "c_auth", "label": "2~3.5초 권위", "type": "text", "default": "7년 동안 해지 상담하며/본 건데요"},
@@ -52,42 +53,55 @@ def check_mark(d, cx, cy, r, color, width=16, p=1.0):
     if p > 0.5:
         q2 = (p - 0.5) * 2; d.line([b, (lerp(b[0], c[0], q2), lerp(b[1], c[1], q2))], fill=color, width=width)
 
-def rows(d, t, items, color, mark, t0, step, y0=420, gap=170):
+def rows(d, t, items, color, mark, t0, step, y0=420, gap=170, x1=990):
     for k, s in enumerate(items):
         a = ease((t - t0 - k * step) / 0.3)
         if a <= 0: continue
-        y = y0 + k * gap; x = 90 + (1 - a) * 60
-        d.rounded_rectangle([x, y, x + 900, y + 140], radius=18, fill=(28, 32, 40), outline=color, width=4)
+        y = y0 + k * gap; x = 90 + (1 - a) * 60; w = x1 - 90
+        d.rounded_rectangle([x, y, x + w, y + 140], radius=18, fill=(28, 32, 40), outline=color, width=4)
         d.ellipse([x + 30, y + 30, x + 110, y + 110], fill=color)
         mark(d, x + 70, y + 70, 22, WHITE, 10, 1.0)
-        lines = wrap(d, s, font(42, "ExtraBold"), 720)[:2]
+        lines = wrap(d, s, font(42, "ExtraBold"), w - 180)[:2]
         for j, ln in enumerate(lines):
             d.text((x + 140, y + 70 + (j - (len(lines) - 1) / 2) * 50), ln, font=font(42, "ExtraBold"), fill=WHITE, anchor="lm")
 
 def build(data):
     losses = [s for s in data["losses"] if s.strip()][:3]
     steps = [s for s in data["steps"] if s.strip()][:3]
+    M = data.get("mascot", True)  # 마스코트가 진행자로 나온다: 훅 X팔·권위 아바타·놀람·엄지척·가리키기
 
-    def w1(d, t):  # 훅: 행동 + 큰 X
+    def w1(d, t):  # 훅: 행동 + X (마스코트가 팔로 X)
         label_top(d, data["topic"], RED)
-        a = ease(t / 0.3)
-        d.rounded_rectangle([140, 430, 940, 650], radius=24, fill=GRAY)
-        text_c(d, (540, 540), data["action"], fit_font(d, data["action"], 720, 76, "Black"), WHITE)
-        d.ellipse([340, 700, 740, 1100], outline=RED, width=24)
-        x_mark(d, 540, 900, 110, RED, 30, ease((t - 0.25) / 0.5))
+        if M:
+            d.rounded_rectangle([60, 430, 680, 640], radius=24, fill=GRAY)
+            text_c(d, (370, 535), data["action"], fit_font(d, data["action"], 540, 76, "Black"), WHITE)
+            d.ellipse([200, 690, 540, 1030], outline=RED, width=22)
+            x_mark(d, 370, 860, 92, RED, 28, ease((t - 0.25) / 0.5))
+            draw_mascot(d, "stop", 870, 380, 760, t, appear=0.05)
+        else:
+            d.rounded_rectangle([140, 430, 940, 650], radius=24, fill=GRAY)
+            text_c(d, (540, 540), data["action"], fit_font(d, data["action"], 720, 76, "Black"), WHITE)
+            d.ellipse([340, 700, 740, 1100], outline=RED, width=24)
+            x_mark(d, 540, 900, 110, RED, 30, ease((t - 0.25) / 0.5))
 
-    def w2(d, t):  # 권위 출처
+    def w2(d, t):  # 권위 출처 (마스코트 얼굴 아바타)
         label_top(d, data["topic"])
         d.rounded_rectangle([140, 560, 940, 900], radius=28, fill=(28, 32, 40), outline=YELLOW, width=5)
-        d.ellipse([200, 640, 380, 820], fill=YELLOW)
-        text_c(d, (290, 730), "FP", font(70, "Black"), BG)
+        if M:
+            d.ellipse([194, 634, 386, 826], fill=YELLOW)
+            d._image.paste(av := mascot_avatar("point", 180), (200, 640), av)
+        else:
+            d.ellipse([200, 640, 380, 820], fill=YELLOW)
+            text_c(d, (290, 730), "FP", font(70, "Black"), BG)
         lines = wrap(d, data["authority"], font(48, "ExtraBold"), 500)[:2]
         for j, ln in enumerate(lines):
             d.text((420, 730 + (j - (len(lines) - 1) / 2) * 62), ln, font=font(48, "ExtraBold"), fill=WHITE, anchor="lm")
 
-    def w3(d, t):  # 손해
+    def w3(d, t):  # 손해 (마스코트 놀람)
         label_top(d, "이렇게 되면 손해", RED)
-        rows(d, t, losses, RED, lambda d, cx, cy, r, c, w, p: d.line([cx - r, cy, cx + r, cy], fill=c, width=w), 0.1, 1.4)
+        rows(d, t, losses, RED, lambda d, cx, cy, r, c, w, p: d.line([cx - r, cy, cx + r, cy], fill=c, width=w), 0.1, 1.4,
+             x1=760 if M else 990)
+        if M: draw_mascot(d, "surprised", 910, 420, 700, t, appear=0.2)
 
     def w4(d, t):  # 전환: 행동에 줄 긋기
         label_top(d, data["topic"])
@@ -99,12 +113,20 @@ def build(data):
         label_top(d, "이렇게 하세요", GREEN)
         rows(d, t, steps, GREEN, check_mark, 0.1, 1.2)
 
-    def w6(d, t):  # 효과
+    def w6(d, t):  # 효과 (마스코트 엄지척)
         label_top(d, "결과", GREEN)
         p = ease(t / 0.4)
-        d.ellipse([390, 460, 690, 760], fill=GREEN)
-        check_mark(d, 540, 610, 80, WHITE, 26, ease((t - 0.2) / 0.5))
-        text_c(d, (540, 880), data["effect"], fit_font(d, data["effect"], 860, 64, "Black"), WHITE if p > 0.5 else GRAY_T)
+        if M:
+            draw_mascot(d, "thumbsup", 250, 390, 740, t, appear=0.0, enter="left")
+            d.ellipse([560, 470, 860, 770], fill=GREEN)
+            check_mark(d, 710, 620, 80, WHITE, 26, ease((t - 0.2) / 0.5))
+            lines = wrap(d, data["effect"], font(58, "Black"), 520)[:2]
+            for j, ln in enumerate(lines):
+                text_c(d, (710, 880 + j * 72), ln, font(58, "Black"), WHITE if p > 0.5 else GRAY_T)
+        else:
+            d.ellipse([390, 460, 690, 760], fill=GREEN)
+            check_mark(d, 540, 610, 80, WHITE, 26, ease((t - 0.2) / 0.5))
+            text_c(d, (540, 880), data["effect"], fit_font(d, data["effect"], 860, 64, "Black"), WHITE if p > 0.5 else GRAY_T)
 
     def w7(d, t):  # 사례 → 결과 (16~22초, 6초)
         label_top(d, "실제 상담 사례 (각색)", YELLOW)
@@ -121,14 +143,16 @@ def build(data):
             for j, ln in enumerate(lines):
                 text_c(d, (540, y + 110 + (j - (len(lines) - 1) / 2) * 60), ln, font(46, "ExtraBold"), WHITE)
 
-    def w8(d, t):  # 체크리스트
+    def w8(d, t):  # 체크리스트 (마스코트가 왼쪽 목록을 가리킴)
         label_top(d, "해지 전 체크리스트" if "해지" in data["topic"] else data["topic"], YELLOW)
+        x1 = 740 if M else 970
         for k, s in enumerate(steps):
             y = 460 + k * 190
-            d.rounded_rectangle([110, y, 970, y + 150], radius=18, fill=(28, 32, 40))
-            d.rounded_rectangle([150, y + 35, 230, y + 115], radius=12, outline=YELLOW, width=6)
-            check_mark(d, 190, y + 75, 26, YELLOW, 10, ease((t - 0.4 - k * 0.6) / 0.4))
-            d.text((270, y + 75), s, font=fit_font(d, s, 660, 44, "ExtraBold"), fill=WHITE, anchor="lm")
+            d.rounded_rectangle([90, y, x1, y + 150], radius=18, fill=(28, 32, 40))
+            d.rounded_rectangle([130, y + 35, 210, y + 115], radius=12, outline=YELLOW, width=6)
+            check_mark(d, 170, y + 75, 26, YELLOW, 10, ease((t - 0.4 - k * 0.6) / 0.4))
+            d.text((250, y + 75), s, font=fit_font(d, s, x1 - 290, 44, "ExtraBold"), fill=WHITE, anchor="lm")
+        if M: draw_mascot(d, "point", 905, 400, 720, t, mirror=True)
 
     scenes = [("w1", 2.0, w1), ("w2", 1.5, w2), ("w3", 4.5, w3), ("w4", 1.0, w4), ("w5", 4.0, w5),
               ("w6", 3.0, w6), ("w7", 6.0, w7), ("w8", 3.0, w8)]

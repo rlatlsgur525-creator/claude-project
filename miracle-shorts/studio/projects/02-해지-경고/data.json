@@ -28,29 +28,7 @@
  "review_no": "",
  "review_exp": "",
  "texts": [],
- "overlays": [
-  {
-   "id": "su7kd00",
-   "src": "library/mascot/surprised.png",
-   "start": 0,
-   "end": 2,
-   "x": 770,
-   "y": 380,
-   "w": 280,
-   "fade": 0.1,
-   "_ar": 2.7145557655954633
-  },
-  {
-   "id": "obe7jb6",
-   "src": "library/mascot/point.png",
-   "start": 13,
-   "end": 16,
-   "x": 20,
-   "y": 380,
-   "w": 250,
-   "fade": 0.15
-  }
- ],
+ "overlays": [],
  "voices": [],
  "markers": [],
  "edits": [],
