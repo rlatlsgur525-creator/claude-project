@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""미라클 쇼츠 스튜디오 — 로컬 웹 툴.  python server.py  →  http://127.0.0.1:8765
+프로젝트는 projects/<id>/data.json 에 저장된다(GitHub로 동기화). 영상(mp4)은 저장소에 올리지 않는다.
+"""
+import json, os, re, sys, threading, webbrowser
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs, unquote
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import pipeline
+
+PORT = 8765
+LOCK = threading.Lock()  # 렌더는 한 번에 하나
+ID_RE = re.compile(r"^[0-9A-Za-z가-힣_\-]{1,60}$")
+
+def proj_path(pid, *rest):
+    if not ID_RE.match(pid): raise ValueError("bad id")
+    return os.path.join(pipeline.PROJECTS, pid, *rest)
+
+def list_projects():
+    out = []
+    if not os.path.isdir(pipeline.PROJECTS): return out
+    for pid in sorted(os.listdir(pipeline.PROJECTS)):
+        f = os.path.join(pipeline.PROJECTS, pid, "data.json")
+        if not os.path.exists(f): continue
+        d = json.load(open(f, encoding="utf-8"))
+        out.append({"id": pid, "title": d.get("title", pid), "template": d["template"],
+                    "templateName": pipeline.template(d["template"]).NAME, "review": pipeline.review_status(d),
+                    "review_exp": d.get("review_exp", ""),
+                    "hasPreview": os.path.exists(proj_path(pid, "final_preview.mp4")),
+                    "hasFinal": os.path.exists(proj_path(pid, "final.mp4"))})
+    return out
+
+class H(SimpleHTTPRequestHandler):
+    def log_message(self, *a): pass
+
+    def send_json(self, obj, code=200):
+        b = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(code); self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
+
+    def body(self):
+        n = int(self.headers.get("Content-Length", 0))
+        return json.loads(self.rfile.read(n).decode("utf-8")) if n else {}
+
+    def do_GET(self):
+        u = urlparse(self.path); parts = [unquote(p) for p in u.path.split("/") if p]
+        try:
+            if u.path in ("/", "/index.html"):
+                return self.serve_file(os.path.join(HERE, "index.html"), "text/html; charset=utf-8")
+            if u.path == "/api/templates":
+                return self.send_json([{"key": k, "name": pipeline.template(k).NAME, "desc": pipeline.template(k).DESC,
+                                        "fields": pipeline.template(k).FIELDS} for k in pipeline.TEMPLATES])
+            if u.path == "/api/projects": return self.send_json(list_projects())
+            if len(parts) == 3 and parts[:2] == ["api", "project"]:
+                d = json.load(open(proj_path(parts[2], "data.json"), encoding="utf-8"))
+                return self.send_json({**pipeline.defaults(d["template"]), **d})
+            if len(parts) == 3 and parts[0] == "files" and parts[2] in ("final.mp4", "final_preview.mp4"):
+                return self.serve_file(proj_path(parts[1], parts[2]), "video/mp4")
+        except (ValueError, FileNotFoundError):
+            return self.send_json({"error": "not found"}, 404)
+        self.send_json({"error": "not found"}, 404)
+
+    def do_POST(self):
+        u = urlparse(self.path); parts = [unquote(p) for p in u.path.split("/") if p]
+        try:
+            if u.path == "/api/projects":
+                b = self.body(); pid = b["id"].strip()
+                if os.path.exists(proj_path(pid)): return self.send_json({"error": "같은 이름의 프로젝트가 있어요"}, 400)
+                os.makedirs(proj_path(pid))
+                d = {"template": b["template"], "title": b.get("title") or pid, "is_sample": True,
+                     "review_no": "", "review_exp": "", **pipeline.defaults(b["template"])}
+                json.dump(d, open(proj_path(pid, "data.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                return self.send_json({"id": pid})
+            if len(parts) == 3 and parts[:2] == ["api", "project"]:
+                d = self.body()
+                json.dump(d, open(proj_path(parts[2], "data.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                return self.send_json({"ok": True})
+            if len(parts) == 3 and parts[:2] == ["api", "render"]:
+                preview = parse_qs(u.query).get("preview", ["1"])[0] == "1"
+                if not LOCK.acquire(blocking=False): return self.send_json({"ok": False, "errors": ["다른 영상을 만드는 중이에요. 잠시 뒤 다시 눌러 주세요."]})
+                try: return self.send_json(pipeline.render(parts[2], preview))
+                finally: LOCK.release()
+        except ValueError:
+            return self.send_json({"error": "잘못된 이름"}, 400)
+        except Exception as e:
+            return self.send_json({"ok": False, "errors": [f"{type(e).__name__}: {e}"]}, 500)
+        self.send_json({"error": "not found"}, 404)
+
+    def serve_file(self, path, ctype):
+        size = os.path.getsize(path); rng = self.headers.get("Range")
+        start, end = 0, size - 1
+        if rng and rng.startswith("bytes="):
+            a, _, b = rng[6:].partition("-"); start = int(a or 0); end = int(b) if b else size - 1
+            self.send_response(206); self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+        else:
+            self.send_response(200)
+        self.send_header("Content-Type", ctype); self.send_header("Accept-Ranges", "bytes")
+        self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(end - start + 1))
+        self.end_headers()
+        with open(path, "rb") as f:
+            f.seek(start); left = end - start + 1
+            while left > 0:
+                chunk = f.read(min(65536, left))
+                if not chunk: break
+                try: self.wfile.write(chunk)
+                except ConnectionError: break
+                left -= len(chunk)
+
+if __name__ == "__main__":
+    os.makedirs(pipeline.PROJECTS, exist_ok=True)
+    srv = ThreadingHTTPServer(("127.0.0.1", PORT), H)
+    url = f"http://127.0.0.1:{PORT}"
+    print(f"미라클 쇼츠 스튜디오: {url}  (끄려면 이 창을 닫으세요)")
+    if "--no-browser" not in sys.argv: webbrowser.open(url)
+    srv.serve_forever()

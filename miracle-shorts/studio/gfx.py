@@ -1,0 +1,116 @@
+"""공통 그리기 도구: 폰트, 색, 카드, 이징, 클립 쓰기 (Pillow 프레임 → ffmpeg mp4).
+화면 배치 규칙 (1080x1920):
+  위 라벨 y≈270 · 그래픽 y 300~1150 · main 자막 ~1170~1344 · small 자막 ~1430~1536 · 하단 16% 비움
+"""
+import glob, math, os, shutil, subprocess
+from PIL import Image, ImageDraw, ImageFont
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+FONTS = os.path.join(HERE, "..", "shorts-kit", "fonts")
+W, H, FPS = 1080, 1920, 30
+
+BG = (14, 17, 22)
+GRAY = (58, 65, 80)
+GRAY_T = (170, 178, 192)
+GREEN = (47, 191, 113)
+RED = (255, 99, 61)
+WHITE = (245, 246, 248)
+INK = (30, 34, 42)
+MUTED = (110, 116, 128)
+YELLOW = (255, 210, 63)
+BLUE = (77, 148, 255)
+
+def ffmpeg_bin(name="ffmpeg"):
+    p = shutil.which(name)
+    if p: return p
+    hits = glob.glob(os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg*\*\bin\\" + name + ".exe"))
+    return hits[0] if hits else name
+
+_fc = {}
+def font(size, w="Bold"):
+    k = (int(size), w)
+    if k not in _fc:
+        _fc[k] = ImageFont.truetype(os.path.join(FONTS, f"Pretendard-{w}.otf"), int(size))
+    return _fc[k]
+
+def ease(p):  # easeInOutCubic
+    p = max(0.0, min(1.0, p))
+    return 4 * p ** 3 if p < 0.5 else 1 - (-2 * p + 2) ** 3 / 2
+
+def lerp(a, b, p): return a + (b - a) * p
+
+def text_c(d, xy, s, f, fill):
+    d.text(xy, s, font=f, fill=fill, anchor="mm")
+
+def fit_font(d, s, maxw, size, w="Bold", minsize=24):
+    """maxw 안에 들어가도록 글자 크기를 줄인다."""
+    while size > minsize and d.textlength(s, font=font(size, w)) > maxw:
+        size -= 2
+    return font(size, w)
+
+def wrap(d, s, f, maxw):
+    """글자 단위 줄바꿈 (한국어)."""
+    lines, cur = [], ""
+    for word in s.split(" "):
+        t = (cur + " " + word).strip()
+        if d.textlength(t, font=f) <= maxw: cur = t; continue
+        if cur: lines.append(cur)
+        cur = word
+        while d.textlength(cur, font=f) > maxw:  # 한 단어가 너무 길면 글자 단위로 자름
+            i = len(cur)
+            while i > 1 and d.textlength(cur[:i], font=f) > maxw: i -= 1
+            lines.append(cur[:i]); cur = cur[i:]
+    if cur: lines.append(cur)
+    return lines
+
+def label_top(d, s, color=GRAY_T):
+    text_c(d, (W / 2, 270), s, fit_font(d, s, W - 160, 40), color)
+
+def card(d, x, y, w, h, fill, label=None, lf=None, lc=WHITE, glow=None, sx=1.0, radius=16):
+    """sx: 가로 축척(뒤집기용)."""
+    cx = x + w / 2; w2 = max(w * sx, 2)
+    x1, x2 = cx - w2 / 2, cx + w2 / 2
+    if glow:
+        d.rounded_rectangle([x1 - 8, y - 8, x2 + 8, y + h + 8], radius=radius + 6, outline=glow, width=6)
+    d.rounded_rectangle([x1, y, x2, y + h], radius=radius, fill=fill)
+    if label and sx > 0.35:
+        text_c(d, (cx, y + h / 2), label, lf, lc)
+
+def flip(t, t0, dur=0.45):
+    """(가로 축척, 뒷면 여부)"""
+    p = (t - t0) / dur
+    if p <= 0: return 1.0, False
+    if p >= 1: return 1.0, True
+    return abs(math.cos(math.pi * p)), p >= 0.5
+
+def grid(n, x0, y0, x1, y1, cols=None, gap=20, aspect=None):
+    """n개를 영역 안에 격자로 배치 → [(x, y, w, h)]"""
+    if n <= 0: return []
+    cols = cols or min(n, max(1, round(math.sqrt(n * (x1 - x0) / max(y1 - y0, 1)))))
+    rows = math.ceil(n / cols)
+    w = (x1 - x0 - gap * (cols - 1)) / cols
+    h = (y1 - y0 - gap * (rows - 1)) / rows
+    if aspect: w, h = min(w, h / aspect), min(h, w * aspect)
+    tw = cols * w + (cols - 1) * gap; th = rows * h + (rows - 1) * gap
+    ox = x0 + (x1 - x0 - tw) / 2; oy = y0 + (y1 - y0 - th) / 2
+    out = []
+    for i in range(n):
+        c, r = i % cols, i // cols
+        last = n - (rows - 1) * cols  # 마지막 줄 가운데 정렬
+        shift = (cols - last) * (w + gap) / 2 if r == rows - 1 and last < cols else 0
+        out.append((ox + shift + c * (w + gap), oy + r * (h + gap), w, h))
+    return out
+
+def write_clip(path, dur, draw_fn, scale=1):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    w, h = W // scale, H // scale
+    cmd = [ffmpeg_bin(), "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}",
+           "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", "-pix_fmt", "yuv420p", path]
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    for i in range(int(round(dur * FPS))):
+        im = Image.new("RGB", (W, H), BG); d = ImageDraw.Draw(im)
+        draw_fn(d, i / FPS)
+        if scale != 1: im = im.resize((w, h), Image.BILINEAR)
+        p.stdin.write(im.tobytes())
+    p.stdin.close()
+    if p.wait(): raise RuntimeError(f"ffmpeg failed: {path}")

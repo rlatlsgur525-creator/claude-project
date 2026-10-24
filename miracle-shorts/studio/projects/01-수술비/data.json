@@ -1,0 +1,37 @@
+{
+ "template": "terms_survey",
+ "title": "약관 전수조사 #1 수술비",
+ "is_sample": true,
+ "review_no": "",
+ "review_exp": "",
+ "coverage": "수술비",
+ "total": 24,
+ "n_wide": 4,
+ "n_caution": 2,
+ "criterion": "수술의 정의",
+ "wide_label": "수술 제외 항목",
+ "wide_value": "적음",
+ "caution_label": "수술로 안 보는 것",
+ "caution_items": [
+  "티눈",
+  "사마귀"
+ ],
+ "clause_title": "제○조 (수술의 정의)",
+ "clause_lines": [
+  "① '수술'이란 의사가 치료를 직접",
+  "목적으로 필요하다고 인정하여",
+  "기구를 사용해 생체에 절단·절제 등의",
+  "조작을 가하는 것을 말합니다.",
+  "② 다음은 수술로 보지 않습니다.",
+  "티눈·사마귀 제거 등 (예시 문구)"
+ ],
+ "clause_highlight": "티눈",
+ "c_hook": "{coverage} 싸서 가입했다면/이 [{caution}곳]인지 확인하세요",
+ "c_pdf": "{total}개 보험사 {coverage} 약관/[전부] 비교했습니다",
+ "c_std": "[{standard}곳]은 거의 같고",
+ "c_wide": "[{wide}곳]은 더 넓게 줍니다",
+ "c_flip": "'수술'에서 빼는 항목이/더 [적어요]",
+ "c_pause": "그런데 이 {caution}곳은…",
+ "c_reveal": "[{items}]를/수술로 안 봅니다",
+ "c_check": "내 약관에 이 문구가/있는지만 [보세요]"
+}

@@ -39,6 +39,19 @@
 | `hunter/results/outliers_1024.csv` | 분석한 60개 영상 전체 수치 (17개 통과) |
 | `hunter/results/vids.tsv`, `ch.tsv` | 스캔 원자료 (영상, 채널 통계) |
 | `report/index.html`, `data.json` | 약관 전수조사 리포트 페이지. 데이터는 data.json으로 분리돼 있어서 매달 개정 때 데이터만 교체하면 됨 |
+| `hunter/results/format_blueprints_1024.md` | 포맷 5개의 **초 단위 구조·편집 수치** (Higgsfield 장면 분석, 2026-10-24). 템플릿을 만들거나 고칠 때 기준 |
+| `studio/` | **미라클 쇼츠 스튜디오** (로컬 웹 툴). 아래 '스튜디오' 참고 |
+| `shorts/01-surgery/` | 스튜디오 이전에 손으로 만든 수술비 편 첫 시험본 (make_scenes.py + edl.json). 같은 내용이 스튜디오 `01-수술비` 프로젝트로 옮겨짐 |
+
+## 스튜디오 (2026-10-24, 첫 버전)
+
+- **실행:** 바탕화면 "미라클 쇼츠 스튜디오" 아이콘(= `studio/start.bat`) → 브라우저에 http://127.0.0.1:8765 . 창을 닫으면 꺼진다.
+- **흐름:** 프로젝트 고르기 → 칸 고치기(자동 저장) → [미리보기] 약 15초 → [최종 만들기] → `studio/projects/<이름>/final.mp4`
+- **템플릿 3개** (`studio/templates/`): `terms_survey` 약관 전수조사(30초), `warning` 경고형(25초, B 설계도), `experiment` 비교 실험(30초, E 설계도·숫자는 코드 계산)
+- **템플릿 규약:** `NAME, DESC, FIELDS, validate(data), build(data) -> (scenes, captions, sfx, note)`. 새 템플릿은 `pipeline.TEMPLATES`에 키를 추가한다. 그리기 공통 도구는 `studio/gfx.py`.
+- **자동 준법:** 심의필 번호가 비면 화면에 "심의 전 · 게시 불가", 예시 데이터 표기, 단정 표현·긴 자막·60초 초과 경고. 목록에 심의 상태(심의 전/완료/만료) 표시.
+- **Claude가 초안을 만들 때:** `studio/projects/<이름>/data.json`을 템플릿 기본값 + 주제 내용으로 채워 저장하면, 사용자가 툴에서 열어 고친다.
+- **다음 기능 후보:** C 루프형 템플릿, 얼굴 출연(A·D)용 촬영본 템플릿, 자막 타이밍 조정, BGM 파일 넣기, 내레이션 녹음 붙이기
 
 ## 로컬(이 PC)에서 이어갈 때
 

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미라클 쇼츠 스튜디오</title>
+<style>
+:root {
+  --bg: #f4f5f7; --panel: #fff; --ink: #1d2129; --muted: #6b7280; --line: #e3e5e9;
+  --accent: #2f6fed; --green: #1f9d5c; --orange: #e8622f; --yellow: #f2b705;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 "Pretendard", "Malgun Gothic", system-ui, sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #12151b; color: #fff; }
+header h1 { font-size: 17px; margin: 0; font-weight: 800; }
+header .sub { color: #9aa3b2; font-size: 13px; }
+main { display: grid; grid-template-columns: 260px minmax(0, 1fr) 380px; gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 1100px) { main { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+h2 { font-size: 15px; margin: 0 0 12px; }
+.proj { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font: inherit; color: inherit; }
+.proj.active { border-color: var(--accent); box-shadow: 0 0 0 2px #2f6fed22; }
+.proj .t { font-weight: 700; overflow-wrap: anywhere; }
+.proj .m { font-size: 12px; color: var(--muted); }
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 4px; }
+.b-ok { background: #e3f6ec; color: var(--green); } .b-warn { background: #fdebe3; color: var(--orange); } .b-exp { background: #fde3e3; color: #c62828; }
+label { display: block; font-weight: 700; font-size: 13px; margin: 12px 0 4px; }
+.help { color: var(--muted); font-size: 12px; margin-top: 2px; }
+input[type=text], input[type=number], input[type=date], textarea, select {
+  width: 100%; border: 1px solid #cfd3da; border-radius: 8px; padding: 8px 10px; font: inherit; background: #fff; color: inherit; }
+textarea { min-height: 90px; resize: vertical; }
+.section { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; font-weight: 800; color: var(--accent); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row > * { flex: 1 1 140px; min-width: 0; }
+.check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-weight: 700; font-size: 13px; }
+button.btn { border: 0; border-radius: 10px; padding: 11px 16px; font: inherit; font-weight: 800; cursor: pointer; }
+.btn-primary { background: var(--accent); color: #fff; } .btn-ghost { background: #eef1f6; color: var(--ink); }
+.btn-dark { background: #12151b; color: #fff; }
+button:disabled { opacity: .5; cursor: wait; }
+.phone { position: relative; width: 100%; max-width: 320px; aspect-ratio: 9 / 16; margin: 0 auto; background: #0e1116; border-radius: 18px; overflow: hidden; }
+.phone video { width: 100%; height: 100%; display: block; }
+.phone .empty { position: absolute; inset: 0; display: grid; place-items: center; color: #8a93a3; text-align: center; padding: 20px; font-size: 14px; }
+.safe { position: absolute; inset: 0; pointer-events: none; display: none; }
+.safe.on { display: block; }
+.safe div { position: absolute; background: rgba(232, 98, 47, .28); border: 1px dashed rgba(232, 98, 47, .9); }
+.safe span { position: absolute; font-size: 10px; color: #fff; background: rgba(0,0,0,.55); padding: 1px 5px; border-radius: 4px; }
+.checks { list-style: none; padding: 0; margin: 12px 0 0; font-size: 13px; }
+.checks li { padding: 6px 8px; border-radius: 8px; margin-bottom: 6px; overflow-wrap: anywhere; }
+.checks .ok { background: #e3f6ec; } .checks .warn { background: #fff4e0; } .checks .err { background: #fde3e3; }
+.status { font-size: 13px; color: var(--muted); min-height: 20px; margin-top: 8px; }
+.tpl { border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; cursor: pointer; }
+.tpl.sel { border-color: var(--accent); background: #f2f6ff; }
+.tpl b { display: block; } .tpl small { color: var(--muted); }
+dialog { border: 0; border-radius: 14px; padding: 20px; width: min(460px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgba(0,0,0,.4); }
+</style>
+</head>
+<body>
+<header><h1>미라클 쇼츠 스튜디오</h1><span class="sub">초안 → 고치기 → 미리보기 → 최종 만들기</span></header>
+<main>
+  <section class="panel">
+    <h2>프로젝트</h2>
+    <button class="btn btn-dark" style="width:100%;margin-bottom:12px" onclick="openNew()">+ 새 쇼츠</button>
+    <div id="plist"></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="ftitle">프로젝트를 고르세요</h2>
+    <div id="form"></div>
+  </section>
+
+  <section class="panel">
+    <h2>미리보기</h2>
+    <div class="phone">
+      <video id="vid" controls playsinline></video>
+      <div class="empty" id="empty">[미리보기]를 누르면<br>여기에 영상이 나와요</div>
+      <div class="safe" id="safe">
+        <div style="left:0;right:0;top:0;height:8%"></div><span style="top:2%;left:4px">검색·메뉴</span>
+        <div style="right:0;top:45%;bottom:18%;width:11%"></div><span style="top:46%;right:4px">버튼</span>
+        <div style="left:0;right:0;bottom:0;height:18%"></div><span style="bottom:12%;left:4px">제목·설명</span>
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" id="safeon" onchange="safe.classList.toggle('on', this.checked)"> 유튜브 화면 가림 영역 보기</label>
+    <div class="row" style="margin-top:12px">
+      <button class="btn btn-ghost" id="bprev" onclick="render(true)" disabled>미리보기 (빠름)</button>
+      <button class="btn btn-primary" id="bfinal" onclick="render(false)" disabled>최종 만들기</button>
+    </div>
+    <div class="status" id="status"></div>
+    <ul class="checks" id="checks"></ul>
+  </section>
+</main>
+
+<dialog id="dnew">
+  <h2>새 쇼츠</h2>
+  <div id="tpls"></div>
+  <label>이름 (영문·숫자·한글, 띄어쓰기 대신 -)</label>
+  <input type="text" id="nid" placeholder="예: 02-진단비">
+  <div class="row" style="margin-top:16px">
+    <button class="btn btn-ghost" onclick="dnew.close()">취소</button>
+    <button class="btn btn-primary" onclick="createNew()">만들기</button>
+  </div>
+</dialog>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let TEMPLATES = [], cur = null, data = null, selTpl = null;
+
+async function api(path, opt) {
+  const r = await fetch(path, opt);
+  return r.json();
+}
+async function loadProjects() {
+  const ps = await api('/api/projects');
+  $('plist').innerHTML = ps.length ? '' : '<div class="help">아직 없어요</div>';
+  for (const p of ps) {
+    const b = document.createElement('button');
+    b.className = 'proj' + (p.id === cur ? ' active' : '');
+    const cls = p.review === '심의 완료' ? 'b-ok' : p.review === '심의 만료' ? 'b-exp' : 'b-warn';
+    b.innerHTML = `<div class="t"></div><div class="m"><span class="tn"></span><span class="badge ${cls}"></span></div>`;
+    b.querySelector('.t').textContent = p.title;
+    b.querySelector('.tn').textContent = p.templateName;
+    b.querySelector('.badge').textContent = p.review + (p.review_exp ? ` ~${p.review_exp}` : '');
+    b.onclick = () => openProject(p.id);
+    $('plist').appendChild(b);
+  }
+}
+function field(f) {
+  const wrap = document.createElement('div');
+  if (f.section) { wrap.className = 'section'; wrap.textContent = f.section; return wrap; }
+  const lab = document.createElement('label'); lab.textContent = f.label; wrap.appendChild(lab);
+  let el;
+  if (f.type === 'lines') { el = document.createElement('textarea'); el.value = (data[f.key] || []).join('\n'); }
+  else { el = document.createElement('input'); el.type = f.type === 'number' ? 'number' : 'text'; el.value = data[f.key] ?? '';
+         if (f.min != null) el.min = f.min; if (f.max != null) el.max = f.max; }
+  el.oninput = () => { data[f.key] = f.type === 'lines' ? el.value.split('\n') : f.type === 'number' ? Number(el.value) : el.value; dirty(); };
+  wrap.appendChild(el);
+  if (f.help) { const h = document.createElement('div'); h.className = 'help'; h.textContent = f.help; wrap.appendChild(h); }
+  return wrap;
+}
+const COMMON = [
+  { section: '기본 · 준법' },
+  { key: 'title', label: '제목 (목록에 보이는 이름)', type: 'text' },
+  { key: 'review_no', label: '심의필 번호 (비어 있으면 화면에 "심의 전 · 게시 불가")', type: 'text' },
+  { key: 'review_exp', label: '심의 유효기간 (예: 2027-10-31)', type: 'text' },
+];
+async function openProject(id) {
+  cur = id; data = await api('/api/project/' + encodeURIComponent(id));
+  const t = TEMPLATES.find(t => t.key === data.template);
+  $('ftitle').textContent = `${data.title} · ${t.name}`;
+  const form = $('form'); form.innerHTML = '';
+  for (const f of COMMON) form.appendChild(field(f));
+  const ck = document.createElement('label'); ck.className = 'check';
+  ck.innerHTML = '<input type="checkbox"> 예시 데이터 (실제 데이터로 바꾸면 끄세요)';
+  ck.querySelector('input').checked = data.is_sample !== false;
+  ck.querySelector('input').onchange = (e) => { data.is_sample = e.target.checked; dirty(); };
+  form.appendChild(ck);
+  for (const f of t.fields) form.appendChild(field(f));
+  $('bprev').disabled = $('bfinal').disabled = false;
+  $('checks').innerHTML = ''; $('status').textContent = '';
+  showVideo(null);
+  loadProjects();
+}
+let saveTimer = null;
+function dirty() { clearTimeout(saveTimer); $('status').textContent = '저장 중…'; saveTimer = setTimeout(save, 500); }
+async function save() {
+  await api('/api/project/' + encodeURIComponent(cur), { method: 'POST', body: JSON.stringify(data) });
+  $('status').textContent = '저장됨';
+}
+function showVideo(src) {
+  const v = $('vid');
+  if (src) { v.src = src + '?t=' + Date.now(); v.style.display = 'block'; $('empty').style.display = 'none'; v.play().catch(() => {}); }
+  else { v.removeAttribute('src'); v.load(); $('empty').style.display = 'grid'; }
+}
+async function render(preview) {
+  clearTimeout(saveTimer); await save();
+  $('bprev').disabled = $('bfinal').disabled = true;
+  $('status').textContent = preview ? '미리보기 만드는 중… (20초 안팎)' : '최종본 만드는 중… (1분 안팎)';
+  const t0 = Date.now();
+  const r = await api(`/api/render/${encodeURIComponent(cur)}?preview=${preview ? 1 : 0}`, { method: 'POST' });
+  $('bprev').disabled = $('bfinal').disabled = false;
+  const ul = $('checks'); ul.innerHTML = '';
+  if (!r.ok) {
+    $('status').textContent = '만들지 못했어요';
+    for (const e of r.errors || []) { const li = document.createElement('li'); li.className = 'err'; li.textContent = e; ul.appendChild(li); }
+    return;
+  }
+  $('status').textContent = `${preview ? '미리보기' : '최종본'} 완료 (${Math.round((Date.now() - t0) / 1000)}초)` +
+    (preview ? '' : ` · 파일: studio/projects/${cur}/final.mp4`);
+  for (const [lv, msg] of r.checks) { const li = document.createElement('li'); li.className = lv; li.textContent = (lv === 'ok' ? '✓ ' : '! ') + msg; ul.appendChild(li); }
+  showVideo(r.video);
+  loadProjects();
+}
+function openNew() {
+  selTpl = TEMPLATES[0].key;
+  $('tpls').innerHTML = '';
+  for (const t of TEMPLATES) {
+    const d = document.createElement('div'); d.className = 'tpl' + (t.key === selTpl ? ' sel' : '');
+    d.innerHTML = '<b></b><small></small>'; d.querySelector('b').textContent = t.name; d.querySelector('small').textContent = t.desc;
+    d.onclick = () => { selTpl = t.key; [...$('tpls').children].forEach(c => c.classList.remove('sel')); d.classList.add('sel'); };
+    $('tpls').appendChild(d);
+  }
+  $('nid').value = ''; $('dnew').showModal();
+}
+async function createNew() {
+  const id = $('nid').value.trim().replace(/\s+/g, '-');
+  if (!id) return;
+  const r = await api('/api/projects', { method: 'POST', body: JSON.stringify({ id, template: selTpl, title: id }) });
+  if (r.error) { alert(r.error); return; }
+  $('dnew').close(); openProject(r.id);
+}
+(async () => { TEMPLATES = await api('/api/templates'); loadProjects(); })();
+</script>
+</body>
+</html>
