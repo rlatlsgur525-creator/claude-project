@@ -1,0 +1,36 @@
+{"out":"final.mp4","w":1080,"h":1920,"fps":30,
+ "segments":[
+  {"src":"../scenes/s1.mp4","fit":"crop","zoom":"none","mute":true},
+  {"src":"../scenes/s2.mp4","fit":"crop","zoom":"none","mute":true},
+  {"src":"../scenes/s3.mp4","fit":"crop","zoom":"none","mute":true},
+  {"src":"../scenes/s4.mp4","fit":"crop","zoom":"none","mute":true},
+  {"src":"../scenes/s5.mp4","fit":"crop","zoom":"none","mute":true},
+  {"src":"../scenes/s6.mp4","fit":"crop","zoom":"none","mute":true}
+ ],
+ "captions":[
+  {"start":0.0,"end":2.0,"text":"수술비 싸서 가입했다면/이 [2곳]인지 확인하세요","style":"main"},
+  {"start":2.0,"end":5.0,"text":"24개 보험사 수술비 약관/[전부] 비교했습니다","style":"main"},
+  {"start":5.0,"end":8.5,"text":"[18곳]은 거의 같고","style":"main"},
+  {"start":8.5,"end":12.0,"text":"[4곳]은 더 넓게 줍니다","style":"main"},
+  {"start":12.0,"end":20.0,"text":"'수술'에서 빼는 항목이/더 [적어요]","style":"main"},
+  {"start":20.0,"end":22.8,"text":"그런데 이 2곳은…","style":"main","anim":"fade"},
+  {"start":22.8,"end":26.0,"text":"[티눈·사마귀]를/수술로 안 봅니다","style":"main"},
+  {"start":26.0,"end":30.0,"text":"내 약관에 이 문구가/있는지만 [보세요]","style":"main"},
+  {"start":0.0,"end":30.0,"text":"예시 데이터 · 실제 약관 반영 전 시험본/회사 익명 · 수술의 정의 조항 기준","style":"small","anim":"none"}
+ ],
+ "sfx":[
+  {"t":0.0,"name":"impact","vol":0.8},
+  {"t":2.0,"name":"whoosh","vol":0.6},
+  {"t":2.3,"name":"tick","vol":0.4},{"t":2.7,"name":"tick","vol":0.4},{"t":3.1,"name":"tick","vol":0.4},
+  {"t":3.5,"name":"tick","vol":0.4},{"t":3.9,"name":"tick","vol":0.4},{"t":4.3,"name":"tick","vol":0.4},
+  {"t":5.2,"name":"whoosh","vol":0.6},
+  {"t":8.5,"name":"pop","vol":0.7},
+  {"t":12.0,"name":"whoosh","vol":0.5},
+  {"t":12.6,"name":"pop","vol":0.5},{"t":13.4,"name":"pop","vol":0.5},{"t":14.2,"name":"pop","vol":0.5},{"t":15.0,"name":"pop","vol":0.5},
+  {"t":20.0,"name":"swoosh_down","vol":0.5},
+  {"t":21.3,"name":"riser","vol":0.6},
+  {"t":22.8,"name":"impact","vol":0.8},
+  {"t":26.0,"name":"whoosh","vol":0.5},
+  {"t":27.7,"name":"ding","vol":0.6}
+ ]
+}

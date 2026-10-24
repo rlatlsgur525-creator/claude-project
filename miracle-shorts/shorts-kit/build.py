@@ -177,7 +177,8 @@ def render(edl_path, preview=False):
     assf = os.path.join(tmp, "cap.ass")
     build_ass(e2, int(edl.get("w", 1080)), int(edl.get("h", 1920)), assf)  # full-res coords; libass scales for preview
     inputs = ["-i", joined]; fc = []; mix = ["[base]"]; idx = 1
-    fc.append(f"[0:v]ass='{assf}':fontsdir='{fonts}'[v]")
+    def fpath(p): return p.replace("\\", "/").replace(":", "\\:")  # Windows paths inside a filter graph
+    fc.append(f"[0:v]ass='{fpath(assf)}':fontsdir='{fpath(fonts)}'[v]")
     fc.append("[0:a]aformat=channel_layouts=stereo,aresample=48000[base0]")
     if edl.get("voice"):
         vo = edl["voice"]; inputs += ["-i", P(vo["src"])]
@@ -210,7 +211,7 @@ def render(edl_path, preview=False):
             fc.append(chain + "[bgm]")
         mix.append("[bgm]"); idx += 1
     fc.append("[sc2]anullsink")
-    fc.append("".join(mix) + f"amix=inputs={len(mix)}:normalize=0:duration=first,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]")
+    fc.append("".join(mix) + f"amix=inputs={len(mix)}:normalize=0:duration=first,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000,alimiter=limit=0.7:level=false[a]")  # ~-3 dBFS: headroom for AAC overshoot on synth transients
     cmd = ["ffmpeg", "-y", *inputs, "-filter_complex", ";".join(fc), "-map", "[v]", "-map", "[a]",
            "-t", f"{total:.3f}", "-c:v", "libx264", "-preset", "veryfast" if preview else "medium",
            "-crf", "23" if preview else "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
