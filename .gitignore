@@ -1,0 +1,19 @@
+# 컴퓨터별 Claude 설정
+.claude/settings.local.json
+
+# 비밀 정보
+.env
+.env.*
+
+# OS / 에디터
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+
+# 의존성·빌드 결과
+node_modules/
+__pycache__/
+.venv/
+dist/
+build/
