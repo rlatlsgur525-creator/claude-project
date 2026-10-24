@@ -7,3 +7,7 @@
 - 작업을 마치면 커밋하고 `git push`로 올립니다.
 - 컴퓨터마다 다른 개인 설정은 `.claude/settings.local.json`에 둡니다(커밋하지 않음).
 - 비밀번호, API 키, `.env` 파일은 커밋하지 않습니다.
+
+## 프로젝트
+- `naver-blog/` — 동네 가게 사장님 대상 네이버 블로그. 작업 전 `naver-blog/CLAUDE.md` → `naver-blog/HANDOFF.md` 순서로 읽습니다.
+- `miracle-shorts/` — 미라클톡 유튜브 쇼츠. 작업 전 `miracle-shorts/CLAUDE.md`를 읽습니다.
