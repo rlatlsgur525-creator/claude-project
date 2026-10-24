@@ -3,524 +3,726 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>김신혁 FP — 보이지 않는 리스크까지</title>
-<meta name="description" content="메트라이프 김신혁 FP. 보이지 않는 리스크까지 투시하는 재무설계 — 전주 · 전북 방문 상담.">
+<title>김신혁 FP 미라클톡</title>
+<meta name="description" content="MetLife 재무설계사 김신혁. 보이지 않던 위험까지 먼저 보여드려요 — 전주 · 익산 · 광주 상담.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Mrs+Saint+Delafield&display=swap">
 <style>
-/* Layout: 시안(김신혁 FP 브랜드 사이트) 그대로 — 히어로 X-RAY 렌즈 → 스크롤 에이징 → 철학 → 설계 영역 → AI 도구 → 미라클톡 → 상담 */
+/* Layout: 시안(김신혁 FP 브랜드 사이트 v2) 그대로 — 글래스 내비 → X-ray 히어로(영상) → 티커 → 에이징 레거시 → 철학 → 설계 영역 → AI 도구(라이트박스) → 미라클톡 → 상담 + 신청 시트 */
+@font-face{font-family:'Pretendard';src:url(assets/fonts/PretendardVariable.woff2) format('woff2-variations'),url(assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}
 :root{
-  --ink:#0E1114; --ink2:#2B3137; --night:#0D1013; --paper:#ECEAE4; --card:#F7F6F2; --steel:#B2B8BC;
-  --muted-d:#8C949B; --muted-l:#5A6168; --body-d:#B9BEC3; --body-l:#3A4046; --line-d:#2A3036; --line-l:#C9C6BE;
-  --accent:#2446D8; --accent-hover:#1A33A8; --scan:#5FD9F2; --lens:150px;
+  --ink:#0A0D11; --ink2:#2A3036; --paper:#F2F1EE; --card:#12161C; --line:#1E242B; --line2:#2A3139; --steel:#B4BABE;
+  --muted:#8A929A; --muted2:#6C747C; --dim:#535B63; --body:#A3AAB2; --body-l:#4B535B; --line-l:#DAD8D1; --soft:#F7F7F5; --nav:#C9CDD2;
+  --blue:#2F52FF; --blue-hover:#4566FF; --scan:#62DDF5; --red:#FF4D4D;
+  --lens:150px;
+  --f-sans:'Pretendard','IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --f-display:'Anton',sans-serif;
-  --f-sans:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --f-mono:'JetBrains Mono',ui-monospace,monospace;
   --f-sig:'Mrs Saint Delafield',cursive;
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--night);color:var(--ink);font-family:var(--f-sans);-webkit-text-size-adjust:100%}
-a{color:var(--accent)}a:hover{color:var(--accent-hover)}
-img{display:block}
-.mono{font-family:var(--f-mono)}
-.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.18em}
-.wrap{max-width:1280px;margin:0 auto}
-.sec{padding:140px 40px}
-.dark{background:var(--night);color:var(--paper)}
-.light{background:var(--paper);color:var(--ink)}
-.h-big{margin:0;font-size:clamp(36px,5vw,72px);line-height:1.08;font-weight:700;letter-spacing:-.04em}
+body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--f-sans);word-break:keep-all;-webkit-text-size-adjust:100%}
+body.locked{overflow:hidden}
+a{color:var(--paper)}a:hover{color:var(--scan)}
+button{font-family:inherit;cursor:pointer}
+img,video{display:block}
+.wrap{max-width:1200px;margin:0 auto}
+.sec{padding:96px 40px}
+.kicker{font-size:14px;font-weight:700;color:var(--scan)}
+.h-big{margin:0;font-size:clamp(36px,5.4vw,76px);line-height:1.08;font-weight:800;letter-spacing:-.045em}
 .sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px}
-.sec-head>div{display:flex;flex-direction:column;gap:18px}
-.sec-head p{margin:0;max-width:380px;font-size:16px;line-height:1.7}
+.sec-head>div{display:flex;flex-direction:column;gap:16px}
+.sec-head p{margin:0;max-width:400px;font-size:18px;line-height:1.7}
+.stack56{display:flex;flex-direction:column;gap:56px}
+
+/* motion */
+.intro{animation:intro 1s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.08s}.d2{animation-delay:.18s}.d3{animation-delay:.3s}
+@keyframes intro{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@supports (animation-timeline: view()){
+  .rv{animation:rv linear both;animation-timeline:view();animation-range:entry 0% entry 55%}
+  .sweep{color:transparent;background-image:linear-gradient(90deg,var(--paper) 0 50%,#454C54 50% 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;animation:sweep linear both;animation-timeline:view();animation-range:entry 15% cover 50%}
+}
+@keyframes rv{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes sweep{from{background-position:100% 0}to{background-position:0 0}}
+.marquee{display:flex;width:max-content;white-space:nowrap;font-family:var(--f-display);line-height:1;animation:marq 32s linear infinite}
+.marquee.rev{animation-direction:reverse}
+.marquee .ko{font-family:var(--f-sans);font-weight:800;letter-spacing:-.04em}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* buttons */
+.btn-primary{display:inline-flex;align-items:center;border:0;background:var(--blue);color:#fff;font-weight:700;text-decoration:none;transition:transform .2s,background .2s}
+.btn-primary:hover{color:#fff;background:var(--blue-hover);transform:translateY(-1px)}
+
+/* ---------- NAV ---------- */
+.nav-slot{position:sticky;top:0;z-index:40;height:0}
+.nav-bar{position:absolute;left:24px;right:24px;top:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 10px 10px 20px;border-radius:18px;background:#0A0D11B8;border:1px solid #FFFFFF14;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}
+.brand i{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--blue);font-family:var(--f-display);font-style:normal;font-size:15px;letter-spacing:.02em}
+.brand b{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.brand:hover{color:#fff}
+.nav-links{display:flex;gap:4px}
+.nav-link{color:var(--nav);text-decoration:none;font-size:14px;font-weight:600;padding:8px 10px;border-radius:10px;transition:background .2s,color .2s}
+.nav-link:hover{color:#fff;background:#FFFFFF14}
+.nav-bar .btn-primary{min-height:44px;padding:0 18px;border-radius:12px;font-size:14px}
 
 /* ---------- HERO ---------- */
-.hero{position:relative;height:900px;background:var(--steel);overflow:hidden;display:flex;flex-direction:column}
-.top{position:relative;z-index:5;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:22px 40px}
-.brand{display:flex;align-items:baseline;gap:10px;color:var(--ink);text-decoration:none}
-.brand b{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.brand span{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em}
-.nav-links{display:flex;gap:32px;align-items:center}
-.navlink{color:var(--ink);text-decoration:none;font-size:15px;font-weight:500}
-.navlink:hover{color:var(--accent)}
-.btn-ink{display:inline-flex;align-items:center;min-height:44px;padding:0 22px;border-radius:999px;background:var(--ink);color:var(--paper);text-decoration:none;font-size:15px;font-weight:600}
-.btn-ink:hover{color:#fff;background:#22282E}
-.hero-names{position:absolute;top:150px;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:flex-start;padding:0 40px;pointer-events:none}
-.hero-names>div{display:flex;flex-direction:column;gap:14px}
-.hero-names>div:last-child{align-items:flex-end}
-.hero-name{font-family:var(--f-display);font-size:224px;line-height:.82;letter-spacing:-.005em;color:var(--ink)}
-.hero-names .eyebrow{font-size:13px;color:var(--ink2)}
-.lens-box{position:relative;width:min(740px,100%);aspect-ratio:1/1;cursor:crosshair;touch-action:pan-y;
-  --lx:50%;--ly:40%;--r:0px}
+.hero{position:relative;height:860px;background:var(--steel);color:var(--ink);overflow:hidden;display:flex;flex-direction:column}
+.hero-names{position:absolute;z-index:3;left:0;right:0;top:116px;display:flex;justify-content:space-between;padding:0 40px;pointer-events:none}
+.hero-name{margin:0;font-family:var(--f-display);font-weight:400;font-size:250px;line-height:.8;letter-spacing:-.01em}
+.hero-sub{position:absolute;z-index:3;left:0;right:0;top:326px;display:flex;justify-content:space-between;padding:0 44px;font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--ink2);pointer-events:none}
 .hero-photo-row{margin-top:auto;display:flex;justify-content:center;position:relative;z-index:2}
-.fade-x{-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(to right,transparent 0%,#000 7%,#000 93%,transparent 100%)}
-.lens-box>img,.xray,.xray>img,.xray>.tint,.xray>svg{position:absolute;inset:0;width:100%;height:100%}
-.lens-box img{object-fit:cover}
-.xray{background:#061017;clip-path:circle(var(--r) at var(--lx) var(--ly));transition:clip-path .14s ease-out;overflow:hidden}
-.xray>img{filter:grayscale(1) invert(1) contrast(1.35) brightness(.42);opacity:.55}
-.xray>.tint{background:var(--scan);opacity:.07}
-.xray>svg{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--scan) 67%,transparent))}
-.xr{color:var(--scan)}
-.xr .ln{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.xr .thin{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;opacity:.75}
-.xr .soft{stroke:currentColor;fill:currentColor;stroke-width:1.6;fill-opacity:.14}
-.xr .dot,.xr text{fill:currentColor}
+.lens-box{position:relative;width:min(720px,100%);aspect-ratio:1/1;cursor:crosshair;--lx:50%;--ly:17%;--r:0px;--t:.9s}
+.fade-x{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%)}
+.lens-box>video,.xray,.xray>img,.xray>svg{position:absolute;inset:0;width:100%;height:100%}
+.lens-box video,.xray img{object-fit:cover}
+.xray{overflow:hidden;background:#061017;clip-path:circle(var(--r) at var(--lx) var(--ly));transition:clip-path var(--t) cubic-bezier(.2,.7,.2,1)}
+.xray>svg{filter:drop-shadow(0 0 4px #000)}
+.xr text{fill:var(--scan)}
 .xr .en{font-family:var(--f-mono);font-size:17px;letter-spacing:.14em}
-.xr .ko{font-family:var(--f-sans);font-size:23px;font-weight:600}
+.xr .ko{font-family:var(--f-sans);font-size:24px;font-weight:700}
 .xr .end{text-anchor:end}.xr .mid{text-anchor:middle}
-.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.1s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}15%{transform:scale(1.07)}30%{transform:scale(.98)}}
+.xr .thin{fill:none;stroke:var(--scan);stroke-width:1.6;stroke-linecap:round}
+.xr circle{fill:var(--scan)}
 .scanline{position:absolute;left:0;right:0;height:2px;background:var(--scan);box-shadow:0 0 14px var(--scan);opacity:.55;animation:scan 3.4s linear infinite}
-@keyframes scan{0%{top:4%}100%{top:96%}}
-.ring{position:absolute;left:var(--lx);top:var(--ly);width:calc(var(--lens) * 2);height:calc(var(--lens) * 2);transform:translate(-50%,-50%);border:1px solid var(--scan);border-radius:50%;opacity:0;transition:opacity .2s,left .14s ease-out,top .14s ease-out;pointer-events:none}
-.lens-box.on:not(.full) .ring{opacity:1}
-.ring span{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;color:var(--scan)}
-.hero-cap{position:absolute;bottom:44px;z-index:4;display:flex;flex-direction:column}
-.hero-cap.left{left:40px;max-width:330px;gap:18px}
-.hero-cap.right{right:40px;align-items:flex-end;gap:16px;text-align:right}
-.hero-cap .lead{margin:0;font-size:30px;line-height:1.3;font-weight:700;letter-spacing:-.03em;color:var(--ink)}
-.hero-cap .hint{margin:0;font-size:14px;line-height:1.6;color:var(--ink2)}
-.btn-full{align-self:flex-start;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;cursor:pointer}
-.btn-full[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+@keyframes scan{from{top:4%}to{top:96%}}
+.ring{position:absolute;left:var(--lx);top:var(--ly);width:calc(var(--lens) * 2);height:calc(var(--lens) * 2);transform:translate(-50%,-50%);border:1px solid var(--scan);border-radius:50%;opacity:0;transition:left var(--t) cubic-bezier(.2,.7,.2,1),top var(--t) cubic-bezier(.2,.7,.2,1),opacity .3s;pointer-events:none}
+.lens-box.ring-on .ring{opacity:1}
+.ring span{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);white-space:nowrap;padding:5px 10px;border-radius:999px;background:#061017;color:var(--scan);font-family:var(--f-mono);font-size:11px;letter-spacing:.12em}
+.hero-cap{position:absolute;z-index:4;bottom:44px;display:flex;flex-direction:column}
+.hero-cap.left{left:40px;max-width:360px;gap:14px}
+.hero-cap.left .who{font-size:14px;font-weight:700;color:var(--blue)}
+.hero-cap.left .lead{margin:0;font-size:34px;line-height:1.28;font-weight:800;letter-spacing:-.035em}
+.hero-cap.left .hint{margin:0;font-size:15px;line-height:1.6;color:var(--ink2)}
+.hero-btns{display:flex;flex-wrap:wrap;gap:8px;padding-top:4px}
+.hero-btns .btn-primary{min-height:48px;padding:0 22px;border-radius:14px;font-size:15px}
+.btn-ghost{min-height:48px;padding:0 20px;border-radius:14px;border:1px solid #0A0D1133;background:#FFFFFF66;color:var(--ink);font-size:15px;font-weight:700;transition:background .2s,color .2s,transform .2s}
+.btn-ghost:hover{transform:translateY(-1px)}
+.btn-ghost[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.hero-stats{right:40px;align-items:flex-end;gap:18px;text-align:right}
 .stat{display:flex;flex-direction:column;gap:2px}
 .stat b{font-family:var(--f-display);font-weight:400;font-size:44px;line-height:1}
-.stat span{font-size:13px;color:var(--ink2)}
+.stat span{font-size:13px;font-weight:600;color:var(--ink2)}
+
+/* ---------- TICKER ---------- */
+.ticker{background:var(--ink);border-bottom:1px solid var(--line);overflow:hidden;padding:18px 0}
+.ticker .marquee{font-size:64px;color:var(--paper)}
+.ticker .marquee>span{padding-right:48px}
+.ticker .x{color:var(--scan)}
 
 /* ---------- LEGACY ---------- */
-.track{position:relative;height:2700px}
-.stage{position:sticky;top:0;height:900px;padding:56px 40px 40px;display:flex;flex-direction:column;gap:28px;overflow:hidden}
-.stage-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:12px}
-.stage-head h2{margin:0;font-size:clamp(26px,3vw,40px);font-weight:700;letter-spacing:-.03em}
-.stage-body{flex:1;display:flex;flex-wrap:wrap;gap:48px;align-items:center;min-height:0}
+.track{position:relative;height:1520px}
+.stage{position:sticky;top:0;height:880px;padding:110px 40px 40px;display:flex;flex-wrap:wrap;gap:56px;align-items:center;overflow:hidden}
 .portrait-col{flex:1 1 420px;display:flex;justify-content:center;min-width:0}
-.portrait{position:relative;width:100%;max-width:560px;aspect-ratio:1/1;background:var(--steel);overflow:hidden}
-.portrait .layer{position:absolute;inset:0}
+.portrait{position:relative;width:100%;max-width:580px;aspect-ratio:1/1;background:var(--steel);border-radius:28px;overflow:hidden}
 .portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.portrait .l40 img{filter:grayscale(.45) contrast(1.05) brightness(.92)}
-.portrait .l50 img{filter:grayscale(.85) contrast(1.1) brightness(.86)}
-.ph-tag{position:absolute;left:16px;top:16px;padding:6px 10px;border:1px dashed var(--ink);background:var(--paper);color:var(--ink);font-family:var(--f-mono);font-size:11px;letter-spacing:.1em}
-.age-stamp{position:absolute;right:16px;bottom:14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;color:var(--ink)}
-.age-col{flex:1 1 400px;display:flex;flex-direction:column;gap:28px;min-width:0}
-.age-row{display:flex;align-items:flex-end;gap:16px}
-.age-num{font-family:var(--f-display);font-size:210px;line-height:.8;letter-spacing:-.02em}
-.age-year{font-family:var(--f-mono);font-size:14px;letter-spacing:.16em;color:var(--muted-d);padding-bottom:10px}
-.chapters{position:relative;min-height:150px}
-.chapter{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px}
-.chapter b{font-size:32px;font-weight:700;letter-spacing:-.03em}
-.chapter span{font-size:17px;line-height:1.7;color:var(--body-d);max-width:460px}
-.progress{height:2px;background:var(--line-d);position:relative}
-.progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--paper)}
-.chips{display:flex;gap:10px}
-.chip{min-width:64px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #4A525A;background:transparent;color:var(--paper);font-family:var(--f-mono);font-size:13px;letter-spacing:.1em;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
-.sig-wrap{position:absolute;left:40px;bottom:24px;width:min(760px,60%);pointer-events:none}
-.sig-wrap svg{width:100%;height:auto;display:block;clip-path:inset(0 100% 0 0)}
+.badge{position:absolute;padding:6px 12px;border-radius:999px;font-size:12px}
+.badge.ai{left:16px;top:16px;background:#0A0D11CC;color:var(--paper);font-weight:700}
+.badge.age{right:16px;bottom:14px;background:#F2F1EECC;color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums}
+.age-col{flex:1 1 420px;display:flex;flex-direction:column;gap:22px;min-width:0}
+.age-col h2{margin:0;font-size:30px;line-height:1.3;font-weight:800;letter-spacing:-.03em}
+.age-row{display:flex;align-items:flex-end;gap:14px}
+.age-num{font-family:var(--f-display);font-size:200px;line-height:.78;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.age-year{font-size:15px;font-weight:700;color:var(--muted);padding-bottom:6px;font-variant-numeric:tabular-nums}
+.decades{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.decade{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);color:var(--dim);transition:color .4s}
+.decade>span{flex:0 0 52px;font-size:13px;font-weight:800;padding-top:6px;color:var(--dim);transition:color .4s}
+.decade>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.decade b{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.decade p{margin:0;font-size:15px;line-height:1.6}
+.decade.on{color:var(--paper)}.decade.on>span{color:var(--scan)}
+.progress{height:4px;border-radius:999px;background:var(--line);position:relative;overflow:hidden}
+.progress i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;background:var(--scan)}
+.age-chips{display:flex;flex-wrap:wrap;gap:8px}
+.age-chip{min-width:64px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line2);background:transparent;color:var(--nav);font-size:14px;font-weight:700;transition:background .2s,color .2s}
+.age-chip[aria-pressed="true"]{background:var(--paper);border-color:var(--paper);color:var(--ink)}
+.sig-wrap{position:absolute;left:40px;bottom:12px;width:min(640px,46%);pointer-events:none;opacity:.9}
+.sig-wrap svg{width:100%;height:auto;display:block}
 .sig{font-family:var(--f-sig);font-size:190px;fill:var(--paper);stroke:var(--paper);stroke-width:1.6;stroke-dasharray:1400;stroke-dashoffset:1400;fill-opacity:0}
 
 /* ---------- PHILOSOPHY ---------- */
-.philo{display:flex;flex-direction:column;gap:72px}
-.philo .eyebrow{color:var(--muted-l)}
-.manifesto{margin:0;font-size:clamp(30px,4.3vw,62px);line-height:1.28;font-weight:600;letter-spacing:-.035em}
-.manifesto em{font-style:normal;color:var(--accent)}
-.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:40px;border-top:1px solid var(--line-l);padding-top:40px}
-.pillars div{display:flex;flex-direction:column;gap:10px}
-.pillars b{font-family:var(--f-display);font-weight:400;font-size:30px}
-.pillars span{font-size:16px;line-height:1.7;color:var(--body-l)}
+#philosophy{padding:100px 40px}
+.philo{display:flex;flex-direction:column;gap:28px}
+.philo h2{margin:0;font-size:clamp(36px,5.4vw,76px);line-height:1.18;font-weight:800;letter-spacing:-.045em;color:#fff}
+.philo h2 em{font-style:normal;color:var(--red)}
+.philo .sweep{margin:8px 0 0;max-width:30em;font-size:clamp(20px,2.2vw,30px);line-height:1.6;font-weight:700;letter-spacing:-.025em}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;padding-top:36px}
+.pillar,.step{display:flex;flex-direction:column;border-radius:24px;background:var(--card);border:1px solid var(--line)}
+.pillar{gap:14px;padding:32px;transition:border-color .3s,transform .4s}
+.pillar:hover{border-color:#3A424B;transform:translateY(-4px)}
+.pillar .no{font-family:var(--f-display);font-size:20px;color:var(--scan)}
+.pillar .cat{font-size:14px;font-weight:700;color:var(--muted)}
+.pillar h3{margin:0;font-size:24px;line-height:1.35;font-weight:800;letter-spacing:-.03em}
+.pillar p{margin:0;font-size:15px;line-height:1.7;color:var(--body)}
 
 /* ---------- SERVICES ---------- */
-.stack56{display:flex;flex-direction:column;gap:56px}
-#services .eyebrow{color:var(--muted-d)}
-#services .sec-head p{color:var(--body-d)}
-.rows{display:flex;flex-direction:column;border-top:1px solid var(--line-d)}
-.row{display:flex;flex-wrap:wrap;gap:16px 40px;align-items:baseline;padding:34px 8px;border-bottom:1px solid var(--line-d)}
-.row:hover{background:#151A1F}
-.row .no{flex:0 0 72px;font-family:var(--f-mono);font-size:14px;color:var(--muted-d)}
-.row .ttl{flex:1 1 300px;display:flex;flex-direction:column;gap:6px}
-.row .ttl b{font-size:clamp(24px,2.4vw,34px);font-weight:700;letter-spacing:-.03em}
-.row .ttl span{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--scan)}
-.row .desc{flex:1 1 380px;font-size:16px;line-height:1.7;color:var(--body-d)}
+#services{background:var(--paper);color:var(--ink)}
+#services .kicker{color:var(--blue)}
+#services .sec-head p{color:var(--body-l)}
+.rows{display:flex;flex-direction:column;gap:4px}
+.row{position:relative;isolation:isolate;display:flex;flex-wrap:wrap;gap:12px 40px;align-items:center;padding:22px 28px;border-bottom:1px solid var(--line-l);transition:color .3s}
+.row:last-child{border-bottom:0}
+.row::before{content:"";position:absolute;inset:0;border-radius:20px;background:var(--blue);transform:scaleY(0);transform-origin:bottom;transition:transform .45s cubic-bezier(.7,0,.2,1);z-index:-1}
+.row:hover::before{transform:scaleY(1)}
+.row:hover{color:#fff}
+.row-no{flex:0 0 88px;font-family:var(--f-display);font-size:48px;line-height:1}
+.row .ttl{flex:1 1 300px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.row .ttl b{font-size:28px;font-weight:800;letter-spacing:-.035em}
+.tag{padding:4px 10px;border-radius:8px;background:#2F52FF14;font-size:13px;font-weight:700;color:var(--blue);transition:color .3s,background .3s}
+.row:hover .tag{color:#DCE3FF;background:#FFFFFF1F}
+.row .desc{flex:1 1 360px;font-size:16px;line-height:1.7;color:var(--body-l);transition:color .3s}
+.row:hover .desc{color:#E6EAFF}
+.row-cta{flex:0 0 auto;min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#2F52FF14;color:var(--blue);font-size:14px;font-weight:800;transition:background .3s,color .3s}
+.row:hover .row-cta{background:#fff;color:var(--blue)}
 
 /* ---------- TOOLS ---------- */
-#tools .eyebrow{color:var(--muted-l)}
-#tools .sec-head p{color:var(--body-l)}
-.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
-.tool{display:flex;flex-direction:column;gap:18px;padding:30px;background:var(--card);border:1px solid #D3D0C7;border-radius:6px}
-.tool-top{display:flex;justify-content:space-between;align-items:center}
-.tool-top span{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--muted-l)}
-.tool-top svg{stroke:var(--accent);stroke-width:1.6}
-.tool b{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.tool p{margin:0;font-size:15px;line-height:1.7;color:var(--body-l)}
+#tools .sec-head p{color:var(--body)}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.tool{display:flex;flex-direction:column;gap:16px;padding:16px 16px 24px;background:var(--card);border:1px solid var(--line);border-radius:24px;transition:border-color .3s,transform .4s}
+.tool:hover{border-color:#62DDF566;transform:translateY(-6px)}
+.shot-frame{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:0;border-radius:14px;overflow:hidden;background:var(--ink);cursor:zoom-in}
+.shot-icon{position:absolute;left:12%;top:26%;width:76%;height:48%;transition:opacity .4s ease}
+.shot-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transform:scale(1.08) translateY(3%);transition:opacity .5s ease,transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.shot-hint{position:absolute;right:10px;bottom:10px;padding:6px 12px;border-radius:999px;background:#0A0D11E6;color:var(--paper);font-size:12px;font-weight:700;opacity:0;transition:opacity .4s ease}
+.tool:hover .shot-img,.shot-frame:focus-visible .shot-img{opacity:1;transform:none}
+.tool:hover .shot-icon,.shot-frame:focus-visible .shot-icon{opacity:0}
+.tool:hover .shot-hint,.shot-frame:focus-visible .shot-hint{opacity:1}
+@media (hover:none){.shot-img{opacity:1;transform:none}.shot-icon{opacity:0}.shot-hint{opacity:1}}
+.tool-info{display:flex;flex-direction:column;gap:8px;padding:0 8px}
+.tool-info .cat{align-self:flex-start;padding:3px 9px;border-radius:7px;background:#62DDF51A;color:var(--scan);font-size:12px;font-weight:700}
+.tool-info b{font-size:21px;font-weight:800;letter-spacing:-.03em}
+.tool-info p{margin:0;font-size:15px;line-height:1.65;color:var(--body)}
 
 /* ---------- MIRACLE TALK ---------- */
-#miracle{background:var(--accent);color:#fff;overflow:hidden}
-.marquee-band{border-bottom:1px solid #FFFFFF40;padding:18px 0;overflow:hidden}
-.marquee{display:flex;width:max-content;white-space:nowrap;font-family:var(--f-display);font-size:56px;line-height:1;letter-spacing:.01em;animation:marq 28s linear infinite}
-.marquee span{padding-right:48px}
-@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.miracle-body{padding:110px 40px;display:flex;flex-wrap:wrap;gap:56px;justify-content:space-between;align-items:flex-end}
-.miracle-copy{flex:1 1 520px;display:flex;flex-direction:column;gap:22px}
-.miracle-copy .eyebrow{color:#DCE3FF}
-.miracle-copy p{margin:0;max-width:520px;font-size:17px;line-height:1.7;color:#E6EBFF}
-.pills{display:flex;flex-wrap:wrap;gap:10px}
-.pills span{padding:8px 14px;border:1px solid #FFFFFF80;border-radius:999px;font-size:14px}
-.miracle-cta{flex:0 1 360px;display:flex;flex-direction:column;gap:12px}
-.btn-light{display:flex;align-items:center;justify-content:space-between;min-height:60px;padding:0 24px;border-radius:6px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:17px;font-weight:600}
-.btn-light:hover{color:var(--ink);background:#fff}
+#miracle{background:var(--blue);color:#fff;overflow:hidden}
+.miracle-band{overflow:hidden;padding:26px 0;border-bottom:1px solid #FFFFFF33}
+.miracle-band .marquee{font-size:96px}
+.miracle-band .marquee>span{padding-right:56px}
+.miracle-body{padding:88px 40px;display:flex;flex-wrap:wrap;gap:48px;justify-content:space-between;align-items:flex-end}
+.miracle-copy{flex:1 1 520px;display:flex;flex-direction:column;gap:22px;min-width:0}
+.miracle-copy .kicker{color:#DCE3FF}
+.miracle-copy p{margin:0;max-width:520px;font-size:18px;line-height:1.7;color:#E6EAFF}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills span{padding:8px 14px;border-radius:10px;background:#FFFFFF1F;font-size:14px;font-weight:600}
+.miracle-cta{flex:0 1 380px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.link-btn{display:flex;align-items:center;justify-content:space-between;min-height:64px;padding:0 24px;border-radius:16px;background:var(--paper);color:var(--ink);font-size:17px;font-weight:700;text-decoration:none;transition:transform .2s,background .2s}
+.link-btn:hover{color:var(--ink);background:#fff;transform:translateX(4px)}
 
 /* ---------- CONTACT ---------- */
-#contact{padding-bottom:48px}
-.contact{display:flex;flex-direction:column;gap:72px}
-.contact .eyebrow,.contact .k{color:var(--muted-d)}
+#contact{padding-bottom:40px}
+.contact{display:flex;flex-direction:column;gap:48px}
 .contact-head{display:flex;flex-direction:column;gap:20px}
-.big-cta{color:var(--paper);text-decoration:none;font-size:clamp(48px,9vw,140px);line-height:1;font-weight:700;letter-spacing:-.05em}
+.big-cta{align-self:flex-start;padding:0;border:0;background:transparent;color:var(--paper);text-align:left;font-size:clamp(52px,8.4vw,124px);line-height:1;font-weight:800;letter-spacing:-.055em;transition:color .3s}
 .big-cta:hover{color:var(--scan)}
-.contact-head p{margin:0;max-width:560px;font-size:17px;line-height:1.7;color:var(--body-d)}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;border-top:1px solid var(--line-d);padding-top:36px}
-.facts div{display:flex;flex-direction:column;gap:8px}
-.k{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em}
-.facts b{font-size:20px;font-weight:600}
-.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;border-top:1px solid var(--line-d);padding-top:28px}
-.foot>div{display:flex;flex-direction:column;gap:10px;max-width:720px}
-.foot .signature{font-family:var(--f-sig);font-size:64px;line-height:1}
-.foot small{font-size:12px;line-height:1.7;color:var(--muted-d)}
-.foot .k{letter-spacing:.12em}
+.contact-head p{margin:0;max-width:560px;font-size:18px;line-height:1.7;color:var(--body)}
+.steps-title{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.step{gap:10px;padding:28px;transition:border-color .3s}
+.step:hover{border-color:#3A424B}
+.step i{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:var(--blue);font-style:normal;font-size:15px;font-weight:800}
+.step b{font-size:21px;font-weight:800;letter-spacing:-.03em}
+.step p{margin:0;font-size:15px;line-height:1.65;color:var(--body)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;border-top:1px solid var(--line);padding-top:32px}
+.facts>div{display:flex;flex-direction:column;gap:6px}
+.facts .k{font-size:13px;font-weight:700;color:var(--muted2)}
+.facts .v{font-size:20px;font-weight:700;text-decoration:none}
+.facts .phone{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.btn-copy{min-height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:transparent;color:var(--nav);font-size:13px;font-weight:700}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;border-top:1px solid var(--line);padding-top:28px}
+.foot>div{display:flex;flex-direction:column;gap:10px;max-width:760px}
+.foot .signature{font-family:var(--f-sig);font-size:60px;line-height:1}
+.foot small{font-size:12px;line-height:1.7;color:var(--muted2)}
+.foot .copy{font-size:12px;font-weight:600;color:var(--muted2)}
 
-@media (max-width:860px){
-  .nav-links{display:none}
-  .top{padding:16px 20px}
-  .hero{height:auto}
-  .hero-names{position:static;padding:12px 20px 0}
-  .hero-name{font-size:88px}
-  .hero-cap{position:static;max-width:none !important;padding:20px 20px 28px;text-align:left !important;align-items:flex-start !important}
-  .track{height:auto}
-  .stage{height:auto;position:relative;padding:56px 20px}
-  .age-num{font-size:120px}
-  .sec{padding:80px 20px}
-  .miracle-body{padding:80px 20px}
-  .sig-wrap{position:static;width:100%}
-}
+/* ---------- LIGHTBOX ---------- */
+.lightbox{position:fixed;inset:0;z-index:100;background:#0A0D11F0;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.lightbox[hidden],.bk-wrap[hidden]{display:none}
+.lightbox figure{margin:0;width:min(1180px,100%);display:flex;flex-direction:column;gap:16px}
+.lightbox img{width:100%;height:auto;border-radius:16px}
+.lightbox figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;color:var(--paper)}
+.lightbox figcaption>span{display:flex;flex-direction:column;gap:4px}
+.lightbox figcaption b{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.lightbox figcaption small{font-size:14px;color:var(--muted)}
+.btn-close-lb{min-height:48px;padding:0 24px;border-radius:14px;border:0;background:var(--paper);color:var(--ink);font-size:15px;font-weight:700}
+
+/* ---------- BOOKING SHEET ---------- */
+.bk-wrap{position:fixed;inset:0;z-index:110;background:#0A0D11B3;display:flex;align-items:center;justify-content:center;padding:24px}
+.sheet{position:relative;width:min(560px,100%);max-height:calc(100% - 16px);overflow:auto;padding:28px 24px 24px;border-radius:28px;background:#fff;color:var(--ink);display:flex;flex-direction:column;gap:24px;animation:sheet .35s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sheet{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sheet-head>div{display:flex;flex-direction:column;gap:6px}
+.sheet-head span{font-size:13px;font-weight:800;color:var(--blue)}
+.sheet-head h2{margin:0;font-size:26px;line-height:1.3;font-weight:800;letter-spacing:-.035em}
+.btn-x{flex:0 0 auto;width:44px;height:44px;border:0;border-radius:12px;background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.bk-pane{display:flex;flex-direction:column;gap:24px}
+.bk-pane[hidden]{display:none}
+.field{display:flex;flex-direction:column;gap:10px}
+.field>.q,.field>label{font-size:16px;font-weight:800}
+.field small,.q small{font-size:13px;font-weight:600;color:var(--muted2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line-l);background:#fff;color:var(--ink);font-size:14px;font-weight:700;transition:background .15s,color .15s,border-color .15s}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.bk-input{width:100%;min-height:52px;padding:0 16px;border:1px solid var(--line-l);border-radius:14px;background:var(--soft);color:var(--ink);font-family:inherit;font-size:16px;outline:none;transition:border-color .2s,background .2s}
+.bk-input:focus{border-color:var(--blue);background:#fff}
+textarea.bk-input{padding:14px 16px;min-height:96px;resize:vertical;line-height:1.5}
+.agree{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-radius:14px;background:var(--soft);font-size:14px;line-height:1.55;color:var(--body-l);cursor:pointer}
+.agree input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--blue);flex:0 0 auto}
+.agree b{color:var(--ink)}
+.bk-err{margin:0;padding:12px 14px;border-radius:12px;background:#FF4D4D14;color:#D93636;font-size:14px;font-weight:700}
+.bk-submit,.bk-send,.bk-kakao,.bk-copy{display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:16px;font-size:16px;font-weight:800;text-decoration:none}
+.bk-submit{border:0;background:var(--blue);color:#fff;font-size:17px}
+.bk-send{background:var(--blue);color:#fff}.bk-send:hover{color:#fff;filter:brightness(1.08)}
+.bk-kakao{background:#FEE500;color:#191600}.bk-kakao:hover{color:#191600;filter:brightness(.97)}
+.bk-copy{border:1px solid var(--line-l);background:#fff;color:var(--ink)}
+.bk-note{margin:0;font-size:15px;line-height:1.6;color:var(--body-l)}
+.bk-msg{padding:18px;border-radius:16px;background:var(--soft);font-size:15px;line-height:1.7;white-space:pre-line;color:var(--ink)}
+.bk-actions{display:flex;flex-direction:column;gap:8px}
+.bk-actions p{margin:0;font-size:13px;color:var(--muted2)}
+.bk-edit{align-self:center;min-height:44px;padding:0 14px;border:0;background:transparent;color:var(--muted2);font-size:14px;font-weight:700;text-decoration:underline}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .pulse,.scanline,.marquee{animation:none}
+  .rv,.sweep,.marquee,.scanline,.intro{animation:none !important}
+  .sweep{color:var(--paper)}
+}
+@media (max-width:860px){
+  .nav-links{display:none}
+  .nav-bar{left:12px;right:12px;top:12px;padding:8px 8px 8px 16px}
+  .hero{height:auto}
+  .hero-names{position:static;padding:104px 16px 0}
+  .hero-name{font-size:23vw}
+  .hero-sub{position:static;padding:10px 16px 0;font-size:11px}
+  .hero-cap,.hero-cap.left{position:static;max-width:none;padding:24px 16px 32px;align-items:flex-start;text-align:left}
+  .hero-stats{flex-direction:row;flex-wrap:wrap;gap:24px;padding-top:0}
+  .track{height:auto}
+  .stage{position:relative;height:auto;padding:88px 16px 170px}
+  .age-num{font-size:120px}
+  .sig-wrap{width:calc(100% - 32px);left:16px}
+  .sec,#philosophy,.miracle-body{padding-left:16px;padding-right:16px}
+  .row{padding:24px 16px}
+  .row-no{flex-basis:44px;font-size:30px}
+  .big-cta{font-size:15vw}
+  .bk-wrap{align-items:flex-end;padding:0}
+  .sheet{border-radius:24px 24px 0 0;max-height:92%}
 }
 </style>
 </head>
 <body>
 
-<!-- ============ HERO ============ -->
-<section class="hero" id="top">
-  <header class="top">
-    <a class="brand" href="#top"><b>김신혁</b><span>FP · MIRACLE TALK</span></a>
+<!-- NAV (floating glass bar) -->
+<div class="nav-slot">
+  <header class="nav-bar">
+    <a class="brand" href="#top"><i>K</i><b>김신혁 FP</b></a>
     <nav class="nav-links" aria-label="주요 메뉴">
-      <a class="navlink" href="#legacy">레거시</a>
-      <a class="navlink" href="#philosophy">철학</a>
-      <a class="navlink" href="#services">설계 영역</a>
-      <a class="navlink" href="#tools">AI 상담 도구</a>
-      <a class="navlink" href="#miracle">미라클톡</a>
+      <a class="nav-link" href="#legacy">이야기</a>
+      <a class="nav-link" href="#philosophy">생각</a>
+      <a class="nav-link" href="#services">설계 영역</a>
+      <a class="nav-link" href="#tools">상담 도구</a>
+      <a class="nav-link" href="#miracle">미라클톡</a>
     </nav>
-    <a class="btn-ink" href="#contact">상담 예약</a>
+    <button class="btn-primary" type="button" data-book>상담 신청</button>
   </header>
+</div>
 
-  <div class="hero-names">
-    <div><div class="hero-name">SHIN</div><div class="eyebrow">METLIFE FINANCIAL PLANNER</div></div>
-    <div><div class="hero-name">HYUK</div><div class="eyebrow">JEONJU · JEONBUK</div></div>
+<!-- ============ HERO ============ -->
+<section id="top" class="hero">
+  <div class="hero-names intro">
+    <h1 class="hero-name">MFS</h1>
+    <span class="hero-name" aria-hidden="true">KSH</span>
   </div>
+  <div class="hero-sub intro d1"><span>METLIFE FINANCIAL SERVICE</span><span>KIM SHIN HYUK</span></div>
 
   <div class="hero-photo-row">
     <div class="lens-box" id="lens">
-      <img class="fade-x" src="assets/profile.jpg" alt="정장을 입은 김신혁 FP의 정면 프로필 사진">
-
-      <!-- X-RAY LAYER (렌즈로 드러남) -->
+      <video class="fade-x" src="assets/hero.mp4" poster="assets/hero-poster.jpg" autoplay muted loop playsinline aria-label="정장을 입은 김신혁 FP가 정면을 바라보는 영상"></video>
       <div class="xray fade-x" aria-hidden="true">
-        <img src="assets/profile.jpg" alt="">
-        <div class="tint"></div>
+        <img src="assets/hero-xray.jpg" alt="">
         <svg class="xr" viewBox="0 0 1024 1024">
-          <!-- lungs (behind) -->
-          <path class="soft" d="M470,815 C420,798 330,828 300,900 C280,950 274,1000 280,1030 L470,1030 Z"/>
-          <path class="soft" d="M554,815 C604,798 694,828 724,900 C744,950 750,1000 744,1030 L640,1030 C630,995 610,972 590,962 L554,940 Z"/>
-          <!-- skull -->
-          <path class="ln" d="M512,92 C655,92 740,195 736,340 C734,410 722,455 712,488 C706,540 690,590 650,622 C610,652 560,668 512,670 C464,668 414,652 374,622 C334,590 318,540 312,488 C302,455 290,410 288,340 C284,195 369,92 512,92 Z"/>
-          <ellipse class="ln" cx="412" cy="420" rx="56" ry="42"/>
-          <ellipse class="ln" cx="612" cy="420" rx="56" ry="42"/>
-          <path class="ln" d="M512,446 L486,540 Q512,556 538,540 Z"/>
-          <path class="thin" d="M330,470 Q380,502 440,488 M694,470 Q644,502 584,488"/>
-          <path class="ln" d="M436,598 L588,598 M436,618 L588,618"/>
-          <path class="thin" d="M452,598 L452,618 M470,598 L470,618 M488,598 L488,618 M506,598 L506,618 M524,598 L524,618 M542,598 L542,618 M560,598 L560,618 M576,598 L576,618"/>
-          <path class="thin" d="M340,560 Q362,640 512,662 Q662,640 684,560"/>
-          <!-- brain -->
-          <path class="ln" d="M512,128 C625,128 700,205 698,300 C696,360 660,392 600,398 L424,398 C364,392 328,360 326,300 C324,205 399,128 512,128 Z"/>
-          <path class="thin" d="M512,132 L512,396"/>
-          <path class="thin" d="M372,198 q16,-22 36,-6 t36,-6 t34,0 M352,248 q18,-26 40,-6 t40,-4 t40,-8 t26,6 M348,298 q20,-24 42,-4 t42,-2 t42,-8 t26,8 M376,348 q18,-20 38,-2 t38,-4 t36,6"/>
-          <path class="thin" d="M538,198 q16,-22 36,-6 t36,-6 t34,0 M538,248 q18,-26 40,-6 t40,-4 t40,-8 t26,6 M538,298 q20,-24 42,-4 t42,-2 t42,-8 t26,8 M538,348 q18,-20 38,-2 t38,-4 t36,6"/>
-          <!-- spine + clavicles + sternum + ribs -->
-          <rect class="ln" x="490" y="676" width="44" height="20" rx="5"/>
-          <rect class="ln" x="490" y="704" width="44" height="20" rx="5"/>
-          <rect class="ln" x="490" y="732" width="44" height="20" rx="5"/>
-          <rect class="ln" x="490" y="760" width="44" height="20" rx="5"/>
-          <path class="ln" d="M500,792 C420,772 320,762 200,778 M524,792 C604,772 704,762 824,778"/>
-          <rect class="ln" x="498" y="800" width="28" height="240" rx="10"/>
-          <path class="thin" d="M498,832 C430,814 320,824 250,882 M498,877 C430,859 312,869 240,932 M498,922 C430,904 306,914 236,982 M498,967 C430,949 302,959 232,1032"/>
-          <path class="thin" d="M526,832 C594,814 704,824 774,882 M526,877 C594,859 712,869 784,932 M526,922 C594,904 718,914 788,982 M526,967 C594,949 722,959 792,1032"/>
-          <!-- heart -->
-          <g class="pulse"><path class="soft" d="M575,928 C555,896 506,906 510,948 C514,986 560,1010 578,1030 C598,1006 646,980 646,944 C646,904 596,900 575,928 Z"/></g>
-          <!-- labels -->
-          <text class="en mid" x="512" y="60">RISK SCAN — 보이지 않는 리스크</text>
-          <circle class="dot" cx="420" cy="196" r="5"/>
-          <path class="thin" d="M420,196 L304,146"/>
-          <text class="en end" x="296" y="134">BRAIN</text>
-          <text class="ko end" x="296" y="162">뇌혈관 질환</text>
-          <circle class="dot" cx="590" cy="962" r="5"/>
-          <path class="thin" d="M590,962 L756,906"/>
-          <text class="en" x="764" y="896">HEART</text>
-          <text class="ko" x="764" y="924">심혈관 질환</text>
-          <circle class="dot" cx="380" cy="932" r="5"/>
-          <path class="thin" d="M380,932 L262,888"/>
-          <text class="en end" x="254" y="876">LUNG</text>
-          <text class="ko end" x="254" y="904">암 · 호흡기</text>
+          <text class="en mid" x="512" y="40">RISK SCAN</text>
+          <circle cx="440" cy="170" r="6"/><path class="thin" d="M440,170 L300,120"/>
+          <text class="en end" x="292" y="108">BRAIN</text><text class="ko end" x="292" y="138">뇌혈관 질환</text>
+          <circle cx="530" cy="880" r="6"/><path class="thin" d="M530,880 L760,820"/>
+          <text class="en" x="768" y="810">HEART</text><text class="ko" x="768" y="840">심혈관 질환</text>
+          <circle cx="310" cy="760" r="6"/><path class="thin" d="M310,760 L240,690"/>
+          <text class="en end" x="232" y="676">LUNG</text><text class="ko end" x="232" y="706">암 · 호흡기</text>
         </svg>
         <div class="scanline"></div>
       </div>
-
-      <div class="ring" aria-hidden="true"><span id="lens-coord">SCAN · X50 Y40</span></div>
+      <div class="ring" aria-hidden="true"><span id="hud">SCANNING</span></div>
     </div>
   </div>
 
-  <div class="hero-cap left">
-    <p class="lead">보이지 않는 리스크까지<br>투시하는 재무설계.</p>
-    <p class="hint">사진 위에 커서를 올려 보세요.<br>겉으로는 보이지 않는 것을 먼저 봅니다.</p>
-    <button class="btn-full" id="btn-full" type="button" aria-pressed="false">전체 투시 보기</button>
+  <div class="hero-cap left intro d2">
+    <span class="who">MetLife 재무설계사 김신혁</span>
+    <p class="lead">보이지 않던 위험까지<br>먼저 보여드려요.</p>
+    <p class="hint">사진 위에 마우스를 올려보세요.<br>겉으로는 안 보이는 것부터 같이 봐요.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" type="button" data-book>상담 신청하기</button>
+      <button class="btn-ghost" id="btn-full" type="button" aria-pressed="false">X-ray로 전체 보기</button>
+    </div>
   </div>
-
-  <div class="hero-cap right">
-    <div class="stat"><b>7 YRS</b><span>현장 상담 경력</span></div>
-    <div class="stat"><b>AI × FP</b><span>데이터 기반 리스크 분석</span></div>
-    <div class="stat"><b>JEONJU</b><span>전주 · 전북 방문 상담</span></div>
+  <div class="hero-cap hero-stats intro d3">
+    <div class="stat"><b>7 YRS</b><span>현장에서 쌓은 상담 경력</span></div>
+    <div class="stat"><b>6 TOOLS</b><span>직접 만든 AI 상담 도구</span></div>
+    <div class="stat"><b>JEONJU</b><span>전주 · 전북 어디든 찾아가요</span></div>
   </div>
 </section>
 
-<!-- ============ LEGACY: 에이징 + 서명 ============ -->
-<section id="legacy" class="dark">
+<!-- ============ TICKER ============ -->
+<div class="ticker" aria-hidden="true">
+  <div class="marquee">
+    <span>SEE THE RISK FIRST <span class="x">✕</span> <span class="ko">보이지 않던 위험까지</span> <span class="x">✕</span> AI × FINANCIAL PLANNER <span class="x">✕</span></span>
+    <span>SEE THE RISK FIRST <span class="x">✕</span> <span class="ko">보이지 않던 위험까지</span> <span class="x">✕</span> AI × FINANCIAL PLANNER <span class="x">✕</span></span>
+  </div>
+</div>
+
+<!-- ============ LEGACY ============ -->
+<section id="legacy">
   <div class="track" id="track">
     <div class="stage">
-      <div class="stage-head">
-        <span class="eyebrow" style="color:var(--muted-d)">02 — LEGACY</span>
-        <h2>시간이 흘러도, 같은 자리에서.</h2>
-      </div>
-
-      <div class="stage-body">
-        <div class="portrait-col">
-          <div class="portrait">
-            <div class="layer l30"><img src="assets/profile.jpg" alt="30대의 김신혁 FP"></div>
-            <div class="layer l40" style="opacity:0">
-              <img src="assets/profile.jpg" alt="40대의 김신혁 FP (AI 에이징 이미지 예정)">
-              <span class="ph-tag">[40대 AI 에이징 컷 자리]</span>
-            </div>
-            <div class="layer l50" style="opacity:0">
-              <img src="assets/profile.jpg" alt="50대의 김신혁 FP (AI 에이징 이미지 예정)">
-              <span class="ph-tag">[50대 AI 에이징 컷 자리]</span>
-            </div>
-            <span class="age-stamp">AGE <span data-age>30</span> · <span data-year>2026</span></span>
-          </div>
+      <div class="portrait-col">
+        <div class="portrait">
+          <img src="assets/age-30.jpg" alt="30세의 김신혁 FP">
+          <img class="age-layer" src="assets/age-35.jpg" alt="35세의 김신혁 FP (AI 에이징)" style="opacity:0">
+          <img class="age-layer" src="assets/age-40.jpg" alt="40세의 김신혁 FP (AI 에이징)" style="opacity:0">
+          <img class="age-layer" src="assets/age-45.jpg" alt="45세의 김신혁 FP (AI 에이징)" style="opacity:0">
+          <img class="age-layer" src="assets/age-50.jpg" alt="50세의 김신혁 FP (AI 에이징)" style="opacity:0">
+          <span class="badge ai">AI로 그려본 미래의 저예요</span>
+          <span class="badge age"><span data-age>30</span>세 · <span data-year>2026</span></span>
         </div>
-
-        <div class="age-col">
-          <div class="age-row">
-            <span class="age-num" data-age>30</span>
-            <span class="age-year" data-year>2026</span>
-          </div>
-          <div class="chapters">
-            <div class="chapter l30"><b>기준을 세우다</b><span>S&amp;P500 연금으로 복리의 시간을 먼저 확보하고, 보장의 뼈대를 세웁니다. 가장 빠른 설계가 가장 싼 설계입니다.</span></div>
-            <div class="chapter l40" style="opacity:0"><b>지켜내다</b><span>사망보장과 단기납 종신으로 가족의 내일과 자산을 함께 지킵니다. 가장의 부재가 가족의 위기가 되지 않도록.</span></div>
-            <div class="chapter l50" style="opacity:0"><b>물려주다</b><span>세금 · 상속 · 유동성까지. 한 가정의 재무 레거시를 다음 세대로 이어지게 완성합니다.</span></div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="progress"><i id="progress"></i></div>
-            <div class="chips" role="group" aria-label="나이 단계">
-              <button class="chip" type="button" data-goto="0" aria-pressed="true">30대</button>
-              <button class="chip" type="button" data-goto="0.5" aria-pressed="false">40대</button>
-              <button class="chip" type="button" data-goto="1" aria-pressed="false">50대</button>
-            </div>
+      </div>
+      <div class="age-col">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="kicker">LEGACY</span>
+          <h2>서로 다른 기준,<br>맞춤 상담의 가치</h2>
+        </div>
+        <div class="age-row">
+          <span class="age-num" data-age>30</span>
+          <span class="age-year">세 · <span data-year>2026</span>년</span>
+        </div>
+        <div class="decades">
+          <div class="decade on"><span>30대</span><div><b>꿈을 포기하지 않도록</b><p>한정된 소득 안에서도 지금의 삶과 미래의 목표를 같이 챙겨요.</p></div></div>
+          <div class="decade"><span>40대</span><div><b>소중한 일상을 지킬 수 있도록</b><p>예상 못 한 위험이 와도 나와 가족의 하루가 흔들리지 않게 준비해요.</p></div></div>
+          <div class="decade"><span>50대</span><div><b>앞으로의 삶에 여유가 생기도록</b><p>일하며 번 소득을 은퇴 뒤의 생활비로 잇고, 모은 자산은 자녀에게 잘 넘겨줄 수 있게 도와요.</p></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="progress"><i id="progress"></i></div>
+          <div class="age-chips" role="group" aria-label="나이 고르기">
+            <button class="age-chip" type="button" aria-pressed="true">30세</button>
+            <button class="age-chip" type="button" aria-pressed="false">35세</button>
+            <button class="age-chip" type="button" aria-pressed="false">40세</button>
+            <button class="age-chip" type="button" aria-pressed="false">45세</button>
+            <button class="age-chip" type="button" aria-pressed="false">50세</button>
           </div>
         </div>
       </div>
-
-      <!-- 스크롤에 따라 그려지는 서명 -->
       <div class="sig-wrap" aria-hidden="true">
-        <svg viewBox="0 0 900 230" id="sig-svg"><text class="sig" id="sig" x="12" y="170">Shin Hyuk</text></svg>
+        <svg viewBox="0 0 900 230"><text class="sig" id="sig" x="12" y="170">Shin Hyuk</text></svg>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============ PHILOSOPHY ============ -->
-<section id="philosophy" class="sec light">
+<section id="philosophy" class="sec">
   <div class="wrap philo">
-    <span class="eyebrow">03 — PHILOSOPHY</span>
-    <p class="manifesto">한계를 다시 쓰고, 고객의 내일을 끝까지 지켜내며, 가능한 모든 방법을 다합니다. <em>AI로 정밀하게, 사람으로 끝까지.</em> 상담 테이블 안과 밖에서, 한 가정의 <em>재무 레거시</em>를 설계합니다.</p>
+    <span class="kicker rv">PHILOSOPHY</span>
+    <h2 class="rv">오늘의 <em>선택</em>이<br>내일의 <em>후회</em>가 되지 않도록</h2>
+    <p class="sweep">돈의 흐름과 삶의 목표를 함께 읽고, 예상 못 한 위험에 먼저 대비해요. 꼭 필요한 순간, 준비해 둔 돈이 제 역할을 하도록요.</p>
     <div class="pillars">
-      <div><b>투시</b><span>보이지 않는 리스크를 데이터로 먼저 읽습니다. 질병, 부재, 세금까지.</span></div>
-      <div><b>설계</b><span>보장 · 저축 · 투자 · 상속을 따로 보지 않고, 하나의 지도로 그립니다.</span></div>
-      <div><b>동행</b><span>계약은 시작일 뿐입니다. 고객의 30년을 함께 나이 들어갑니다.</span></div>
+      <div class="pillar rv"><span class="no">01</span><span class="cat">리스크 점검</span><h3>지금은 안 보이는<br>위험까지 살펴요.</h3><p>지금의 보장과 재정 상황을 점검하고, 질병 · 소득 공백 · 세금처럼 앞으로 마주할 위험을 미리 짚어요.</p></div>
+      <div class="pillar rv"><span class="no">02</span><span class="cat">재무 계획</span><h3>흩어진 돈에<br>목적과 순서를 정해요.</h3><p>보장 · 저축 · 투자 · 노후를 따로 보지 않고, 지금의 여유와 미래의 목표에 맞춰 하나의 계획으로 이어요.</p></div>
+      <div class="pillar rv"><span class="no">03</span><span class="cat">꾸준한 관리</span><h3>삶이 바뀌면<br>계획도 같이 바꿔요.</h3><p>상담과 계약으로 끝나지 않아요. 소득 · 가족 · 목표가 달라질 때마다 계획을 다시 점검하고 조정해요.</p></div>
     </div>
   </div>
 </section>
 
 <!-- ============ SERVICES ============ -->
-<section id="services" class="sec dark">
+<section id="services" class="sec">
   <div class="wrap stack56">
-    <div class="sec-head">
+    <div class="sec-head rv">
       <div>
-        <span class="eyebrow">04 — WHAT I DESIGN</span>
+        <span class="kicker">WHAT I DO</span>
         <h2 class="h-big">모든 리스크를,<br>하나의 설계로.</h2>
       </div>
-      <p>건강보험만이 리스크 관리가 아닙니다. 가족, 자산, 노후, 세금까지 — 삶 전체의 리스크를 한 번에 봅니다.</p>
+      <p>건강보험만 리스크 관리가 아니에요. 가족, 자산, 노후, 세금까지 삶 전체를 한 번에 봐요.</p>
     </div>
     <div class="rows">
-      <div class="row"><span class="no">01</span><div class="ttl"><b>건강 리스크</b><span>3대 질병 · 실손 · 간병</span></div><span class="desc">암 · 뇌 · 심장, 그리고 간병까지. 치료비뿐 아니라 치료 기간의 소득 공백을 함께 계산합니다.</span></div>
-      <div class="row"><span class="no">02</span><div class="ttl"><b>가족 리스크 헤지</b><span>사망보장 · 종신보험</span></div><span class="desc">가장의 부재가 가족의 위기가 되지 않도록, 필요한 사망보장 규모를 숫자로 산출해 설계합니다.</span></div>
-      <div class="row"><span class="no">03</span><div class="ttl"><b>자산 증식</b><span>단기납 종신 · 저축 기능</span></div><span class="desc">짧게 납입하고 길게 쌓는 구조로, 보장과 목돈 마련을 하나의 계약으로 해결합니다.</span></div>
-      <div class="row"><span class="no">04</span><div class="ttl"><b>글로벌 연금 투자</b><span>S&amp;P500 · 국내 주식형 · 금</span></div><span class="desc">미국 대표 지수와 다양한 펀드에 장기 분산 투자하는 연금으로 은퇴 후 현금흐름을 만듭니다.</span></div>
-      <div class="row"><span class="no">05</span><div class="ttl"><b>세금 · 상속 · 유동성</b><span>LEGACY PLANNING</span></div><span class="desc">자산을 지키는 마지막 단계. 상속세 재원과 갑작스러운 유동성 위기를 미리 준비합니다.</span></div>
+      <div class="row rv"><span class="row-no">01</span><div class="ttl"><b>건강 리스크</b><span class="tag">3대 질병 · 실손 · 간병</span></div><span class="desc">큰 병과 간병까지. 치료비뿐 아니라 치료받는 동안 끊기는 소득도 같이 계산해요.</span><button class="row-cta" type="button" data-book="건강 · 3대 질병" aria-label="건강 · 3대 질병 상담 신청">상담 받기 →</button></div>
+      <div class="row rv"><span class="row-no">02</span><div class="ttl"><b>조기 사망 리스크</b><span class="tag">사망보장 · 종신보험</span></div><span class="desc">가장의 빈자리가 가족의 위기가 되지 않게, 필요한 보장 금액을 숫자로 뽑아드려요.</span><button class="row-cta" type="button" data-book="사망보장 · 종신" aria-label="사망보장 · 종신 상담 신청">상담 받기 →</button></div>
+      <div class="row rv"><span class="row-no">03</span><div class="ttl"><b>자산 증식</b><span class="tag">목적 자금 · 비과세 · 인플레이션 대비</span></div><span class="desc">목표까지 가장 효율적인 길을 찾아요. 상황에 맞는 자산 모으는 방법을 안내해요.</span><button class="row-cta" type="button" data-book="자산 증식 · 비과세" aria-label="자산 증식 · 비과세 상담 신청">상담 받기 →</button></div>
+      <div class="row rv"><span class="row-no">04</span><div class="ttl"><b>글로벌 연금 투자</b><span class="tag">S&amp;P500 · 국내 주식형 · 금</span></div><span class="desc">미국 대표 지수와 여러 펀드에 길게 나눠 투자하는 연금으로, 은퇴 후 매달 들어오는 돈을 만들어요.</span><button class="row-cta" type="button" data-book="연금 · S&amp;P500" aria-label="연금 · S&amp;P500 상담 신청">상담 받기 →</button></div>
+      <div class="row rv"><span class="row-no">05</span><div class="ttl"><b>세금 · 상속 · 유동성</b><span class="tag">LEGACY PLANNING</span></div><span class="desc">모은 자산을 지키는 마지막 단계예요. 상속세 재원과 갑자기 현금이 필요한 순간을 미리 준비해요.</span><button class="row-cta" type="button" data-book="세금 · 상속" aria-label="세금 · 상속 상담 신청">상담 받기 →</button></div>
     </div>
   </div>
 </section>
 
 <!-- ============ AI TOOLS ============ -->
-<section id="tools" class="sec light">
+<section id="tools" class="sec">
   <div class="wrap stack56">
-    <div class="sec-head">
+    <div class="sec-head rv">
       <div>
-        <span class="eyebrow">05 — AI CONSULTING TOOLS</span>
-        <h2 class="h-big">말이 아니라,<br>눈으로 확인하는 상담.</h2>
+        <span class="kicker">AI TOOLS</span>
+        <h2 class="h-big">말로만 설명하지 않아요.<br>눈으로 보여드려요.</h2>
       </div>
-      <p>AI로 직접 만든 상담 도구로 고객의 숫자를 그 자리에서 시각화합니다. 상담실에서 직접 보여드립니다.</p>
+      <p>AI로 직접 만든 상담 도구로 고객님의 숫자를 그 자리에서 그려드려요. 카드에 마우스를 올려보세요.</p>
     </div>
-    <div class="tools" id="tools-grid"></div>
+    <div class="tools">
+      <article class="tool rv">
+        <button class="shot-frame" type="button" data-shot="assets/tools/coverage.jpg" data-title="한눈에 보는 보장분석" aria-label="한눈에 보는 보장분석 화면 크게 보기">
+          <svg class="shot-icon" viewBox="0 0 300 90" aria-hidden="true"><rect x="0" y="10" width="210" height="14" rx="7" fill="#2F52FF"/><rect x="0" y="38" width="120" height="14" rx="7" fill="#2F52FF" opacity="0.55"/><rect x="0" y="66" width="250" height="14" rx="7" fill="#2F52FF" opacity="0.8"/><line x1="180" y1="0" x2="180" y2="90" stroke="#62DDF5" stroke-width="2"/></svg>
+          <img class="shot-img" src="assets/tools/coverage.jpg" alt="" loading="lazy">
+          <span class="shot-hint">눌러서 크게 보기</span>
+        </button>
+        <div class="tool-info"><span class="cat">보장</span><b>한눈에 보는 보장분석</b><p>흩어진 보험을 한 장으로 모아요. 부족한 보장과 겹치는 보장이 바로 보여요.</p></div>
+      </article>
+      <article class="tool rv">
+        <button class="shot-frame" type="button" data-shot="assets/tools/lifeplan.jpg" data-title="생애 재무 설계도" aria-label="생애 재무 설계도 화면 크게 보기">
+          <svg class="shot-icon" viewBox="0 0 300 90" aria-hidden="true"><line x1="0" y1="45" x2="300" y2="45" stroke="#2A3139" stroke-width="2"/><circle cx="30" cy="45" r="8" fill="#2F52FF"/><circle cx="100" cy="45" r="8" fill="#2F52FF"/><circle cx="170" cy="45" r="8" fill="#2F52FF"/><circle cx="250" cy="45" r="8" fill="#62DDF5"/></svg>
+          <img class="shot-img" src="assets/tools/lifeplan.jpg" alt="" loading="lazy">
+          <span class="shot-hint">눌러서 크게 보기</span>
+        </button>
+        <div class="tool-info"><span class="cat">생애</span><b>생애 재무 설계도</b><p>지금부터 은퇴까지, 인생 이벤트와 필요한 돈을 한 장의 지도로 그려요.</p></div>
+      </article>
+      <article class="tool rv">
+        <button class="shot-frame" type="button" data-shot="assets/tools/pension-calc.jpg" data-title="주식 적립 연금 계산기" aria-label="주식 적립 연금 계산기 화면 크게 보기">
+          <svg class="shot-icon" viewBox="0 0 300 90" aria-hidden="true"><path d="M0,88 C80,84 150,70 210,44 C250,28 280,14 300,6 L300,88 Z" fill="#62DDF5" fill-opacity="0.14"/><path d="M0,88 C80,84 150,70 210,44 C250,28 280,14 300,6" fill="none" stroke="#62DDF5" stroke-width="2.5"/></svg>
+          <img class="shot-img" src="assets/tools/pension-calc.jpg" alt="" loading="lazy">
+          <span class="shot-hint">눌러서 크게 보기</span>
+        </button>
+        <div class="tool-info"><span class="cat">연금</span><b>주식 적립 연금 계산기</b><p>매달 모은 돈이 오래 투자되면 얼마가 되는지 바로 계산해요.</p></div>
+      </article>
+      <article class="tool rv">
+        <button class="shot-frame" type="button" data-shot="assets/tools/hidden-claims.jpg" data-title="숨은 보험금 찾기" aria-label="숨은 보험금 찾기 화면 크게 보기">
+          <svg class="shot-icon" viewBox="0 0 300 90" aria-hidden="true"><circle cx="130" cy="40" r="32" fill="none" stroke="#2A3139" stroke-width="3"/><circle cx="130" cy="40" r="32" fill="none" stroke="#62DDF5" stroke-width="3" stroke-dasharray="60 400"/><line x1="153" y1="63" x2="180" y2="88" stroke="#62DDF5" stroke-width="3" stroke-linecap="round"/></svg>
+          <img class="shot-img" src="assets/tools/hidden-claims.jpg" alt="" loading="lazy">
+          <span class="shot-hint">눌러서 크게 보기</span>
+        </button>
+        <div class="tool-info"><span class="cat">청구</span><b>숨은 보험금 찾기</b><p>받을 수 있었는데 놓친 보험금이 있는지 같이 찾아봐요.</p></div>
+      </article>
+      <article class="tool rv">
+        <button class="shot-frame" type="button" data-shot="assets/tools/pension-tax.jpg" data-title="연금 세금 지도" aria-label="연금 세금 지도 화면 크게 보기">
+          <svg class="shot-icon" viewBox="0 0 300 90" aria-hidden="true"><rect x="30" y="30" width="56" height="60" rx="6" fill="#2F52FF" opacity="0.5"/><rect x="122" y="52" width="56" height="38" rx="6" fill="#2F52FF" opacity="0.75"/><rect x="214" y="70" width="56" height="20" rx="6" fill="#2F52FF"/></svg>
+          <img class="shot-img" src="assets/tools/pension-tax.jpg" alt="" loading="lazy">
+          <span class="shot-hint">눌러서 크게 보기</span>
+        </button>
+        <div class="tool-info"><span class="cat">세금</span><b>연금 세금 지도</b><p>연금을 언제, 어떻게 받느냐에 따라 달라지는 세금을 비교해요.</p></div>
+      </article>
+      <article class="tool rv">
+        <button class="shot-frame" type="button" data-shot="assets/tools/critical-illness.jpg" data-title="중대질병 치료비 비교" aria-label="중대질병 치료비 비교 화면 크게 보기">
+          <svg class="shot-icon" viewBox="0 0 300 90" aria-hidden="true"><rect x="10" y="14" width="280" height="22" rx="11" fill="#1E242B"/><rect x="10" y="14" width="230" height="22" rx="11" fill="#2F52FF"/><rect x="10" y="54" width="280" height="22" rx="11" fill="#1E242B"/><rect x="10" y="54" width="90" height="22" rx="11" fill="#FF4D4D"/></svg>
+          <img class="shot-img" src="assets/tools/critical-illness.jpg" alt="" loading="lazy">
+          <span class="shot-hint">눌러서 크게 보기</span>
+        </button>
+        <div class="tool-info"><span class="cat">질병</span><b>중대질병 치료비 비교</b><p>암 · 뇌 · 심장 치료비의 현실과 지금 준비된 보장을 나란히 놓고 봐요.</p></div>
+      </article>
+    </div>
   </div>
 </section>
 
 <!-- ============ MIRACLE TALK ============ -->
 <section id="miracle">
-  <div class="marquee-band" aria-hidden="true">
-    <div class="marquee">
-      <span>MIRACLE TALK — 매일 아침 경제 브리핑 — MIRACLE TALK — 매일 아침 경제 브리핑 — </span>
-      <span>MIRACLE TALK — 매일 아침 경제 브리핑 — MIRACLE TALK — 매일 아침 경제 브리핑 — </span>
+  <div class="miracle-band" aria-hidden="true">
+    <div class="marquee rev">
+      <span>MIRACLE TALK <span class="ko">— 매일 아침 3분 경제 브리핑 —</span></span>
+      <span>MIRACLE TALK <span class="ko">— 매일 아침 3분 경제 브리핑 —</span></span>
     </div>
   </div>
   <div class="wrap miracle-body">
-    <div class="miracle-copy">
-      <span class="eyebrow">06 — 김신혁FP의 미라클톡</span>
-      <h2 class="h-big">오늘의 뉴스가<br>내 지갑에 뜻하는 것.</h2>
-      <p>매일 아침, 경제 뉴스를 3분 브리핑으로. 시장의 큰 흐름부터 내 생활비와 노후 자금까지 한 번에 연결해 드립니다.</p>
-      <div class="pills">
-        <span>핵심 요약</span><span>거시 흐름</span><span>내 생활 영향</span><span>리스크 시사점</span><span>미국 증시 시나리오</span>
-      </div>
+    <div class="miracle-copy rv">
+      <span class="kicker">김신혁 FP의 미라클톡</span>
+      <h2 class="h-big">오늘 뉴스가<br>내 지갑에 뜻하는 것.</h2>
+      <p>매일 아침 3분, 경제 뉴스를 쉽게 풀어드려요. 시장의 큰 흐름부터 내 생활비와 노후 자금까지 한 번에 이어서 봐요.</p>
+      <div class="pills"><span>핵심 요약</span><span>거시 흐름</span><span>내 생활 영향</span><span>리스크 시사점</span><span>미국 증시 시나리오</span></div>
     </div>
-    <div class="miracle-cta">
-      <!-- TODO: 실제 카카오톡 채널 / 네이버 블로그 주소로 교체 -->
-      <a class="btn-light" href="#">카카오톡 채널 추가 <span aria-hidden="true">→</span></a>
-      <a class="btn-light" href="#">네이버 블로그 구독 <span aria-hidden="true">→</span></a>
+    <div class="miracle-cta rv">
+      <a class="link-btn" data-kakao href="#" target="_blank" rel="noopener">카카오톡 채널 추가하기 <span aria-hidden="true">→</span></a>
+      <a class="link-btn" data-blog href="#" target="_blank" rel="noopener">네이버 블로그 구독하기 <span aria-hidden="true">→</span></a>
     </div>
   </div>
 </section>
 
-<!-- ============ CONTACT / FOOTER ============ -->
-<section id="contact" class="sec dark">
+<!-- ============ CONTACT ============ -->
+<section id="contact" class="sec">
   <div class="wrap contact">
-    <div class="contact-head">
-      <span class="eyebrow">07 — CONTACT</span>
-      <a class="big-cta" href="#">상담 예약하기 →</a>
-      <p>지금 준비된 것과 필요한 것의 차이를, 한 번의 상담으로 확인하세요.</p>
+    <div class="contact-head rv">
+      <span class="kicker">CONTACT</span>
+      <button class="big-cta" type="button" data-book>상담 예약하기 →</button>
+      <p>지금 준비된 것과 필요한 것의 차이, 한 번의 상담으로 확인해 보세요.</p>
     </div>
-    <div class="facts">
-      <div><span class="k">PHONE</span><b>[전화번호]</b></div>
-      <div><span class="k">KAKAOTALK</span><b>[카카오톡 채널 ID]</b></div>
-      <div><span class="k">AREA</span><b>전주 · 전북 전역 방문 상담</b></div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <span class="steps-title rv">상담은 이렇게 진행돼요</span>
+      <div class="steps">
+        <div class="step rv"><i>1</i><b>신청</b><p>카카오톡이나 전화로 편한 시간과 장소를 알려주세요.</p></div>
+        <div class="step rv"><i>2</i><b>진단</b><p>가입한 보험과 재정 상황을 상담 도구로 같이 살펴봐요.</p></div>
+        <div class="step rv"><i>3</i><b>설계</b><p>필요한 것부터 우선순위를 정해, 고객님께 맞는 계획을 그려드려요.</p></div>
+      </div>
     </div>
-    <div class="foot">
+    <div class="facts rv">
+      <div><span class="k">전화</span><span class="phone"><a class="v" id="tel" href="#"></a><button class="btn-copy" id="copy-phone" type="button">번호 복사</button></span></div>
+      <div><span class="k">카카오톡</span><a class="v" data-kakao id="kakao-text" href="#" target="_blank" rel="noopener">카카오톡 채널 열기</a></div>
+      <div><span class="k">활동지역</span><span class="v">전주 · 익산 · 광주</span></div>
+    </div>
+    <footer class="foot">
       <div>
-        <span class="signature">Shin Hyuk</span>
+        <span class="signature" aria-hidden="true">Shin Hyuk</span>
         <small>보험계약 체결 전 상품설명서와 약관을 반드시 확인하시기 바랍니다. 변액보험은 운용 실적에 따라 원금 손실이 발생할 수 있으며, 과거 수익률이 미래 수익을 보장하지 않습니다. [모집인 등록번호 · 준법감시 심의필 번호]</small>
       </div>
-      <span class="k">© 2026 김신혁 FP · METLIFE</span>
-    </div>
+      <span class="copy">© 2026 김신혁 FP · MetLife</span>
+    </footer>
   </div>
 </section>
 
-<script>
-// AI 상담 도구 카드
-const TOOLS = [
-  ['한눈에 보는 보장분석', '흩어진 보험을 한 장으로. 부족한 보장과 겹치는 보장이 바로 보입니다.'],
-  ['생애 재무 설계도', '지금부터 은퇴까지, 인생 이벤트와 필요 자금을 하나의 지도로 그립니다.'],
-  ['주식 적립 연금 계산기', '매달 적립한 금액이 장기 투자로 어떻게 쌓이는지 시뮬레이션합니다.'],
-  ['숨은 보험금 찾기', '받을 수 있었는데 놓치고 있던 보험금을 함께 점검합니다.'],
-  ['연금 세금 지도', '연금을 언제, 어떻게 받느냐에 따라 달라지는 세금을 비교합니다.'],
-  ['중대질병 치료비 비교', '암 · 뇌 · 심장 치료비의 현실과 지금 준비된 보장을 나란히 봅니다.']
-];
-document.getElementById('tools-grid').innerHTML = TOOLS.map(([title, desc], i) => `
-  <div class="tool">
-    <div class="tool-top"><span>TOOL 0${i + 1}</span>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7"/></svg></div>
-    <b>${title}</b><p>${desc}</p>
-  </div>`).join('');
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="" hidden>
+  <figure>
+    <img id="lb-img" alt="">
+    <figcaption>
+      <span><b id="lb-title"></b><small>예시 데이터 화면이에요. 실제 상담에서는 고객님의 숫자로 보여드려요.</small></span>
+      <button class="btn-close-lb" type="button">닫기</button>
+    </figcaption>
+  </figure>
+</div>
 
-// 히어로: X-RAY 렌즈
-const lens = document.getElementById('lens');
-const coord = document.getElementById('lens-coord');
-const btnFull = document.getElementById('btn-full');
-const LENS_R = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lens')) || 150;
-let full = false;
-function applyLens() {
-  lens.style.setProperty('--r', full ? '1600px' : (lens.classList.contains('on') ? LENS_R + 'px' : '0px'));
+<!-- ============ BOOKING SHEET ============ -->
+<div class="bk-wrap" id="bk" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bk-title">
+    <div class="sheet-head">
+      <div><span>김신혁 FP 상담 신청</span><h2 id="bk-title">편하게 이야기 나눠요</h2></div>
+      <button class="btn-x" type="button" data-bk-close aria-label="닫기"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+
+    <div class="bk-pane" id="bk-form">
+      <div class="field" role="group" aria-labelledby="bk-q1">
+        <span class="q" id="bk-q1">어떤 상담이 궁금하세요? <small>여러 개 골라도 돼요</small></span>
+        <div class="chips" data-group="topics" data-multi></div>
+      </div>
+      <div class="field" role="group" aria-labelledby="bk-q2">
+        <span class="q" id="bk-q2">언제 연락드리면 편하세요?</span>
+        <div class="chips" data-group="time"></div>
+      </div>
+      <div class="field" role="group" aria-labelledby="bk-q3">
+        <span class="q" id="bk-q3">어떻게 만날까요?</span>
+        <div class="chips" data-group="way"></div>
+      </div>
+      <div class="field"><label for="bk-name">이름</label><input id="bk-name" class="bk-input" type="text" autocomplete="name" placeholder="홍길동"></div>
+      <div class="field"><label for="bk-phone">연락처</label><input id="bk-phone" class="bk-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000"></div>
+      <div class="field"><label for="bk-memo">남기고 싶은 말 <small>선택</small></label><textarea id="bk-memo" class="bk-input" rows="3" placeholder="예) 아이가 생겨서 보험을 다시 보고 싶어요"></textarea></div>
+      <label class="agree" for="bk-agree">
+        <input id="bk-agree" type="checkbox">
+        <span><b>개인정보 수집 · 이용에 동의해요 (필수)</b><br>이름과 연락처는 상담 연락에만 쓰고, 상담이 끝나면 지워요.</span>
+      </label>
+      <p class="bk-err" id="bk-err" role="alert" hidden></p>
+      <button class="bk-submit" id="bk-submit" type="button">신청 내용 확인하기</button>
+    </div>
+
+    <div class="bk-pane" id="bk-done" hidden>
+      <p class="bk-note">아래 버튼으로 보내주시면 확인하고 바로 연락드릴게요. 보내기 전까지는 신청이 접수되지 않아요.</p>
+      <div class="bk-msg" id="bk-msg"></div>
+      <div class="bk-actions">
+        <a class="bk-kakao" id="bk-kakao" href="#" target="_blank" rel="noopener">카카오톡으로 보내기</a>
+        <a class="bk-send" id="bk-sms" href="#">문자로 보내기</a>
+        <button class="bk-copy" id="bk-copy" type="button">메시지 복사하기</button>
+        <p id="bk-nochan" hidden>아직 연락 채널이 연결되지 않았어요. 메시지를 복사해서 보내주세요.</p>
+      </div>
+      <button class="bk-edit" id="bk-edit" type="button">내용 고치기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 연락처 — 바뀌면 여기만 고치면 됩니다
+const CONFIG = {
+  phone: '010-9633-2970',
+  kakaoChannelUrl: 'https://pf.kakao.com/_xcjzaX',
+  blogUrl: 'https://blog.naver.com/aa64245',
+  autoTour: true   // 마우스를 안 올렸을 때 렌즈가 장기 사이를 스스로 돌아다님
+};
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const clamp = v => Math.max(0, Math.min(1, v));
+const okUrl = u => /^https?:\/\//i.test(u);
+const phoneDigits = CONFIG.phone.replace(/[^0-9]/g, '');
+const chUrl = CONFIG.kakaoChannelUrl.trim().replace(/\/+$/, '').replace(/^http:\/\//i, 'https://');
+
+function copyText(text, onDone) {
+  try { navigator.clipboard.writeText(text).then(() => onDone(true), () => onDone(false)); }
+  catch (e) { onDone(false); }
 }
-function moveLens(cx, cy) {
-  const r = lens.getBoundingClientRect();
-  const x = (cx - r.left) / r.width * 100, y = (cy - r.top) / r.height * 100;
+
+// ---------- 연락처 링크 ----------
+$$('[data-kakao]').forEach(a => { a.href = okUrl(chUrl) ? chUrl : '#'; });
+$$('[data-blog]').forEach(a => { a.href = okUrl(CONFIG.blogUrl) ? CONFIG.blogUrl : '#'; });
+if (!okUrl(chUrl)) $('#kakao-text').textContent = '[카카오톡 채널 주소]';
+const tel = $('#tel');
+tel.textContent = CONFIG.phone;
+tel.href = phoneDigits.length >= 9 ? 'tel:' + phoneDigits : '#';
+$('#copy-phone').addEventListener('click', e => copyText(CONFIG.phone, ok => { if (ok) e.target.textContent = '복사했어요'; }));
+
+// ---------- 히어로: X-ray 렌즈 ----------
+const lens = $('#lens'), hud = $('#hud'), btnFull = $('#btn-full');
+const LENS_R = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lens')) || 150;
+const ORGANS = [
+  { x: 50, y: 17, n: 'BRAIN · 뇌혈관' }, { x: 52, y: 86, n: 'HEART · 심혈관' },
+  { x: 31, y: 74, n: 'LUNG · 암' }, { x: 50, y: 60, n: 'SPINE · 척추' }, { x: 50, y: 37, n: 'SKULL · 두부' }
+];
+const lensState = { on: false, full: false, x: 50, y: 30, tour: 0 };
+function renderLens() {
+  const s = lensState;
+  const o = ORGANS[s.tour % ORGANS.length];
+  const x = s.on ? s.x : o.x, y = s.on ? s.y : o.y;
+  const r = s.full ? 1600 : (s.on ? LENS_R : (CONFIG.autoTour ? Math.round(LENS_R * 0.82) : 0));
+  let best = ORGANS[0], bd = 1e9;
+  ORGANS.forEach(g => { const d = (g.x - x) ** 2 + (g.y - y) ** 2; if (d < bd) { bd = d; best = g; } });
   lens.style.setProperty('--lx', x.toFixed(2) + '%');
   lens.style.setProperty('--ly', y.toFixed(2) + '%');
-  coord.textContent = `SCAN · X${Math.round(x)} Y${Math.round(y)}`;
-  lens.classList.add('on');
-  applyLens();
+  lens.style.setProperty('--r', r + 'px');
+  lens.style.setProperty('--t', s.on ? '.12s' : '.9s');
+  lens.classList.toggle('ring-on', r > 20 && !s.full);
+  hud.textContent = bd < 160 ? best.n : 'SCANNING';
 }
-function leaveLens() { lens.classList.remove('on'); applyLens(); }
-lens.addEventListener('mousemove', e => moveLens(e.clientX, e.clientY));
-lens.addEventListener('mouseleave', leaveLens);
-lens.addEventListener('touchmove', e => { const t = e.touches[0]; if (t) moveLens(t.clientX, t.clientY); }, { passive: true });
-lens.addEventListener('touchend', leaveLens);
-btnFull.addEventListener('click', () => {
-  full = !full;
-  lens.classList.toggle('full', full);
-  btnFull.setAttribute('aria-pressed', String(full));
-  btnFull.textContent = full ? 'X-RAY 끄기' : '전체 투시 보기';
-  applyLens();
+lens.addEventListener('mousemove', e => {
+  const rect = lens.getBoundingClientRect();
+  Object.assign(lensState, { on: true, x: (e.clientX - rect.left) / rect.width * 100, y: (e.clientY - rect.top) / rect.height * 100 });
+  renderLens();
 });
+lens.addEventListener('mouseleave', () => { lensState.on = false; renderLens(); });
+btnFull.addEventListener('click', () => {
+  lensState.full = !lensState.full;
+  btnFull.setAttribute('aria-pressed', String(lensState.full));
+  btnFull.textContent = lensState.full ? 'X-ray 끄기' : 'X-ray로 전체 보기';
+  renderLens();
+});
+setInterval(() => {
+  if (lensState.on || lensState.full || !CONFIG.autoTour) return;
+  lensState.tour = (lensState.tour + 1) % ORGANS.length;
+  renderLens();
+}, 2200);
+renderLens();
+const video = $('video', lens);
+video.muted = true;
+const pr = video.play(); if (pr && pr.catch) pr.catch(() => {});
 
-// 레거시: 스크롤 진행도(p)에 따라 30 → 50대
-const track = document.getElementById('track');
-const stage = track.firstElementChild;
-const clamp = v => Math.max(0, Math.min(1, v));
-const layers = { l30: track.querySelectorAll('.l30'), l40: track.querySelectorAll('.l40'), l50: track.querySelectorAll('.l50') };
-const ageEls = track.querySelectorAll('[data-age]'), yearEls = track.querySelectorAll('[data-year]');
-const chips = track.querySelectorAll('.chip');
-const progress = document.getElementById('progress');
-const sig = document.getElementById('sig'), sigSvg = document.getElementById('sig-svg');
+// ---------- 레거시: 스크롤 진행도(p)로 30 → 50세 ----------
+const track = $('#track'), stage = track.firstElementChild;
+const ageLayers = $$('.age-layer', track), decades = $$('.decade', track), ageChips = $$('.age-chip', track);
+const ageEls = $$('[data-age]', track), yearEls = $$('[data-year]', track);
+const progress = $('#progress'), sig = $('#sig');
 let lastP = -1;
-
-function render(p) {
-  const o = {
-    l30: clamp(1 - (p - 0.28) / 0.14),
-    l40: p < 0.5 ? clamp((p - 0.28) / 0.14) : clamp(1 - (p - 0.62) / 0.14),
-    l50: clamp((p - 0.62) / 0.14)
-  };
-  for (const k in layers) layers[k].forEach(el => { el.style.opacity = o[k].toFixed(3); });
+function renderAge(p) {
+  ageLayers.forEach((img, i) => { img.style.opacity = clamp((p * 4 - i) * 1.6 - 0.3).toFixed(3); });
   const age = Math.round(30 + 20 * p);
   ageEls.forEach(el => { el.textContent = age; });
   yearEls.forEach(el => { el.textContent = 2026 + (age - 30); });
   progress.style.width = (p * 100).toFixed(1) + '%';
   const idx = p < 0.35 ? 0 : (p < 0.69 ? 1 : 2);
-  chips.forEach((c, i) => c.setAttribute('aria-pressed', String(i === idx)));
+  decades.forEach((d, i) => d.classList.toggle('on', i === idx));
+  const nearest = Math.round(p * 4);
+  ageChips.forEach((c, i) => c.setAttribute('aria-pressed', String(i === nearest)));
   const s = clamp((p - 0.04) / 0.9);
-  sigSvg.style.clipPath = `inset(0 ${((1 - s) * 100).toFixed(1)}% 0 0)`;
   sig.style.strokeDashoffset = Math.round(1400 * (1 - s));
   sig.style.fillOpacity = clamp((s - 0.75) / 0.25).toFixed(2);
 }
@@ -531,19 +733,121 @@ function scrollRange() {
 function measure() {
   const { r, total } = scrollRange();
   // 모바일(스티키 해제)에서는 스크롤 연출 없이 칩으로만 전환
-  if (total <= 0) { if (lastP < 0) { lastP = 0; render(0); } return; }
+  if (total <= 0) { if (lastP < 0) { lastP = 0; renderAge(0); } return; }
   const p = clamp(-r.top / total);
-  if (Math.abs(p - lastP) > 0.002) { lastP = p; render(p); }
+  if (Math.abs(p - lastP) > 0.002) { lastP = p; renderAge(p); }
 }
-chips.forEach(c => c.addEventListener('click', () => {
-  const target = parseFloat(c.dataset.goto);
+ageChips.forEach((c, i) => c.addEventListener('click', () => {
+  const target = i / 4;
   const { r, total } = scrollRange();
-  lastP = target; render(target);
+  lastP = target; renderAge(target);
   if (total > 0) window.scrollTo({ top: window.scrollY + r.top + total * target + 2, behavior: 'smooth' });
 }));
 document.addEventListener('scroll', measure, { passive: true });
 window.addEventListener('resize', measure);
 measure();
+
+// ---------- 모달 공통 ----------
+let lastFocus = null;
+function openModal(el) { lastFocus = document.activeElement; el.hidden = false; document.body.classList.add('locked'); }
+function closeModal(el) { el.hidden = true; document.body.classList.remove('locked'); if (lastFocus) lastFocus.focus(); }
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!bk.hidden) closeModal(bk); else if (!lb.hidden) closeModal(lb);
+});
+
+// ---------- AI 도구 라이트박스 ----------
+const lb = $('#lightbox');
+$$('[data-shot]').forEach(btn => btn.addEventListener('click', () => {
+  const title = btn.dataset.title;
+  $('#lb-img').src = btn.dataset.shot;
+  $('#lb-img').alt = title + ' 화면 (예시 데이터)';
+  $('#lb-title').textContent = title;
+  lb.setAttribute('aria-label', title);
+  openModal(lb);
+  $('.btn-close-lb', lb).focus();
+}));
+lb.addEventListener('click', () => closeModal(lb));
+
+// ---------- 상담 신청 시트 ----------
+const bk = $('#bk');
+const OPTIONS = {
+  topics: ['내 보험 점검', '건강 · 3대 질병', '사망보장 · 종신', '자산 증식 · 비과세', '연금 · S&P500', '세금 · 상속', '아직 잘 모르겠어요'],
+  time: ['평일 낮', '평일 저녁', '주말', '언제든 괜찮아요'],
+  way: ['직접 만나서', '전화로', '화상으로']
+};
+const form = { topics: [], time: '', way: '' };
+$$('.chips[data-group]', bk).forEach(box => {
+  const key = box.dataset.group, multi = box.hasAttribute('data-multi');
+  box.innerHTML = OPTIONS[key].map(t => `<button class="chip" type="button" aria-pressed="false">${t}</button>`).join('');
+  $$('.chip', box).forEach((chip, i) => chip.addEventListener('click', () => {
+    const t = OPTIONS[key][i];
+    if (multi) form[key] = form[key].includes(t) ? form[key].filter(x => x !== t) : form[key].concat([t]);
+    else form[key] = t;
+    syncChips();
+    showErr('');
+  }));
+});
+function syncChips() {
+  $$('.chips[data-group]', bk).forEach(box => {
+    const key = box.dataset.group, v = form[key];
+    $$('.chip', box).forEach((chip, i) => {
+      const t = OPTIONS[key][i];
+      chip.setAttribute('aria-pressed', String(Array.isArray(v) ? v.includes(t) : v === t));
+    });
+  });
+}
+const showErr = msg => { const el = $('#bk-err'); el.textContent = msg; el.hidden = !msg; };
+function showPane(done) {
+  $('#bk-form').hidden = done;
+  $('#bk-done').hidden = !done;
+  $('#bk-title').textContent = done ? '거의 다 됐어요!' : '편하게 이야기 나눠요';
+  $('.sheet', bk).scrollTop = 0;
+}
+function openBooking(topic) {
+  if (topic) form.topics = [topic];
+  syncChips(); showErr(''); showPane(false);
+  openModal(bk);
+  $('.btn-x', bk).focus();
+}
+$$('[data-book]').forEach(btn => btn.addEventListener('click', () => openBooking(btn.dataset.book || null)));
+bk.addEventListener('click', e => { if (e.target === bk) closeModal(bk); });
+$$('[data-bk-close]', bk).forEach(b => b.addEventListener('click', () => closeModal(bk)));
+['bk-name', 'bk-phone', 'bk-agree'].forEach(id => $('#' + id).addEventListener('input', () => showErr('')));
+
+function buildMsg() {
+  const memo = $('#bk-memo').value.trim();
+  return ['[김신혁 FP 상담 신청]', '이름: ' + $('#bk-name').value.trim(), '연락처: ' + $('#bk-phone').value.trim(),
+    '상담 주제: ' + form.topics.join(', '), '편한 시간: ' + (form.time || '상관없음'), '상담 방식: ' + (form.way || '상관없음')]
+    .concat(memo ? ['남긴 말: ' + memo] : []).join('\n');
+}
+$('#bk-submit').addEventListener('click', () => {
+  let err = '';
+  if (!form.topics.length) err = '궁금한 상담을 하나 이상 골라주세요.';
+  else if (!$('#bk-name').value.trim()) err = '이름을 적어주세요.';
+  else if ($('#bk-phone').value.replace(/[^0-9]/g, '').length < 9) err = '연락처를 정확히 적어주세요. 예) 010-1234-5678';
+  else if (!$('#bk-agree').checked) err = '개인정보 수집 · 이용에 동의해주셔야 연락드릴 수 있어요.';
+  showErr(err);
+  if (err) return;
+  const msg = buildMsg();
+  $('#bk-msg').textContent = msg;
+  const kakao = $('#bk-kakao'), sms = $('#bk-sms');
+  kakao.hidden = !okUrl(chUrl);
+  kakao.href = okUrl(chUrl) ? chUrl + '/chat' : '#';
+  sms.hidden = phoneDigits.length < 9;
+  sms.href = 'sms:' + phoneDigits + '?&body=' + encodeURIComponent(msg);
+  $('#bk-nochan').hidden = okUrl(chUrl) || phoneDigits.length >= 9;
+  $('#bk-copy').textContent = '메시지 복사하기';
+  showPane(true);
+});
+function copyMsg() {
+  copyText($('#bk-msg').textContent, ok => {
+    $('#bk-copy').textContent = ok ? '복사했어요 · 채팅창에 붙여넣기만 하세요' : '복사가 안 돼요 · 위 내용을 길게 눌러 복사해주세요';
+  });
+}
+$('#bk-copy').addEventListener('click', copyMsg);
+$('#bk-kakao').addEventListener('click', copyMsg);
+$('#bk-edit').addEventListener('click', () => showPane(false));
 </script>
 </body>
 </html>
