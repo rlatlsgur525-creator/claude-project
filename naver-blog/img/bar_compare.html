@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<style>
+  @font-face { font-family: "Pretendard"; font-weight: 700; src: url("../../miracle-shorts/shorts-kit/fonts/Pretendard-Bold.otf"); }
+  @font-face { font-family: "Pretendard"; font-weight: 800; src: url("../../miracle-shorts/shorts-kit/fonts/Pretendard-ExtraBold.otf"); }
+  @font-face { font-family: "Pretendard"; font-weight: 900; src: url("../../miracle-shorts/shorts-kit/fonts/Pretendard-Black.otf"); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 860px; height: 860px; overflow: hidden; }
+  body { background: #F7F3EC; font-family: "Pretendard", "Malgun Gothic", sans-serif; font-weight: 700; color: #1E2A44; }
+  .wrap { padding: 52px 48px 40px; }
+  .eyebrow { font-size: 26px; color: #C8642A; letter-spacing: 1px; }
+  h1 { font-size: 44px; font-weight: 900; line-height: 1.25; margin-top: 10px; }
+  .group { margin-top: 34px; background: #fff; border-radius: 22px; padding: 26px 28px 22px; border: 3px solid #1E2A44; }
+  .gtitle { font-size: 26px; color: #6B7487; margin-bottom: 14px; }
+  .row { display: grid; grid-template-columns: 170px 1fr; align-items: center; gap: 16px; margin-top: 12px; }
+  .label { font-size: 26px; }
+  .track { height: 54px; background: #EEE8DD; border-radius: 12px; position: relative; }
+  .bar { height: 54px; border-radius: 12px; display: flex; align-items: center; justify-content: flex-end; padding-right: 16px;
+         font-size: 28px; font-weight: 800; color: #fff; }
+  .navy { background: #1E2A44; }
+  .orange { background: #C8642A; }
+  .gap { position: absolute; top: 0; height: 54px; border: 3px dashed #C8642A; border-left: none; border-radius: 0 12px 12px 0;
+         display: flex; align-items: center; justify-content: center; font-size: 22px; color: #C8642A; }
+  .calc { margin-top: 28px; font-size: 28px; font-weight: 800; text-align: center; }
+  .calc b { color: #C8642A; font-weight: 900; }
+  .foot { margin-top: 14px; font-size: 20px; color: #7A8296; text-align: center; }
+</style></head>
+<body><div class="wrap">
+  <div class="eyebrow">집기 지금 가치 5,000만 원 가게의 예시</div>
+  <h1>2천만 원 들면, 3천만 원 손해에<br>1,500만 원만 받아요</h1>
+
+  <div class="group">
+    <div class="gtitle">① 가입 금액: 가치의 80%(4,000만 원)는 들어야 했는데</div>
+    <div class="row"><div class="label">들어야 할 금액</div>
+      <div class="track"><div class="bar navy" style="width:80%">4,000만</div></div></div>
+    <div class="row"><div class="label">실제 가입</div>
+      <div class="track"><div class="bar orange" style="width:40%">2,000만</div>
+        <div class="gap" style="left:40%; width:40%">절반만 들었어요</div></div></div>
+  </div>
+
+  <div class="group">
+    <div class="gtitle">② 그래서 받는 돈도 손해의 절반</div>
+    <div class="row"><div class="label">불로 생긴 손해</div>
+      <div class="track"><div class="bar navy" style="width:60%">3,000만</div></div></div>
+    <div class="row"><div class="label">실제로 받는 돈</div>
+      <div class="track"><div class="bar orange" style="width:30%">1,500만</div>
+        <div class="gap" style="left:30%; width:30%">−1,500만</div></div></div>
+  </div>
+
+  <div class="calc">3,000만 × (2,000만 ÷ 4,000만) = <b>1,500만 원</b></div>
+  <div class="foot">비례보상 · 화재보험 표준약관 기준 예시, 상품마다 다를 수 있음 · 2026년 10월 기준</div>
+</div></body></html>
