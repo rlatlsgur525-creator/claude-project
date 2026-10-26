@@ -358,7 +358,8 @@ function fieldEl(f) {
 /* 대본 칸(type script, 말하는 마스코트): 줄마다 문장·포인트 카드·동작. 녹음은 프롬프터로 줄 시작 시각(voice.marks)을 함께 남긴다 */
 function scriptEl(f, wrap) {
   const lines = S.data[f.key] = S.data[f.key] || [];
-  const opts = f.options || [['', '없음']];
+  // 줄마다 붙는 칸: 템플릿 FIELDS의 columns. 없으면 말하는 마스코트의 포인트 카드·동작
+  const cols = f.columns || [{ key: 'card', label: '포인트 카드 (비우면 없음)', type: 'text' }, { key: 'gesture', label: '동작', type: 'select', options: f.options }];
   const redraw = () => { const w = scriptEl(f, document.createElement('div')); w.id = wrap.id; wrap.replaceWith(w); };
   const edit = (fn) => { fn(); changed(false); };
   wrap.innerHTML = `<label class="f">${f.label}</label><div class="help">한 줄 = 한 문장. 카드 문구의 '/'는 줄바꿈, [ ]는 빨간 강조. 녹음 전에는 글자 수로 시간을 어림해요.</div>`;
@@ -374,18 +375,24 @@ function scriptEl(f, wrap) {
     const tx = document.createElement('textarea'); tx.value = l.text || ''; tx.style.minHeight = '44px'; tx.placeholder = '말할 문장';
     tx.onfocus = () => snapshot(); tx.oninput = () => edit(() => l.text = tx.value.replace(/\n/g, ' '));
     const row = document.createElement('div'); row.className = 'row';
-    const cw = document.createElement('div'); cw.className = 'grow'; cw.style.flexBasis = '160px';
-    cw.innerHTML = '<label class="f">포인트 카드 (비우면 없음)</label><input type="text">';
-    const ci = cw.querySelector('input'); ci.value = l.card || ''; ci.onfocus = () => snapshot(); ci.oninput = () => edit(() => l.card = ci.value);
-    const gw = document.createElement('div'); gw.className = 'grow';
-    gw.innerHTML = '<label class="f">동작</label><select class="in"></select>';
-    const gs = gw.querySelector('select');
-    for (const [v, n] of opts) { const o = document.createElement('option'); o.value = v; o.textContent = n; gs.appendChild(o); }
-    gs.value = l.gesture || ''; gs.onchange = () => { snapshot(); edit(() => l.gesture = gs.value); };
-    row.append(cw, gw); box.append(head, tx, row); wrap.appendChild(box);
+    for (const c of cols) {
+      const cw = document.createElement('div'); cw.className = 'grow'; if (c.type === 'text') cw.style.flexBasis = '160px';
+      const lb = document.createElement('label'); lb.className = 'f'; lb.textContent = c.label; cw.appendChild(lb);
+      if (c.type === 'select') {
+        const gs = document.createElement('select'); gs.className = 'in';
+        for (const [v, n] of c.options || [['', '없음']]) { const o = document.createElement('option'); o.value = v; o.textContent = n; gs.appendChild(o); }
+        gs.value = l[c.key] || ''; gs.onchange = () => { snapshot(); edit(() => l[c.key] = gs.value); }; cw.appendChild(gs);
+      } else {
+        const ci = document.createElement('input'); ci.type = c.type === 'number' ? 'number' : 'text'; if (c.type === 'number') ci.step = '0.1';
+        ci.value = l[c.key] ?? ''; ci.onfocus = () => snapshot();
+        ci.oninput = () => edit(() => l[c.key] = c.type === 'number' ? (ci.value === '' ? null : Number(ci.value)) : ci.value); cw.appendChild(ci);
+      }
+      row.appendChild(cw);
+    }
+    box.append(head, tx, row); wrap.appendChild(box);
   });
   const bar = document.createElement('div'); bar.className = 'row';
-  bar.append(btn('+ 줄 추가', () => { snapshot(); edit(() => { lines.push({ text: '', card: '', gesture: '' }); redraw(); }); }),
+  bar.append(btn('+ 줄 추가', () => { snapshot(); edit(() => { lines.push(Object.fromEntries([['text', ''], ...cols.map(c => [c.key, c.type === 'number' ? null : ''])])); redraw(); }); }),
              btn('🎙 대본 보며 녹음', () => openPrompter(f.key), 'btn btn-sm btn-rec'));
   const v = S.data.voice;
   if (v && v.src) bar.append(btn('녹음 지우기', () => { snapshot(); edit(() => { delete S.data.voice; redraw(); }); }));
@@ -628,7 +635,7 @@ function drawTimeline() {
   // template captions
   const rs = document.createElement('button'); rs.className = 'btn btn-sm'; rs.textContent = '↺'; rs.title = '자막 시간을 템플릿 기본값으로';
   rs.onclick = () => { delete S.data.tl.cap_times; changed(); }; if (tl.custom.cap_times) lanes.capLab.appendChild(rs);
-  tl.captions.forEach((c, i) => { if (!c.gone) lanes.cap.appendChild(block('cap', i, c.start, c.end, plain(c.text), lanes.cap)); });
+  tl.captions.forEach((c, i) => { if (!c.gone && c.idx !== null) lanes.cap.appendChild(block('cap', i, c.start, c.end, plain(c.text), lanes.cap)); });  // idx null = 영상 내내 고정(헤드라인) → '내용' 탭에서 고침
   tl.texts.forEach((c, i) => lanes.text.appendChild(block('text', i, c.start, c.end, 'T ' + plain(c.text), lanes.text)));
   const sb = document.createElement('div'); sb.className = 'blk small'; sb.style.left = '0'; sb.style.width = Wd(tl.total); sb.style.top = '2px'; sb.style.bottom = '2px';
   sb.textContent = plain(tl.small.text) + '  (항상 표시)'; lanes.small.appendChild(sb);
@@ -698,7 +705,7 @@ function list(type) {  // 저장 대상(최종 시간) 배열
   if (type === 'voice') return S.data.voices;
   return null;
 }
-function capTimes() { return S.tl.captions.map(c => [c.start, c.end]); }
+function capTimes() { return S.tl.captions.filter(c => c.idx !== null).map(c => [c.start, c.end]); }
 function sfxList() { return S.tl.sfx.map(s => ({ t: s.t, name: s.name, vol: s.vol ?? 0.7 })); }
 function itemRange(type, i) {
   if (type === 'cap') { const c = S.tl.captions[i]; return [c.start, c.end]; }

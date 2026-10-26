@@ -74,8 +74,10 @@ def build(pid):
         return None
     for c in A["captions"]:
         if c["gone"]: continue
-        items.append({"id": f"cap{c['idx'] + 1}", "track": "caption", "kind": "template_caption", "start": c["start"], "end": c["end"],
-                      "shot_id": shot_at(c["start"]), "props": {"text": c["text"], "style": c["style"], "field": c.get("key")}})
+        fixed = c["idx"] is None  # 영상 내내 고정(plan의 헤드라인)
+        items.append({"id": f"fixed_{c.get('key') or 'cap'}" if fixed else f"cap{c['idx'] + 1}", "track": "caption",
+                      "kind": "fixed_caption" if fixed else "template_caption", "start": c["start"], "end": c["end"],
+                      "shot_id": None if fixed else shot_at(c["start"]), "props": {"text": c["text"], "style": c["style"], "field": c.get("key")}})
     for i, t in enumerate(A["texts"]):
         items.append({"id": t.get("id") or f"text{i + 1}", "track": "text", "kind": "text", "start": t["start"], "end": t["end"],
                       "shot_id": shot_at(t["start"]), "props": {k: t[k] for k in ("text", "style", "pos", "size", "color", "anim") if k in t}})

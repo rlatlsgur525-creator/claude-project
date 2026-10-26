@@ -26,7 +26,7 @@ SFX_DIR = os.path.join(HERE, "..", "shorts-kit", "sfx")
 PROJECTS = os.path.join(HERE, "projects")
 MUSIC = os.path.join(HERE, "music")
 LIBRARY = os.path.join(HERE, "library")
-TEMPLATES = ["terms_survey", "warning", "experiment", "talk"]
+TEMPLATES = ["terms_survey", "warning", "experiment", "talk", "plan"]
 MAX_SEC = 60  # 1분 초과 쇼츠는 음악 저작권 신고 시 차단될 수 있어 기본 상한으로 둔다
 AUDIO_EXT = (".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".webm")
 IMG_EXT = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
@@ -195,10 +195,12 @@ def assemble(full, pid=None, scale=None):
                      "key": keys[i] if i < len(keys) else None, "idx": i, "gone": e - s < 0.05})
     tl = full.get("tl") or {}
     times = tl.get("cap_times")
+    fixed = [{"start": 0.0, "end": total, "style": "main", **c, "idx": None, "gone": False} for c in extras.get("fixed_caps") or []]
     custom_caps = bool(times and len(times) == len(caps))
     if custom_caps:
         for c, (s, e) in zip(caps, times):
             c["start"], c["end"] = max(0.0, float(s)), min(total, float(e)); c["gone"] = c["end"] - c["start"] < 0.05
+    caps += fixed  # 영상 내내 걸리는 자막(예: plan의 헤드라인) — 장면 배치·tl.cap_times와 상관없이 0초~끝
     if tl.get("sfx") is not None:
         sfx_out = tl["sfx"]
     else:
@@ -398,7 +400,7 @@ def render(pid, preview=True):
             a = float(p.get("in", 0))
             segs.append({"src": media_path(pid, p["src"]), "in": a, "out": a + p["dur"], "fit": p.get("fit", "crop"),
                          "zoom": "none", "mute": float(p.get("vol", 1)) == 0})
-    caps = [{k: v for k, v in c.items() if k in ("start", "end", "text", "style", "anim", "pos")} for c in A["captions"] if not c["gone"]]
+    caps = [{k: v for k, v in c.items() if k in ("start", "end", "text", "style", "anim", "pos", "size")} for c in A["captions"] if not c["gone"]]
     for t in A["texts"]:
         caps.append({k: t[k] for k in ("start", "end", "text", "style", "anim", "pos", "size", "color") if t.get(k) not in (None, "")})
         caps[-1]["layer"] = 1

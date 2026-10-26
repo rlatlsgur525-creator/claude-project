@@ -6,7 +6,7 @@
 
 1. `git pull` → `docs/STATUS.md` → `docs/upgrade-guide.md`(사용자의 고도화 지침서 요약) → `docs/phase0-audit.md`
 2. 지금 진행 중인 큰 흐름: **고도화 지침서 Phase 1~2 완료 → 다음은 실제 사용성 평가 후 Phase 4(AI 장면 계획)**. 지침서 원칙: 작은 단위로, 기존 렌더 엔진 재작성 금지, 미구현을 구현됐다고 말하지 않기, 태블릿 가로 스크롤 금지.
-3. 검증: `cd studio && python tests/test_scenes.py` (최종 MP4까지: `--final`). 39개 검사.
+3. 검증: `cd studio && python tests/test_scenes.py` (최종 MP4까지: `--final`). 47개 검사.
 4. 실행: 바탕화면 "미라클 쇼츠 스튜디오" 또는 `studio/start.bat` → http://127.0.0.1:8765
 5. 새 컴퓨터: Python 3.12 + `pip install numpy pillow` (벡터 도구: `vtracer resvg-py`) + ffmpeg(`winget install Gyan.FFmpeg`). 마스코트 동작 클립(`studio/library/anim/*.mp4`)은 저장소에 들어 있다.
 
@@ -47,6 +47,7 @@
 | `hunter/results/outliers_1024.csv` | 분석한 60개 영상 전체 수치 (17개 통과) |
 | `hunter/results/vids.tsv`, `ch.tsv` | 스캔 원자료 (영상, 채널 통계) |
 | `report/index.html`, `data.json` | 약관 전수조사 리포트 페이지. 데이터는 data.json으로 분리돼 있어서 매달 개정 때 데이터만 교체하면 됨 |
+| `.claude/skills/chat-shorts/SKILL.md` | **채팅으로 쇼츠 만들기** 절차(대본 → 컷 나누기 → 스토리보드 → 키프레임(크레딧 먼저 묻기) → 미리보기 → 헤드라인 → 최종). 도구는 `studio/chat_tools.py` (new·update·keyframe·show·render) |
 | `docs/ai-image-vector.md` | 이미지 모델 → 벡터 그림: `brand/mascot/vectorize.py`(포즈 → SVG), `gfx.svg_img`(색 바꾸기), 작업 순서 규칙 (2026-10-26) |
 | `hunter/results/format_blueprints_1024.md` | 포맷 5개의 **초 단위 구조·편집 수치** (Higgsfield 장면 분석, 2026-10-24). 템플릿을 만들거나 고칠 때 기준 |
 | `studio/` | **미라클 쇼츠 스튜디오** (로컬 웹 툴). 아래 '스튜디오' 참고 |
@@ -59,7 +60,7 @@
 - **화면 (v2, 영상 편집기형):** 오른쪽 영상은 항상 보임(좁은 화면에선 위에 고정). 아래 타임라인 트랙: 장면 / 자막(끌어서 이동·양 끝으로 길이) / 준법 표기 / 효과음(높이 = 크기, 끌어서 이동, + 추가) / 배경음악(크기·덕킹) / 실제 음량 파형(렌더 결과 dB). 항목을 누르면 왼쪽 '선택한 항목'에서 문구·시간·소리·크기를 고친다. "고치면 자동 미리보기"가 켜져 있으면 2초 뒤 자동 렌더.
 - **타임라인 수정값 저장:** `data.json`의 `tl.cap_times`, `tl.sfx`, `bgm` (↺ 버튼 = 템플릿 기본값으로). 렌더 상태는 `render.json`(데이터 해시)로 "영상 최신 / 고친 내용 미반영"을 판단.
 - **배경음악:** `studio/music/` 폴더에 음원을 넣고 고른다(저장소에 올리지 않음). 저작권 걱정 없는 음원만.
-- **템플릿 4개** (`studio/templates/`): `terms_survey` 약관 전수조사(30초), `warning` 경고형(25초, B 설계도), `experiment` 비교 실험(30초, E 설계도·숫자는 코드 계산), `talk` 말하는 마스코트(대본 줄 + 프롬프터 녹음, 2026-10-26)
+- **템플릿 4개** (`studio/templates/`): `terms_survey` 약관 전수조사(30초), `warning` 경고형(25초, B 설계도), `experiment` 비교 실험(30초, E 설계도·숫자는 코드 계산), `talk` 말하는 마스코트(대본 줄 + 프롬프터 녹음, 2026-10-26), `plan` 채팅 스토리보드(대본 한 줄 = 장면 하나, 키프레임 이미지·영상을 끼움, 헤드라인 고정, 2026-10-26)
 - **템플릿 규약:** `NAME, DESC, FIELDS, validate(data), build(data) -> (scenes, captions, sfx, note)`. 새 템플릿은 `pipeline.TEMPLATES`에 키를 추가한다. 그리기 공통 도구는 `studio/gfx.py`. 선택: `build`가 다섯째 값 `extras`(마스코트 트랙·박스 자막 위치·템플릿 음성)를 돌려줄 수 있고, `NON_SCENE` 키인데 그림에 쓰는 키는 `SCENE_KEYS`로 알린다.
 - **자동 준법:** 심의필 번호가 비면 화면에 "심의 전 · 게시 불가", 예시 데이터 표기, 단정 표현·긴 자막·60초 초과 경고. 목록에 심의 상태(심의 전/완료/만료) 표시.
 - **Claude가 초안을 만들 때:** `studio/projects/<이름>/data.json`을 템플릿 기본값 + 주제 내용으로 채워 저장하면, 사용자가 툴에서 열어 고친다.

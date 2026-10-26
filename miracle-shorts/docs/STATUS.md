@@ -31,6 +31,14 @@
 - 구도 확정: 상반신, 밝은 회색 배경(#EEF0F4), 포인트 카드는 위, 자막은 가슴 위 박스(y≈1430), 준법 표기는 맨 위.
 - Higgsfield 크레딧 잔액 152.75 (2026-10-25).
 
+## 채팅으로 쇼츠 만들기 (2026-10-26, 지침서 Phase 4·5의 1차 — Claude Code가 채팅창 역할)
+- ✅ 템플릿 `plan`(채팅 스토리보드): 비트 = 장면 `b1…`, 키프레임 없으면 '키프레임 대기' 화면(그림 설명 표시), 헤드라인은 `fixed_caps`로 0초~끝 고정(위 84px, 노란 강조), 녹음 `voice.marks` 있으면 장면 시작이 녹음을 따름
+- ✅ `studio/chat_tools.py`: `new`(plan.json → 프로젝트, shots[bN].prompt/desc/purpose) · `update`(키프레임 유지) · `keyframe`(이미지·영상 → shots[bN] kind image/video + 승인된 keyframes) · `show`(장면표) · `render`(미리보기/최종 + 장면 모음 PNG)
+- ✅ 스킬 `miracle-shorts/.claude/skills/chat-shorts/SKILL.md`(이 폴더 아래에서 Claude Code로 작업하면 쓰인다. 저장소 루트 `.claude`는 sparse checkout 범위 밖이라 여기에 둠): 단계별 확인, 크레딧 쓰기 전 반드시 묻기, 장면 1개 먼저
+- ✅ 스튜디오: 대본 칸이 템플릿 `columns`대로 그려짐(plan = 그림 설명·길이, talk = 카드·동작 그대로). 헤드라인은 타임라인 자막 줄에 안 보이고 '내용' 탭에서 고침
+- 예시 프로젝트 `05-채팅-스토리보드-예시`(키프레임 전). 검사 3c(8개) 추가 → 전체 47개 통과
+- **미검증 · 미구현:** Higgsfield 생성 → 키프레임까지 실제로 이어 본 적 없음(크레딧 사용이라 사용자 확인 후 첫 실행). AI가 대본을 나누는 품질은 매번 사람이 스토리보드에서 확인해야 함. 스튜디오 화면 안 채팅창(방식 B)·TTS 없음. 키프레임 영상은 `vol 0`(소리 끔)으로만 넣음
+
 ## 이미지 모델 → 벡터 그림 (2026-10-26, `docs/ai-image-vector.md`)
 - ✅ `brand/mascot/vectorize.py`: 포즈 6개 → `studio/library/mascot_svg/*.svg` (`make_cutouts.bg_mask` 공유, PNG 결과 그대로)
 - ✅ `gfx.svg_img(name, h, ink, paper, edge, mirror)`: 색 바꾸기·고해상도. 템플릿은 아직 PNG(`draw_mascot`·`mascot_avatar`) 그대로

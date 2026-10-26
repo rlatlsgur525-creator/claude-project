@@ -136,6 +136,33 @@ def main():
     check(any(v["src"].endswith("script_test.wav") for v in edl["voices"]), "edl: 대본 녹음이 소리로 들어감")
     shutil.rmtree(d0)
 
+    print("3c) 채팅 스토리보드 (chat_tools, 임시 프로젝트, 미리보기 렌더)")
+    import chat_tools, tempfile
+    pid = "_test_plan"; shutil.rmtree(os.path.join(pipeline.PROJECTS, pid), ignore_errors=True)
+    plan = {"title": pid, "headline": "시험 헤드라인/[강조]", "beats": [
+        {"text": "첫 장면 자막", "prompt": "첫 그림", "purpose": "훅"}, {"text": "둘째 장면 [강조] 자막", "prompt": "둘째 그림"},
+        {"text": "셋째 장면 자막", "prompt": "셋째 그림", "dur": 3.0}]}
+    pf = os.path.join(tempfile.mkdtemp(), "plan.json"); json.dump(plan, open(pf, "w", encoding="utf-8"), ensure_ascii=False)
+    chat_tools.cmd_new(pid, pf, force=True)
+    A = pipeline.assemble(pipeline.load(pid), pid)
+    check([s["id"] for s in A["shots"]] == ["b1", "b2", "b3"] and A["shots"][2]["dur"] == 3.0, "계획 → 장면 b1~b3, 길이 준 장면은 그 길이(3초)")
+    head = [c for c in A["captions"] if c["idx"] is None]
+    check(len(head) == 1 and head[0]["start"] == 0 and head[0]["end"] == A["total"], "헤드라인이 0초~끝까지 고정 자막으로 들어감")
+    check(not model.build(pid)["validation"]["errors"], "계획 프로젝트 모델 검증 통과")
+    chat_tools.cmd_keyframe(pid, "b2", os.path.join(pipeline.LIBRARY, "mascot", "think.png"), "시험 그림")
+    d = raw(pid)
+    check(d["shots"]["b2"]["kind"] == "image" and d["shots"]["b2"]["keyframes"][0]["approved"], "키프레임 → b2가 이미지 장면, 승인된 키프레임 기록")
+    r = pipeline.render(pid, True)
+    check(r["ok"] and sorted(r["shots_drawn"]) == ["b1", "b3"], f"렌더: 키프레임 없는 b1·b3만 대기 화면을 그림 {r.get('shots_drawn')}")
+    edl = json.load(open(os.path.join(pipeline.PROJECTS, pid, "edl.json"), encoding="utf-8"))
+    check(any(c.get("style") == "top" and c.get("size") == 84 and c["text"] == plan["headline"] for c in edl["captions"]), "edl: 헤드라인이 위 큰 글씨로 들어감")
+    check(any(s.get("src", "").endswith("kf_b2.png") for s in edl["segments"]), "edl: b2 구간이 키프레임 이미지")
+    plan["headline"] = "바뀐 헤드라인"; plan["beats"][0]["text"] = "바뀐 첫 자막"; json.dump(plan, open(pf, "w", encoding="utf-8"), ensure_ascii=False)
+    chat_tools.cmd_update(pid, pf)
+    d = raw(pid)
+    check(d["headline"] == "바뀐 헤드라인" and d["shots"]["b2"]["kind"] == "image", "update: 헤드라인·자막만 바뀌고 키프레임은 그대로")
+    shutil.rmtree(os.path.join(pipeline.PROJECTS, pid))
+
     if final:
         print("4) 기존 세 프로젝트 최종 MP4")
         for p in SEEDS:
@@ -147,5 +174,5 @@ if __name__ == "__main__":
     try: main()
     except AssertionError as e:
         print("  ✗ 실패:", e)
-        for t in ("_test_shots", "_test_talk"): shutil.rmtree(os.path.join(pipeline.PROJECTS, t), ignore_errors=True)
+        for t in ("_test_shots", "_test_talk", "_test_plan"): shutil.rmtree(os.path.join(pipeline.PROJECTS, t), ignore_errors=True)
         sys.exit(1)
