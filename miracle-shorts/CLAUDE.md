@@ -8,7 +8,7 @@
 2. 지금 진행 중인 큰 흐름: **고도화 지침서 Phase 1~2 완료 → 다음은 실제 사용성 평가 후 Phase 4(AI 장면 계획)**. 지침서 원칙: 작은 단위로, 기존 렌더 엔진 재작성 금지, 미구현을 구현됐다고 말하지 않기, 태블릿 가로 스크롤 금지.
 3. 검증: `cd studio && python tests/test_scenes.py` (최종 MP4까지: `--final`). 39개 검사.
 4. 실행: 바탕화면 "미라클 쇼츠 스튜디오" 또는 `studio/start.bat` → http://127.0.0.1:8765
-5. 새 컴퓨터: Python 3.12 + `pip install numpy pillow` + ffmpeg(`winget install Gyan.FFmpeg`). 마스코트 동작 클립(`studio/library/anim/*.mp4`)은 저장소에 들어 있다.
+5. 새 컴퓨터: Python 3.12 + `pip install numpy pillow` (벡터 도구: `vtracer resvg-py`) + ffmpeg(`winget install Gyan.FFmpeg`). 마스코트 동작 클립(`studio/library/anim/*.mp4`)은 저장소에 들어 있다.
 
 ## 사용자
 
@@ -47,6 +47,7 @@
 | `hunter/results/outliers_1024.csv` | 분석한 60개 영상 전체 수치 (17개 통과) |
 | `hunter/results/vids.tsv`, `ch.tsv` | 스캔 원자료 (영상, 채널 통계) |
 | `report/index.html`, `data.json` | 약관 전수조사 리포트 페이지. 데이터는 data.json으로 분리돼 있어서 매달 개정 때 데이터만 교체하면 됨 |
+| `docs/ai-image-vector.md` | 이미지 모델 → 벡터 그림: `brand/mascot/vectorize.py`(포즈 → SVG), `gfx.svg_img`(색 바꾸기), 작업 순서 규칙 (2026-10-26) |
 | `hunter/results/format_blueprints_1024.md` | 포맷 5개의 **초 단위 구조·편집 수치** (Higgsfield 장면 분석, 2026-10-24). 템플릿을 만들거나 고칠 때 기준 |
 | `studio/` | **미라클 쇼츠 스튜디오** (로컬 웹 툴). 아래 '스튜디오' 참고 |
 | `shorts/01-surgery/` | 스튜디오 이전에 손으로 만든 수술비 편 첫 시험본 (make_scenes.py + edl.json). 같은 내용이 스튜디오 `01-수술비` 프로젝트로 옮겨짐 |

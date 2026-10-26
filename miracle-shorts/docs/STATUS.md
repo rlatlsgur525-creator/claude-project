@@ -31,6 +31,13 @@
 - 구도 확정: 상반신, 밝은 회색 배경(#EEF0F4), 포인트 카드는 위, 자막은 가슴 위 박스(y≈1430), 준법 표기는 맨 위.
 - Higgsfield 크레딧 잔액 152.75 (2026-10-25).
 
+## 이미지 모델 → 벡터 그림 (2026-10-26, `docs/ai-image-vector.md`)
+- ✅ `brand/mascot/vectorize.py`: 포즈 6개 → `studio/library/mascot_svg/*.svg` (`make_cutouts.bg_mask` 공유, PNG 결과 그대로)
+- ✅ `gfx.svg_img(name, h, ink, paper, edge, mirror)`: 색 바꾸기·고해상도. 템플릿은 아직 PNG(`draw_mascot`·`mascot_avatar`) 그대로
+- ⏳ 소품 라이브러리(보험증권·약관 PDF·병원·계산기·돈봉투) 벡터화
+- ⏳ 시리즈 팔레트 프리셋 템플릿 적용 (사용자 확인 후) — 적용 전 SVG 테두리 두께를 PNG와 맞출 것
+- ⏳ 줌인·얼굴 클로즈업에 SVG 사용
+
 ## 콘텐츠 쪽 다음 할 일 (변함없음)
 1. 수술비 편 실제 약관 데이터 → 리포트·쇼츠의 예시 값 교체, 준법감시 사전 심의
 2. `hunter/scan.py` 실제 실행(YouTube API 키는 환경변수로만)

@@ -14,8 +14,8 @@ SKIP = {"sheet.png", "original.png"}  # 설정표·원본 시안(좌우 2컷)은
 MAX_H = 1400
 STROKE = 14  # 흰 테두리 두께(px, 높이 1400 기준)
 
-def cutout(path, out):
-    im = Image.open(path).convert("RGB")
+def bg_mask(im):
+    """가장자리와 이어진 흰 배경 = True 인 배열 (vectorize.py도 같이 쓴다)"""
     w, h = im.size
     KEY = (255, 0, 255)  # 바깥 흰색을 이 색으로 채운 뒤 투명 처리 (L 모드 floodfill은 이 Pillow에서 채워지지 않았다)
     c = im.copy()
@@ -23,7 +23,12 @@ def cutout(path, out):
     for s in seeds:
         if sum(c.getpixel(s)) > 228 * 3 and c.getpixel(s) != KEY: ImageDraw.floodfill(c, s, KEY, thresh=40)
     a = np.asarray(c)
-    bg = (a[..., 0] == 255) & (a[..., 1] == 0) & (a[..., 2] == 255)
+    return (a[..., 0] == 255) & (a[..., 1] == 0) & (a[..., 2] == 255)
+
+def cutout(path, out):
+    im = Image.open(path).convert("RGB")
+    w, h = im.size
+    bg = bg_mask(im)
     alpha = Image.fromarray(np.where(bg, 0, 255).astype("uint8")).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(0.8))
     rgba = im.copy(); rgba.putalpha(alpha)
     bbox = alpha.point(lambda v: 255 if v > 20 else 0).getbbox()
@@ -39,7 +44,6 @@ def cutout(path, out):
     sticker.alpha_composite(canvas)
     sticker.save(out, optimize=True)
     return sticker.size
-    return rgba.size
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)

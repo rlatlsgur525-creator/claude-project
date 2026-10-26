@@ -103,12 +103,30 @@ def grid(n, x0, y0, x1, y1, cols=None, gap=20, aspect=None):
 
 # ---------------- 마스코트 (brand/mascot/README.md, studio/library/mascot/*.png) ----------------
 MASCOT_DIR = os.path.join(HERE, "library", "mascot")
+SVG_DIR = os.path.join(HERE, "library", "mascot_svg")
 _mc = {}
 def mascot_img(name, h, mirror=False):
     k = (name, int(h), mirror)
     if k not in _mc:
         im = Image.open(os.path.join(MASCOT_DIR, name + ".png")).convert("RGBA")
         im = im.resize((max(1, round(im.width * h / im.height)), int(h)), Image.LANCZOS)
+        if mirror: im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        _mc[k] = im
+    return _mc[k]
+
+def svg_img(name, h, ink="#000", paper="#fff", edge=None, mirror=False):
+    """벡터 포즈(library/mascot_svg/<name>.svg, brand/mascot/vectorize.py로 만듦)를 높이 h로 그린다.
+    PNG와 달리 크게 키워도 선이 선명하고, 잉크·바탕·테두리 색을 장면 팔레트에 맞춰 바꿀 수 있다. 필요: pip install resvg-py"""
+    k = ("svg", name, int(h), ink, paper, edge, mirror)
+    if k not in _mc:
+        import io, re, resvg_py
+        svg = open(os.path.join(SVG_DIR, name + ".svg"), encoding="utf-8").read()
+        edge = edge or paper
+        svg = re.sub(r"\.edge\{fill:[^;]+;stroke:[^;]+;", f".edge{{fill:{edge};stroke:{edge};", svg)
+        svg = re.sub(r"\.paper\{fill:[^}]+\}", f".paper{{fill:{paper}}}", svg)
+        svg = re.sub(r"\.ink\{fill:[^}]+\}", f".ink{{fill:{ink}}}", svg)
+        vw, vh = map(float, re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', svg).groups())
+        im = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=svg, width=max(1, round(vw * h / vh)), height=int(h))))).convert("RGBA")
         if mirror: im = im.transpose(Image.FLIP_LEFT_RIGHT)
         _mc[k] = im
     return _mc[k]

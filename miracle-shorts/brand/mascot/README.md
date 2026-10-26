@@ -23,6 +23,7 @@
 | `raw/<포즈>.png` | 포즈 원본 (흰 배경) |
 | `../../studio/library/mascot/<포즈>.png` | **스튜디오에서 바로 쓰는 투명 PNG** (흰 테두리). 미디어 탭 [공용]에 보인다 |
 | `make_cutouts.py` | raw → 투명 PNG 변환. 새 포즈를 raw에 넣고 실행 |
+| `vectorize.py` | raw → SVG 벡터(`../../studio/library/mascot_svg/<포즈>.svg`). 확대해도 선명하고 `gfx.svg_img`로 색을 바꿀 수 있다 (`docs/ai-image-vector.md`) |
 
 현재 포즈: `point`(옆을 가리키며 설명) · `surprised`(놀람, 경고 훅) · `think`(턱 괴고 태블릿 분석) · `thumbsup`(좋은 결과) · `stop`(팔로 X, "하지 마세요") · `wave`(인사)
 
@@ -50,6 +51,7 @@ pure white background, single character only, no text, no props besides the tabl
 ```
 
 4. 받은 PNG를 `raw/<포즈이름>.png`로 저장 → `python make_cutouts.py <포즈이름>.png` → 스튜디오 [공용]에 나타남.
+5. 벡터도 만든다: `python vectorize.py <포즈이름>.png` → `studio/library/mascot_svg/<포즈이름>.svg` (필요: `pip install vtracer resvg-py`)
 
 ## 다음에 만들 것 (후보)
 
