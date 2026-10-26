@@ -156,7 +156,7 @@ def main():
     check(r["ok"] and sorted(r["shots_drawn"]) == ["b1", "b3"], f"렌더: 키프레임 없는 b1·b3만 대기 화면을 그림 {r.get('shots_drawn')}")
     edl = json.load(open(os.path.join(pipeline.PROJECTS, pid, "edl.json"), encoding="utf-8"))
     check(any(c.get("style") == "top" and c.get("size") == 84 and c["text"] == plan["headline"] for c in edl["captions"]), "edl: 헤드라인이 위 큰 글씨로 들어감")
-    check(any(s.get("src", "").endswith("kf_b2.png") for s in edl["segments"]), "edl: b2 구간이 키프레임 이미지")
+    check(any(s.get("src", "").endswith("kf_b2.jpg") for s in edl["segments"]), "edl: b2 구간이 키프레임 이미지")
     plan["headline"] = "바뀐 헤드라인"; plan["beats"][0]["text"] = "바뀐 첫 자막"; json.dump(plan, open(pf, "w", encoding="utf-8"), ensure_ascii=False)
     chat_tools.cmd_update(pid, pf)
     d = raw(pid)

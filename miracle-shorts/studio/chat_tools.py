@@ -57,7 +57,15 @@ def cmd_keyframe(pid, shot, f, prompt=None):
     if ext not in IMG + VID: sys.exit(f"이미지({', '.join(IMG)})나 영상({', '.join(VID)})만 넣을 수 있어요")
     d = raw(pid); n = len(T.beats(d))
     if not (shot.startswith("b") and shot[1:].isdigit() and 1 <= int(shot[1:]) <= n): sys.exit(f"장면은 b1~b{n} 중 하나예요")
-    rel = f"media/kf_{shot}{ext}"; shutil.copyfile(f, os.path.join(pdir(pid), rel))
+    for old in os.listdir(os.path.join(pdir(pid), "media")):  # 같은 장면의 예전 키프레임(다른 확장자)
+        if os.path.splitext(old)[0] == f"kf_{shot}": os.remove(os.path.join(pdir(pid), "media", old))
+    if ext in IMG:  # 생성 이미지(2k PNG ≈ 6MB) → 영상 크기에 맞춘 JPG(수백 KB). 저장소가 무거워지지 않게
+        from PIL import Image
+        im = Image.open(f).convert("RGB")
+        if im.height > 2160: im = im.resize((round(im.width * 2160 / im.height), 2160), Image.LANCZOS)
+        rel = f"media/kf_{shot}.jpg"; im.save(os.path.join(pdir(pid), rel), quality=90)
+    else:
+        rel = f"media/kf_{shot}{ext}"; shutil.copyfile(f, os.path.join(pdir(pid), rel))
     o = d.setdefault("shots", {}).setdefault(shot, {})
     o.update(kind="video" if ext in VID else "image", src=rel, fit="crop")
     if ext in VID: o.update(**{"in": 0.0, "vol": 0})

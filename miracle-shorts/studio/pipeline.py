@@ -436,7 +436,7 @@ def render(pid, preview=True):
     lu, pk = loudness(os.path.join(pdir, out))
     if lu is not None:
         ok = -15.5 <= lu <= -12.5 and (pk is None or pk <= -0.5)
-        checks.insert(1, ("ok" if ok else "warn", f"음량 {lu:.1f} LUFS · 최고 {pk:.1f} dB (목표 -14 LUFS 근처)"))
+        checks.insert(1, ("ok" if ok else "warn", f"음량 {lu:.1f} LUFS · 최고 " + (f"{pk:.1f} dB" if pk is not None else "측정 안 됨") + " (목표 -14 LUFS 근처)"))
     checks.insert(1, ("ok", "1080×1920 · 30fps · H.264/AAC"))
     return {"ok": True, "video": f"/files/{pid}/{out}", "kind": kind, "checks": checks, "wave": wave, "cached": cached,
             "shots_drawn": drawn, "shots_reused": reused}

@@ -20,9 +20,12 @@ description: 채팅만으로 미라클 쇼츠를 만든다 — 대본·주제를
 3. **스토리보드 보여 주기** — 계획을 `plan.json`으로 쓰고(스크래치 폴더), `python chat_tools.py new <id> plan.json` → 출력된 장면표를 채팅에 표로 보여 준다(장면·시간·자막·그림 설명). 헤드라인도 함께 제안한다.
    - 프로젝트 id: `05-주제` 식(띄어쓰기 대신 -). 고칠 때는 `update`(키프레임 유지).
    - 그림 설명(prompt)은 장면마다 한 문장, 모든 장면에 같은 **스타일 한 줄**을 붙인다(plan.json `style`). 기본 스타일: 흑백 2D 플랫 벡터 + 강조 1색, 글자 없음, 9:16. 마스코트가 나오는 장면은 Higgsfield 요소 `miracle-fp`(`brand/mascot/README.md`).
-4. **키프레임 만들기 — 반드시 먼저 묻는다**: "키프레임 N장, 약 X크레딧(이미지 장당 약 0.5, 영상으로 움직이면 클립당 7.5~12.5)" + 잔액을 보여 주고 '좋아'를 받은 뒤에만 생성한다.
+4. **키프레임 만들기 — 반드시 먼저 묻는다**: 잔액(`balance`)과 비용(`generate_image`에 `get_cost: true` — 생성하지 않음)을 확인해 "키프레임 N장, X크레딧, 남는 잔액"을 보여 주고 '좋아'를 받은 뒤에만 생성한다.
+   - 확인된 값(2026-10-26): Nano Banana Pro(`nano_banana_pro`) 9:16·2k = **장당 2크레딧**, 생성에 약 1.5~2분. 영상(움직임)은 클립당 7.5~12.5(Wan 2.7, STATUS.md 기준 — 생성 전 get_cost로 다시 확인).
+   - 그림 설명에 항상 붙일 것: 스타일 한 줄 + "no text, no letters" + **"keep the lower third plain (captions go there), subject in the upper-middle"** — 아래 자막(y≈1290)과 헤드라인(y≈250)이 그림의 중요한 부분을 가리지 않게.
    - **장면 1개 먼저**: 첫 장면 하나만 만들어 보여 주고 그림체를 확인받은 뒤 나머지를 만든다.
-   - 생성: Higgsfield MCP의 이미지 생성(`generate_image`, 9:16, 스키마는 ToolSearch로 불러온다) → 결과 파일을 스크래치 폴더에 받아 `python chat_tools.py keyframe <id> b3 <파일> --prompt "…"`.
+   - 생성: Higgsfield MCP의 이미지 생성(`generate_image`, 9:16, `use_unlim: false`, 스키마는 ToolSearch로 불러온다. 처음엔 `get_preferences`) → `jobs_wait`로 기다려 `result_url`을 스크래치 폴더에 받고(curl) 직접 보고(Read) → `python chat_tools.py keyframe <id> b3 <파일> --prompt "…"` (이미지는 JPG로 줄여 media/에 저장된다).
+   - 결과가 그림 설명과 다르면(예: 보험증권 대신 신문) 다시 만들기 전에 비용을 알리고 묻는다.
    - 영상(움직임)은 사용자가 원할 때 그 장면만. 생성 결과는 사용자의 계정·크레딧이므로 실패·재시도도 알린다.
 5. **미리보기** — `python chat_tools.py render <id> --sheet <스크래치>/sheet.png` → 장면 모음 이미지를 직접 보고(Read) 이상한 장면(글자 겹침, 얼굴 잘림, 스타일 불일치)을 먼저 고친 뒤 보여 준다. 영상 경로와 점검 결과(!)를 함께 알린다.
 6. **헤드라인·자막 포인트** — 요청대로 `update`로 바꾸고 다시 미리보기. 헤드라인은 영상 내내 위에 고정('/' 줄바꿈, [ ] 노란 강조).

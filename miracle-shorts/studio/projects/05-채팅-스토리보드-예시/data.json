@@ -31,7 +31,19 @@
  "shots": {
   "b1": {
    "prompt": "보험증권을 들여다보며 고개를 갸웃하는 직장인",
-   "desc": "보험증권을 들여다보며 고개를 갸웃하는 직장인"
+   "desc": "보험증권을 들여다보며 고개를 갸웃하는 직장인",
+   "kind": "image",
+   "src": "media/kf_b1.jpg",
+   "fit": "crop",
+   "keyframes": [
+    {
+     "src": "media/kf_b1.jpg",
+     "prompt": "A Korean office worker in his 30s looking closely at an insurance policy document and tilting his head in confusion. Flat 2D vector, black and white + yellow #FFD23F, no text, 9:16 (Higgsfield nano_banana_pro 2k, job 13666d04)",
+     "gen_status": "generated",
+     "approved": true,
+     "role": "start"
+    }
+   ]
   },
   "b2": {
    "prompt": "여러 장의 약관 문서가 책상 위에 펼쳐진 모습",
