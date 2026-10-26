@@ -125,8 +125,8 @@ def svg_img(name, h, ink="#000", paper="#fff", edge=None, mirror=False):
         svg = re.sub(r"\.edge\{fill:[^;]+;stroke:[^;]+;", f".edge{{fill:{edge};stroke:{edge};", svg)
         svg = re.sub(r"\.paper\{fill:[^}]+\}", f".paper{{fill:{paper}}}", svg)
         svg = re.sub(r"\.ink\{fill:[^}]+\}", f".ink{{fill:{ink}}}", svg)
-        vw, vh = map(float, re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', svg).groups())
-        im = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=svg, width=max(1, round(vw * h / vh)), height=int(h))))).convert("RGBA")
+        # 높이만 준다: resvg는 너비·높이를 같이 주면 너비에 맞춰 높이가 몇 px 달라진다
+        im = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=svg, height=int(h))))).convert("RGBA")
         if mirror: im = im.transpose(Image.FLIP_LEFT_RIGHT)
         _mc[k] = im
     return _mc[k]

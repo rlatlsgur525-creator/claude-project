@@ -35,7 +35,7 @@
 - ✅ `brand/mascot/vectorize.py`: 포즈 6개 → `studio/library/mascot_svg/*.svg` (`make_cutouts.bg_mask` 공유, PNG 결과 그대로)
 - ✅ `gfx.svg_img(name, h, ink, paper, edge, mirror)`: 색 바꾸기·고해상도. 템플릿은 아직 PNG(`draw_mascot`·`mascot_avatar`) 그대로
 - ⏳ 소품 라이브러리(보험증권·약관 PDF·병원·계산기·돈봉투) 벡터화
-- ⏳ 시리즈 팔레트 프리셋 템플릿 적용 (사용자 확인 후) — 적용 전 SVG 테두리 두께를 PNG와 맞출 것
+- ⏳ 시리즈 팔레트 프리셋 템플릿 적용 (사용자 확인 후) (SVG 크기·테두리는 PNG와 맞춤 완료)
 - ⏳ 줌인·얼굴 클로즈업에 SVG 사용
 
 ## 콘텐츠 쪽 다음 할 일 (변함없음)

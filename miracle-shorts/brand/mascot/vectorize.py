@@ -12,11 +12,13 @@ import os, re, sys, tempfile
 import numpy as np
 from PIL import Image
 import vtracer
-from make_cutouts import RAW, SKIP, bg_mask
+from make_cutouts import RAW, SKIP, MAX_H, STROKE, bg_mask
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "..", "studio", "library", "mascot_svg")
-EDGE = 28  # 스티커 테두리 두께(원본 px, 높이 2400 기준 — PNG 쪽 14px@1400과 비슷한 비율)
+# PNG(make_cutouts.cutout)와 같은 기하를 원본 px로 환산한다 → 같은 높이로 그리면 인물 크기·테두리·여백이 PNG와 같다
+#   PNG: 실루엣 bbox ±CROP → 높이 MAX_H로 축소(f) → 바깥 여백 STROKE+4 → 테두리 STROKE//2 번 1px 팽창(+원본에서 1px)
+CROP = 12
 
 def trace(mask):
     """True 영역을 검은 면으로 보고 패스 목록(d, transform)을 돌려준다"""
@@ -35,12 +37,16 @@ def vectorize(path, out):
     im = Image.open(path).convert("RGB")
     w, h = im.size
     body = ~bg_mask(im)
-    ys, xs = np.nonzero(body); pad = EDGE + 8
-    x0, y0, x1, y1 = max(0, xs.min() - pad), max(0, ys.min() - pad), min(w, xs.max() + pad), min(h, ys.max() + pad)
-    ink = np.asarray(im.convert("L")) < 128
+    ys, xs = np.nonzero(body)
+    cx0, cy0, cx1, cy1 = max(0, xs.min() - CROP), max(0, ys.min() - CROP), min(w, xs.max() + 1 + CROP), min(h, ys.max() + 1 + CROP)
+    f = min(1.0, MAX_H / (cy1 - cy0))  # PNG가 줄인 배율
+    pad = round((STROKE + 4) / f); edge = (STROKE // 2) / f + 1
+    M = pad  # 자른 영역 + 바깥 여백이 원본 밖으로 나갈 수 있어 빈 칸을 덧댄다
+    body = np.pad(body, M); ink = np.pad(np.asarray(im.convert("L")) < 128, M)
+    x0, y0, x1, y1 = cx0 + M - pad, cy0 + M - pad, cx1 + M + pad, cy1 + M + pad
     sil, lines = trace(body[y0:y1, x0:x1]), trace((ink & body)[y0:y1, x0:x1])
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{x1 - x0}" height="{y1 - y0}" viewBox="0 0 {x1 - x0} {y1 - y0}">\n'
-           f'<style>.edge{{fill:#fff;stroke:#fff;stroke-width:{EDGE * 2};stroke-linejoin:round}} .paper{{fill:#fff}} .ink{{fill:#000}}</style>\n'
+           f'<style>.edge{{fill:#fff;stroke:#fff;stroke-width:{edge * 2:.1f};stroke-linejoin:round}} .paper{{fill:#fff}} .ink{{fill:#000}}</style>\n'
            f'{paths(sil, "edge")}\n{paths(sil, "paper")}\n{paths(lines, "ink")}\n</svg>\n')
     with open(out, "w", encoding="utf-8") as f: f.write(svg)
     return (int(x1 - x0), int(y1 - y0)), len(svg) // 1024

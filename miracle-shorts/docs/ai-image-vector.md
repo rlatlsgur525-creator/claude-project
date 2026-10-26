@@ -26,8 +26,8 @@
 ## 확인 결과 (2026-10-26)
 - `make_cutouts.py`의 배경 판별을 `bg_mask()`로 분리 → `raw/stop.png` 변환 결과가 바꾸기 전과 픽셀까지 같음.
 - `vectorize.py` → point·stop·surprised·think·thumbsup·wave.svg 6개(77~111KB).
+- **PNG와 크기·테두리 맞춤 (2026-10-26):** vectorize.py가 make_cutouts와 같은 기하(실루엣 ±12px → 높이 1400 축소 배율 → 바깥 여백 STROKE+4 → 테두리 STROKE//2 = 7px@1400)를 원본 px로 환산해 쓴다. `svg_img`는 resvg에 높이만 준다(너비·높이를 같이 주면 너비 기준이라 높이가 어긋났다). 6개 포즈 × 높이 820·1436에서 높이 일치, 너비 0~2px(반올림), 바깥선 위치 평균 0.5px 이내, 불투명 영역 IoU 0.98~0.99. 남은 차이: PNG 테두리는 흐림(blur 1px)으로 부드럽고 SVG는 또렷하다.
 - 어두운 배경 비교: `svg_img('point',820)`은 PNG와 모양이 같고, `ink='#1F2A44', paper='#F3E9D2'`는 남색 정장·크림색 셔츠·크림색 테두리로 나옴. `svg_img('point', 6000)` 얼굴 확대도 선이 선명함.
-- 알려진 차이: SVG 흰 테두리가 PNG보다 조금 두껍다(EDGE 28 → 820px 높이에서 약 11px, PNG는 약 8px). resvg가 높이를 몇 px 다르게 낼 수 있다(820 요청 → 822). 템플릿에 쓰기 전에 맞출 것.
 - `tests/test_scenes.py` 39개 통과(바꾸기 전과 같은 개수).
 
 ## 다음 (아직 안 함)
