@@ -26,7 +26,7 @@ SFX_DIR = os.path.join(HERE, "..", "shorts-kit", "sfx")
 PROJECTS = os.path.join(HERE, "projects")
 MUSIC = os.path.join(HERE, "music")
 LIBRARY = os.path.join(HERE, "library")
-TEMPLATES = ["terms_survey", "warning", "experiment"]
+TEMPLATES = ["terms_survey", "warning", "experiment", "talk"]
 MAX_SEC = 60  # 1분 초과 쇼츠는 음악 저작권 신고 시 차단될 수 있어 기본 상한으로 둔다
 AUDIO_EXT = (".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".webm")
 IMG_EXT = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
@@ -285,6 +285,7 @@ def shot_time_map(shots):
     return ShotTimeMap(shots)
 
 ANIM_DIR = os.path.join(LIBRARY, "anim")
+MASCOT_KEY = "#00FF00"  # 동작 클립의 초록 배경
 
 def mascot_track_file(pid, track, preview):
     """마스코트 동작 조각들을 하나의 초록 배경 영상으로 이어 붙인다 (조각 목록이 같으면 재사용)."""
@@ -369,7 +370,8 @@ def timeline(pid):
 def scene_key(full, scale):
     """장면 그림에 영향을 주는 값 + 템플릿·그리기 코드 수정 시각"""
     T = template(full["template"])
-    src = {k: v for k, v in full.items() if k not in NON_SCENE and not k.startswith("c_")}
+    keep = set(getattr(T, "SCENE_KEYS", ()))  # 템플릿이 그림에 쓰는 키(예: talk는 녹음 시각으로 카드 시간을 정한다)
+    src = {k: v for k, v in full.items() if (k not in NON_SCENE or k in keep) and not k.startswith("c_")}
     mt = [os.path.getmtime(T.__file__), os.path.getmtime(gfx.__file__)]
     return data_hash({"d": src, "s": scale, "m": mt})
 
@@ -396,7 +398,7 @@ def render(pid, preview=True):
             a = float(p.get("in", 0))
             segs.append({"src": media_path(pid, p["src"]), "in": a, "out": a + p["dur"], "fit": p.get("fit", "crop"),
                          "zoom": "none", "mute": float(p.get("vol", 1)) == 0})
-    caps = [{k: v for k, v in c.items() if k in ("start", "end", "text", "style", "anim")} for c in A["captions"] if not c["gone"]]
+    caps = [{k: v for k, v in c.items() if k in ("start", "end", "text", "style", "anim", "pos")} for c in A["captions"] if not c["gone"]]
     for t in A["texts"]:
         caps.append({k: t[k] for k in ("start", "end", "text", "style", "anim", "pos", "size", "color") if t.get(k) not in (None, "")})
         caps[-1]["layer"] = 1
@@ -406,7 +408,11 @@ def render(pid, preview=True):
            "sfx": [{"t": s["t"], "name": s["name"], "vol": s.get("vol", 0.7)} for s in A["sfx"]],
            "overlays": [{**{k: o[k] for k in ("start", "end", "x", "y", "w", "fade", "in", "vol") if k in o},
                          "src": media_path(pid, o["src"])} for o in A["overlays"]],
-           "voices": [{"src": media_path(pid, v["src"]), "offset": v["offset"], "vol": v.get("vol", 1.0)} for v in A["voices"]]}
+           "voices": [{"src": media_path(pid, v["src"]), "offset": v["offset"], "vol": v.get("vol", 1.0)} for v in A["tvoices"] + A["voices"]]}
+    if A["mascot"]:  # 말하는 마스코트: 동작 조각을 이어 붙인 초록 배경 영상을 맨 아래 얹기로 (사용자가 얹은 것은 그 위)
+        b = A["mascot_box"] or {"x": 0, "y": 480, "w": 1080}
+        edl["overlays"].insert(0, {"src": mascot_track_file(pid, A["mascot"], preview), "start": 0.0, "end": A["total"],
+                                   "x": b["x"], "y": b["y"], "w": b["w"], "fade": 0, "in": 0.0, "chroma": MASCOT_KEY})
     if A["bgm"]:
         b = A["bgm"]
         edl["bgm"] = {"src": os.path.join(MUSIC, b["file"]), "vol": float(b.get("vol", 0.22)), "duck": bool(b.get("duck", True)),

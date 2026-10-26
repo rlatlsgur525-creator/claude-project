@@ -11,10 +11,17 @@ NAME = "말하는 마스코트"
 DESC = "대본을 한 줄씩 쓰고 녹음만 하면, 마스코트가 말하고 포인트 카드가 나오는 쇼츠."
 
 GESTURES = [["", "없음"], ["finger", "손가락 위로(포인트)"], ["point", "카드 가리키기"], ["surprised", "놀람"], ["thumbs", "엄지척"]]
+ANIM_DIR = os.path.join(HERE, "library", "anim")
+
+def gesture_options():
+    """화면의 동작 고르기용. 동작 클립이 아직 없는 것은 '준비 중'으로 표시(고르면 효과음만 나고 마스코트는 말하기 동작 그대로)."""
+    try: have = json.load(open(os.path.join(ANIM_DIR, "clips.json"), encoding="utf-8"))
+    except OSError: have = {}
+    return [[k, n if not k or k in have else n + " · 준비 중"] for k, n in GESTURES]
 
 FIELDS = [
     {"section": "대본 (한 줄 = 한 문장)"},
-    {"key": "lines", "label": "대본", "type": "script", "default": [
+    {"key": "lines", "label": "대본", "type": "script", "options": gesture_options(), "default": [
         {"text": "수술비 싸서 가입했다면, 이것부터 확인하세요", "card": "", "gesture": "surprised"},
         {"text": "24개 보험사 수술비 약관을 전부 비교해 봤는데요", "card": "24개사 약관/[전부] 비교", "gesture": "finger"},
         {"text": "18곳은 거의 같고, 4곳은 더 넓게 줘요", "card": "넓게 보장 [4곳]", "gesture": "point"},
@@ -23,8 +30,7 @@ FIELDS = [
     {"key": "note", "label": "준법 표기 둘째 줄", "type": "text", "default": "회사 익명 · 개인 상황에 따라 다를 수 있음"},
 ]
 CAP_KEYS = []  # 자막은 대본 줄에서 나온다
-
-ANIM_DIR = os.path.join(HERE, "library", "anim")
+SCENE_KEYS = ("voice",)  # 포인트 카드 시간이 녹음 시각(voice.marks)을 따르므로, 다시 녹음하면 배경 장면도 다시 그린다
 BG_COL = (238, 240, 244)
 MASCOT_BOX = (0, 480, 1080)  # x, y, 폭 — 3:4 클립(1080×1440)을 화면 아래에 붙인다
 CAP_POS = [540, 1440]

@@ -1,0 +1,42 @@
+{
+ "lines": [
+  {
+   "text": "수술비 싸서 가입했다면, 이것부터 확인하세요",
+   "card": "",
+   "gesture": "surprised"
+  },
+  {
+   "text": "24개 보험사 수술비 약관을 전부 비교해 봤는데요",
+   "card": "24개사 약관/[전부] 비교",
+   "gesture": "finger"
+  },
+  {
+   "text": "18곳은 거의 같고, 4곳은 더 넓게 줘요",
+   "card": "넓게 보장 [4곳]",
+   "gesture": "point"
+  },
+  {
+   "text": "그런데 2곳은 티눈·사마귀를 수술로 안 봐요",
+   "card": "확인 필요 [2곳]",
+   "gesture": "surprised"
+  },
+  {
+   "text": "내 약관 '수술의 정의'에 제외 항목이 있는지만 보세요",
+   "card": "'수술의 정의'/[제외 항목] 확인",
+   "gesture": "thumbs"
+  }
+ ],
+ "note": "회사 익명 · 개인 상황에 따라 다를 수 있음",
+ "template": "talk",
+ "title": "말하는 마스코트 — 수술비 (시험)",
+ "is_sample": true,
+ "review_no": "",
+ "review_exp": "",
+ "texts": [],
+ "overlays": [],
+ "voices": [],
+ "markers": [],
+ "edits": [],
+ "tl": {},
+ "upload": {}
+}

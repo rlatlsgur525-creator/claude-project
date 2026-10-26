@@ -102,6 +102,40 @@ def main():
     check(len(r["shots_drawn"]) == 5, f"템플릿 입력값(보험사 수) 변경 → 그린 장면 5개 모두 다시 그림 {r['shots_drawn']}")
     shutil.rmtree(os.path.join(pipeline.PROJECTS, pid))
 
+    print("3b) 말하는 마스코트 (임시 프로젝트, 미리보기 렌더)")
+    pid = "_test_talk"; d0 = os.path.join(pipeline.PROJECTS, pid); shutil.rmtree(d0, ignore_errors=True); os.makedirs(os.path.join(d0, "media"))
+    d = {"template": "talk", "title": pid, "is_sample": True, "review_no": "", "review_exp": "", **pipeline.defaults("talk")}; save(pid, d)
+    A = pipeline.assemble(pipeline.load(pid), pid)
+    m_end = sum(x["dur"] for x in A["mascot"])
+    check(A["mascot"] and abs(m_end - A["total"]) < 0.05, f"마스코트 동작 조각이 영상 전체를 채움 ({m_end:.2f} / {A['total']:.2f}초)")
+    check(all(x["clip"] in ("idle", "talk", "finger") for x in A["mascot"]), "클립이 없는 동작(가리키기·놀람·엄지척)은 말하기/대기로 대신함")
+    r = pipeline.render(pid, True)
+    check(r["ok"], "녹음 전(글자 수 어림) 미리보기 렌더 성공" + ("" if r["ok"] else f": {r['errors']}"))
+    edl = json.load(open(os.path.join(d0, "edl.json"), encoding="utf-8"))
+    check(edl["overlays"] and edl["overlays"][0].get("chroma") and edl["overlays"][0]["end"] == A["total"], "edl: 마스코트가 초록 배경 제거 얹기로 영상 전체에 들어감")
+    check(any(c.get("style") == "mainbox" and c.get("pos") == [540, 1440] for c in edl["captions"]), "edl: 대본 자막이 박스 자막·가슴 위 위치로 들어감")
+    # 초록 배경이 지워졌는지: 마스코트 영역 맨 위 가장자리(배경 부분) 픽셀이 초록이 아니어야 한다
+    px = subprocess.run([pipeline.gfx.ffmpeg_bin(), "-v", "error", "-ss", "1", "-i", os.path.join(d0, "final_preview.mp4"), "-frames:v", "1",
+                         "-vf", "crop=4:4:20:250", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+    rgb = tuple(px[:3])
+    check(len(px) >= 3 and not (rgb[1] > 150 and rgb[0] < 120 and rgb[2] < 120), f"마스코트 초록 배경이 화면에 남지 않음 (배경 픽셀 {rgb})")
+    # 녹음(말소리 1.2초 + 쉼 0.8초 ×5)을 넣고 줄 시작 시각을 주면 → 시간이 녹음을 따르고, 카드 때문에 배경 장면을 다시 그린다
+    wav = os.path.join(d0, "media", "script_test.wav")
+    tone = ";".join(f"sine=f=220:d=1.2[a{i}];anullsrc=r=48000:cl=stereo,atrim=0:0.8[s{i}]" for i in range(5))
+    subprocess.run([pipeline.gfx.ffmpeg_bin(), "-v", "error", "-y", "-filter_complex",
+                    tone + ";" + "".join(f"[a{i}]aformat=sample_rates=48000:channel_layouts=stereo[b{i}];" for i in range(5))
+                    + "".join(f"[b{i}][s{i}]" for i in range(5)) + "concat=n=10:v=0:a=1[o]", "-map", "[o]", wav], check=True)
+    d["voice"] = {"src": "media/script_test.wav", "dur": pipeline.probe_dur(wav), "marks": [0, 2, 4, 6, 8]}; save(pid, d)
+    A = pipeline.assemble(pipeline.load(pid), pid)
+    check([c["start"] for c in A["captions"]] == [0, 2, 4, 6, 8] and abs(A["total"] - (d["voice"]["dur"] + 0.4)) < 0.01,
+          f"녹음 시각대로 자막 시작 0·2·4·6·8초, 길이 = 녹음 + 0.4초 ({A['total']})")
+    check(any(x["clip"] == "idle" for x in A["mascot"]), "녹음의 쉬는 구간에서 마스코트가 대기 동작으로 바뀜")
+    r = pipeline.render(pid, True)
+    check(r["ok"] and r["shots_drawn"], f"녹음을 넣으면 카드 시간이 바뀌어 배경 장면을 다시 그림 {r.get('shots_drawn')}")
+    edl = json.load(open(os.path.join(d0, "edl.json"), encoding="utf-8"))
+    check(any(v["src"].endswith("script_test.wav") for v in edl["voices"]), "edl: 대본 녹음이 소리로 들어감")
+    shutil.rmtree(d0)
+
     if final:
         print("4) 기존 세 프로젝트 최종 MP4")
         for p in SEEDS:
@@ -112,4 +146,6 @@ def main():
 if __name__ == "__main__":
     try: main()
     except AssertionError as e:
-        print("  ✗ 실패:", e); shutil.rmtree(os.path.join(pipeline.PROJECTS, "_test_shots"), ignore_errors=True); sys.exit(1)
+        print("  ✗ 실패:", e)
+        for t in ("_test_shots", "_test_talk"): shutil.rmtree(os.path.join(pipeline.PROJECTS, t), ignore_errors=True)
+        sys.exit(1)

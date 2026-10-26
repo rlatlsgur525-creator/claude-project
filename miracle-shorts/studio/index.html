@@ -112,6 +112,11 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .playhead::before { content: ""; position: absolute; top: 0; left: -5px; border: 6px solid transparent; border-top-color: var(--red); }
 dialog { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 18px; width: min(480px, calc(100vw - 32px)); }
 dialog::backdrop { background: rgba(0,0,0,.6); }
+.sline { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin-top: 8px; }
+.sline textarea { margin-top: 6px; }
+dialog.prompter { width: min(720px, calc(100vw - 32px)); }
+.pcur { font-size: clamp(22px, 4.5vw, 34px); font-weight: 800; line-height: 1.35; margin: 18px 0 10px; min-height: 2.7em; word-break: keep-all; }
+.pnext { font-size: 15px; min-height: 1.5em; }
 .tpl { border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; cursor: pointer; }
 .tpl.sel { border-color: var(--accent); background: #1b2740; }
 .tpl b { display: block; } .tpl small { color: var(--muted); }
@@ -274,6 +279,16 @@ kbd { background: #2a2f3a; border-radius: 4px; padding: 0 4px; font-size: 11px; 
     <button class="btn btn-primary" onclick="doInsert()">넣기</button>
   </div>
 </dialog>
+<dialog id="dprompt" class="prompter" onkeydown="if([' ','Enter','ArrowRight'].includes(event.key)){event.preventDefault();prompterGo();}" oncancel="event.preventDefault();prompterCancel()">
+  <div class="row" style="align-items:center"><b class="grow">대본 보며 녹음</b><span class="help" id="pstep"></span></div>
+  <div class="pcur" id="pcur"></div>
+  <div class="help pnext" id="pnext"></div>
+  <div class="help">Space · Enter · → = 다음 줄 (누른 순간이 그 줄의 시작 시각이 돼요)</div>
+  <div class="row" style="margin-top:14px;justify-content:flex-end">
+    <button class="btn" onclick="prompterCancel()">취소</button>
+    <button class="btn btn-rec" id="pgo" onclick="prompterGo()"></button>
+  </div>
+</dialog>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -328,6 +343,7 @@ function fieldEl(f) {
     el.onchange = () => { snapshot(); S.data[f.key] = el.checked; changed(false); };
     wrap.appendChild(lab); return wrap;
   }
+  if (f.type === 'script') return scriptEl(f, wrap);
   const lab = document.createElement('label'); lab.className = 'f'; lab.textContent = f.label; wrap.appendChild(lab);
   let el;
   if (f.type === 'lines') { el = document.createElement('textarea'); el.value = (S.data[f.key] || []).join('\n'); }
@@ -339,6 +355,84 @@ function fieldEl(f) {
   if (f.help) { const h = document.createElement('div'); h.className = 'help'; h.textContent = f.help; wrap.appendChild(h); }
   return wrap;
 }
+/* 대본 칸(type script, 말하는 마스코트): 줄마다 문장·포인트 카드·동작. 녹음은 프롬프터로 줄 시작 시각(voice.marks)을 함께 남긴다 */
+function scriptEl(f, wrap) {
+  const lines = S.data[f.key] = S.data[f.key] || [];
+  const opts = f.options || [['', '없음']];
+  const redraw = () => { const w = scriptEl(f, document.createElement('div')); w.id = wrap.id; wrap.replaceWith(w); };
+  const edit = (fn) => { fn(); changed(false); };
+  wrap.innerHTML = `<label class="f">${f.label}</label><div class="help">한 줄 = 한 문장. 카드 문구의 '/'는 줄바꿈, [ ]는 빨간 강조. 녹음 전에는 글자 수로 시간을 어림해요.</div>`;
+  lines.forEach((l, i) => {
+    const box = document.createElement('div'); box.className = 'sline';
+    const head = document.createElement('div'); head.className = 'row'; head.style.alignItems = 'center';
+    head.innerHTML = `<b class="grow">${i + 1}번 줄</b>`;
+    const mv = (d) => edit(() => { const j = i + d; [lines[i], lines[j]] = [lines[j], lines[i]]; redraw(); });
+    for (const [t, fn, dis] of [['↑', () => { snapshot(); mv(-1); }, i === 0], ['↓', () => { snapshot(); mv(1); }, i === lines.length - 1],
+                                ['✕', () => { snapshot(); edit(() => { lines.splice(i, 1); redraw(); }); }, false]]) {
+      const b = document.createElement('button'); b.className = 'btn btn-sm'; b.textContent = t; b.disabled = dis; b.onclick = fn; head.appendChild(b);
+    }
+    const tx = document.createElement('textarea'); tx.value = l.text || ''; tx.style.minHeight = '44px'; tx.placeholder = '말할 문장';
+    tx.onfocus = () => snapshot(); tx.oninput = () => edit(() => l.text = tx.value.replace(/\n/g, ' '));
+    const row = document.createElement('div'); row.className = 'row';
+    const cw = document.createElement('div'); cw.className = 'grow'; cw.style.flexBasis = '160px';
+    cw.innerHTML = '<label class="f">포인트 카드 (비우면 없음)</label><input type="text">';
+    const ci = cw.querySelector('input'); ci.value = l.card || ''; ci.onfocus = () => snapshot(); ci.oninput = () => edit(() => l.card = ci.value);
+    const gw = document.createElement('div'); gw.className = 'grow';
+    gw.innerHTML = '<label class="f">동작</label><select class="in"></select>';
+    const gs = gw.querySelector('select');
+    for (const [v, n] of opts) { const o = document.createElement('option'); o.value = v; o.textContent = n; gs.appendChild(o); }
+    gs.value = l.gesture || ''; gs.onchange = () => { snapshot(); edit(() => l.gesture = gs.value); };
+    row.append(cw, gw); box.append(head, tx, row); wrap.appendChild(box);
+  });
+  const bar = document.createElement('div'); bar.className = 'row';
+  bar.append(btn('+ 줄 추가', () => { snapshot(); edit(() => { lines.push({ text: '', card: '', gesture: '' }); redraw(); }); }),
+             btn('🎙 대본 보며 녹음', () => openPrompter(f.key), 'btn btn-sm btn-rec'));
+  const v = S.data.voice;
+  if (v && v.src) bar.append(btn('녹음 지우기', () => { snapshot(); edit(() => { delete S.data.voice; redraw(); }); }));
+  wrap.appendChild(bar);
+  const st = document.createElement('div'); st.className = 'help';
+  const n = lines.filter(l => (l.text || '').trim()).length;
+  st.textContent = !(v && v.src) ? '녹음 없음 — 시간은 글자 수로 어림했어요.'
+    : (v.marks || []).length >= n ? `녹음 ${fmt(v.dur)}초 · 줄 ${n}개의 시작 시각이 녹음을 따라요.`
+    : `⚠ 녹음 뒤에 줄이 늘었어요(녹음 ${(v.marks || []).length}줄 / 지금 ${n}줄) — 글자 수 어림으로 돌아갔어요. 다시 녹음해 주세요.`;
+  wrap.appendChild(st);
+  return wrap;
+}
+/* 프롬프터: 큰 글씨로 한 줄씩 보여 주고, [다음](Space·Enter·→)을 누른 시각을 그 줄의 시작으로 남긴다 */
+const P = { rec: null, stream: null, marks: [], i: 0, t0: 0, lines: [], key: '' };
+function openPrompter(key) {
+  P.key = key; P.lines = (S.data[key] || []).filter(l => (l.text || '').trim());
+  if (!P.lines.length) return toast('대본을 한 줄 이상 써 주세요');
+  P.i = 0; P.marks = []; P.rec = null; drawPrompter(); $('dprompt').showModal();
+}
+function drawPrompter() {
+  const cur = P.lines[P.i], nxt = P.lines[P.i + 1];
+  $('pcur').textContent = P.rec ? cur.text : '준비되면 [녹음 시작]을 누르고 첫 줄을 읽으세요';
+  $('pnext').textContent = P.rec ? (nxt ? '다음: ' + nxt.text : '마지막 줄이에요') : '1번 줄: ' + P.lines[0].text;
+  $('pstep').textContent = P.rec ? `${P.i + 1} / ${P.lines.length}` : '';
+  $('pgo').textContent = !P.rec ? '● 녹음 시작' : nxt ? '다음 줄 ▶' : '■ 녹음 끝';
+}
+async function prompterGo() {
+  if (!P.rec) {
+    try { P.stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { return toast('마이크를 쓸 수 없어요 — 브라우저 마이크 권한을 허용해 주세요'); }
+    const chunks = []; P.rec = new MediaRecorder(P.stream);
+    P.rec.ondataavailable = (e) => chunks.push(e.data);
+    P.rec.onstop = async () => {
+      P.stream.getTracks().forEach(t => t.stop());
+      if (P.cancel) { P.cancel = false; P.rec = null; return; }
+      const blob = new Blob(chunks, { type: 'audio/webm' }); const marks = P.marks.slice(); P.rec = null;
+      $('dprompt').close(); toast('녹음 저장 중…');
+      const r = await fetch(`/api/upload/${encodeURIComponent(S.cur)}?name=script_${Date.now()}.webm`, { method: 'POST', body: blob }).then(r => r.json());
+      if (!r.path) return toast('녹음 저장 실패');
+      snapshot(); S.data.voice = { src: r.path, dur: r.dur, marks }; buildForm(); tab('content'); changed(false);
+      toast(`녹음 ${fmt(r.dur)}초 · ${marks.length}줄 시각을 넣었어요`);
+    };
+    P.rec.start(); P.t0 = performance.now(); P.marks = [0]; drawPrompter(); return;
+  }
+  if (P.i + 1 < P.lines.length) { P.i++; P.marks.push(r2((performance.now() - P.t0) / 1000)); drawPrompter(); }
+  else P.rec.stop();
+}
+function prompterCancel() { if (P.rec) { P.cancel = true; P.rec.stop(); } $('dprompt').close(); }
 function buildForm() {
   const t = S.templates.find(t => t.key === S.data.template);
   const p = $('p-content'); p.innerHTML = '';
