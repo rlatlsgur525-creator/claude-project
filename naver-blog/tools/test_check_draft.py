@@ -30,12 +30,13 @@ class RealDrafts(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("[사람 확인]", out)
 
-    def test_v23_publish_blocked_by_blanks_only(self):
-        # 2026-10-27 사실 검증 완료 뒤: 빈칸·이미지 자리표시로만 막힌다 (미확인 차단은 test_publish_unverified_fact_fails)
+    def test_v23_publish_blocked_by_image_placeholders_only(self):
+        # 2026-10-27 사실 검증·경험 2곳 채운 뒤: 이미지 자리표시로만 막힌다
+        # (미확인 차단은 test_publish_unverified_fact_fails, 빈칸 차단은 test_publish_blank_fails)
         code, out = run(ROOT / "15_draft_fire_insurance_v2.3.md", "--publish")
         self.assertEqual(code, 1)
         f = " ".join(failed(out))
-        self.assertIn("빈칸", f)
+        self.assertNotIn("빈칸", f)
         self.assertNotIn("사실 검증표", f)
         self.assertIn("이미지 자리표시", f)
 
@@ -87,6 +88,11 @@ class Fixtures(unittest.TestCase):
         code, out = run(FIX / "publish_unverified.md", "--publish")
         self.assertEqual(code, 1)
         self.assertIn("T2(미확인)", out)
+
+    def test_publish_blank_fails(self):
+        code, out = run(FIX / "publish_blank.md", "--publish")
+        self.assertEqual(code, 1)
+        self.assertIn("빈칸", " ".join(failed(out)))
 
     def test_unverified_fact_is_only_info_in_draft_mode(self):
         code, out = run(FIX / "publish_unverified.md")

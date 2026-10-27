@@ -3,7 +3,7 @@
 ## 다른 컴퓨터에서 이어서 할 때 (먼저)
 1. 저장소 루트에서 `git pull`.
 2. 이 폴더의 `CLAUDE.md` → 이 파일 → `19_quality_system.md` 순서로 읽는다.
-3. 검사기가 이 컴퓨터에서 도는지 확인: `naver-blog` 폴더에서 `python3 -m unittest tools/test_check_draft.py -v` (Windows는 `python` 또는 `py`). 12개 모두 OK여야 한다. 외부 패키지는 필요 없다 (Python 3.8 이상).
+3. 검사기가 이 컴퓨터에서 도는지 확인: `naver-blog` 폴더에서 `python3 -m unittest tools/test_check_draft.py -v` (Windows는 `python` 또는 `py`). 13개 모두 OK여야 한다. 외부 패키지는 필요 없다 (Python 3.8 이상).
 4. 네이버 임시저장·발행은 Uplika 커넥터 + 그 컴퓨터 브라우저의 Uplika 확장이 켜져 있어야 한다 (`bridge_status`로 확인). 확장이 없는 컴퓨터에서는 글 파일 작업만 한다.
 5. 이미지 렌더(`img/*.html` → PNG): `img/render.py`(Playwright 필요) 또는 Windows에서는 Edge headless (아래 "도구" 참고).
 
@@ -28,6 +28,8 @@
    - 원문 못 찾은 2건(재고 100%, 계약서 면책 문구 효력)은 본문에서 삭제. 4번은 표준약관 제14조 제5항(세입자가 건물주 보험료 납부 시 청구 안 함)으로 교체
    - FAQ 보험료를 2022 배달의민족 → 관악구청 2023 안내로 교체. 판결 문장의 "입증" 표현 삭제
    - 네이버 임시저장본(224452539251)은 고치기 전 버전이다. 새로 임시저장해야 반영된다
+   - 같은 날 4차 독립 심사(`16_judge_v2.3.md`) 수정 후 가능 → 높음 2·중간 1 반영. 경험 2곳을 신혁 님 말로 채움 (**공개 동의·익명화 확인 전 발행 금지**)
+   - 발행 모드 남은 실패: 이미지 자리표시뿐 (생활안전지도 캡처 1장, 계약서 사진·AI 일러스트는 뺄지 결정 대기)
 
 ## 파일 지도
 | 파일 | 내용 | 상태 |
@@ -43,7 +45,7 @@
 | 17_review_drafts/A·B·C | 악성 리뷰 3틀 | 가상 시나리오 → 발행 모드 실패 |
 | 03~05, 07, 08, 10_sim, 11, 12, 14_debate | 이전 버전·시뮬레이션·비교·토론 | 참고용, 고치지 않음 |
 | tools/check_draft.py | 기계 검사 v1.6 | 사용 중 |
-| tools/test_check_draft.py, tools/tests/ | 회귀 테스트·고정 문서·v1.5 기준 결과 | 12개 통과 |
+| tools/test_check_draft.py, tools/tests/ | 회귀 테스트·고정 문서·v1.5 기준 결과 | 13개 통과 (2026-10-27 빈칸 고정 문서 추가) |
 | img/ | 렌더 HTML·PNG | four_way, bar_compare, thumbnail_fire 완성 |
 
 ## 사용자가 정해야 할 것 (막혀 있는 것)
