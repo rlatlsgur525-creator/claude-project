@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주간 리포트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+<style>
+/* 휴대폰 한 손 읽기용 카드 피드. 카톡 이미지로 보내기 위해 밝은 테마 하나로 고정 */
+:root{
+  --bg:#F2F4F6; --card:#FFFFFF; --ink:#191F28; --sub:#4E5968; --muted:#8B95A1; --line:#E5E8EB;
+  --blue:#3182F6; --blue-soft:#E8F3FF; --good:#03A94D; --good-soft:#E5F7EE; --warn:#E5503C; --warn-soft:#FDEDEB; --amber:#B7791F; --amber-soft:#FFF4DE;
+  --font:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+.wrap{width:430px;margin:0 auto}
+.shot{padding:12px 16px;display:flex;flex-direction:column;gap:12px;background:var(--bg)}
+.num{font-variant-numeric:tabular-nums}
+.top{padding:12px 4px 4px;display:flex;flex-direction:column;gap:4px}
+.top .from{font-size:13px;font-weight:600;color:var(--muted)}
+.top h1{font-size:28px;font-weight:800;line-height:1.3;margin:0;letter-spacing:-.03em}
+.top .range{font-size:15px;color:var(--sub);font-weight:500}
+.card{background:var(--card);border-radius:20px;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
+.card h2{font-size:20px;font-weight:700;margin:0;line-height:1.4;letter-spacing:-.02em}
+.card h3{font-size:16px;font-weight:700;margin:0;line-height:1.45}
+.eyebrow{font-size:13px;font-weight:600;color:var(--blue)}
+.sub{color:var(--sub);margin:0}
+.muted{color:var(--muted);font-size:13px;margin:0}
+.score{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.score .big{font-size:56px;font-weight:800;line-height:1;letter-spacing:-.04em}
+.score .big small{font-size:22px;color:var(--muted);font-weight:600;margin-left:4px}
+.dots{display:flex;gap:6px;padding-bottom:8px}
+.dots i{width:28px;height:8px;border-radius:4px;background:var(--line)}
+.dots i.on{background:var(--blue)}
+.headline{font-size:17px;font-weight:600;line-height:1.55;margin:0}
+.method{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--sub)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--bg);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.tile .k{font-size:13px;color:var(--sub);font-weight:500}
+.tile .v{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.tile .v small{font-size:15px;font-weight:600;color:var(--muted);margin-left:2px}
+.tile .t{font-size:12px;color:var(--muted)}
+.review{display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:1px solid var(--line)}
+.review.first{border-top:0;padding-top:0}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rdate{font-weight:700}
+.stars{color:#F5A623;font-size:15px;letter-spacing:1px}
+.stars span{color:var(--line)}
+.quote{font-size:15px;font-weight:600;padding-left:12px;border-left:3px solid var(--line);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;background:var(--bg);color:var(--sub)}
+.chip.blue{background:var(--blue-soft);color:var(--blue)}
+.flag{display:flex;gap:10px;align-items:flex-start;background:var(--amber-soft);border-radius:12px;padding:12px 14px;font-size:14px}
+.flag b{color:var(--amber);flex:none}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo{margin:0;display:flex;flex-direction:column;gap:6px}
+.photo img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:14px;display:block;background:var(--bg)}
+.photo figcaption{font-size:12px;color:var(--muted)}
+.post-title{font-size:17px;font-weight:700;line-height:1.5;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted)}
+.meta .url{word-break:break-all}
+.block{display:flex;flex-direction:column;gap:10px;padding-top:18px;border-top:1px solid var(--line)}
+.block-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pill{font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.mid{background:var(--amber-soft);color:var(--amber)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.flow span{background:var(--bg);border-radius:8px;padding:4px 9px;color:var(--sub);font-weight:500}
+.flow em{font-style:normal;color:var(--muted)}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
+.checks li{display:flex;gap:10px;align-items:flex-start}
+.checks .ic{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;margin-top:1px}
+.checks .ok .ic{background:var(--good-soft);color:var(--good)}
+.checks .no .ic{background:var(--warn-soft);color:var(--warn)}
+.summary{margin:0;padding-left:18px;display:grid;gap:4px;color:var(--sub)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line)}
+td{padding:9px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.n{color:var(--sub)}
+.where{font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.where.in{background:var(--good-soft);color:var(--good)}
+.where.tag{background:var(--amber-soft);color:var(--amber)}
+.where.miss{background:var(--warn-soft);color:var(--warn)}
+.ratio{display:flex;align-items:center;gap:12px}
+.ratio .bar{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.ratio .bar i{display:block;height:100%;background:var(--blue);border-radius:5px}
+.ratio b{font-size:15px;white-space:nowrap}
+.chart{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;align-items:end;height:150px;padding-top:8px}
+.col{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.col .val{font-size:13px;font-weight:700;color:var(--sub)}
+.col .b{width:100%;max-width:36px;border-radius:8px 8px 4px 4px;background:var(--line)}
+.col.now .b{background:var(--blue)}
+.col.now .val{color:var(--blue)}
+.col .lb{font-size:11px;color:var(--muted);white-space:nowrap}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.points li{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:start}
+.points .pill{margin-top:2px;border-radius:6px;font-size:12px;text-align:center;padding:3px 0}
+.points p{margin:0;font-size:15px}
+.ask{background:var(--blue-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.ask b{color:var(--blue);font-size:14px}
+.ask ol{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center}
+.scale div{background:var(--bg);border-radius:10px;padding:10px 4px;display:flex;flex-direction:column;gap:2px}
+.scale div.on{background:var(--blue);color:#fff}
+.scale div.on .r{color:#fff;opacity:.85}
+.scale .p{font-weight:800;font-size:16px}
+.scale .r{font-size:11px;color:var(--muted)}
+.foot{padding:4px 4px 8px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const D=/*__REPORT_DATA__*/null;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>Number(n).toLocaleString("ko-KR");
+const SCALE_PCT=[["1점","30% 미만"],["2점","30~49%"],["3점","50~69%"],["4점","70~89%"],["5점","90% 이상"]];
+const SCALE_CNT=[["1점","0개"],["2점","1개"],["3점","2개"],["4점","3개"],["5점","4개 이상"]];
+const stars=n=>`<span class="stars">${"★".repeat(n)}<span>${"★".repeat(5-n)}</span></span>`;
+const shot=(name,inner)=>`<div class="shot" data-shot="${esc(name)}">${inner}</div>`;
+
+function render(){
+  const s=D.score, out=[];
+  const method=s.method==="count"
+    ? `비교할 가게가 아직 ${s.peers}곳이라 이번 주는 <b>새 글 개수</b>(리뷰+블로그 ${s.posts}개)로 매겼어요.`
+    : `같은 동네·업종 가게 ${s.peers}곳과 비교하면 상위 <b>${100-s.pct}%</b>예요.`;
+
+  out.push(shot("01_요약",`
+    <header class="top"><div class="from">${esc(D.from)}</div><h1>${esc(D.store)} 주간 리포트</h1><div class="range num">${esc(D.range)}</div></header>
+    <section class="card">
+      <div class="eyebrow">이번 주 점수</div>
+      <div class="score"><div class="big num">${s.value}<small>/ 5점</small></div><div class="dots">${[1,2,3,4,5].map(k=>`<i class="${k<=s.value?"on":""}"></i>`).join("")}</div></div>
+      <p class="headline">${esc(D.headline)}</p>
+      <div class="tiles">
+        <div class="tile"><span class="k">새 방문자 리뷰</span><span class="v num">${D.counts.visitor}<small>개</small></span><span class="t num">전체 ${fmt(D.totals.visitor)}개</span></div>
+        <div class="tile"><span class="k">새 블로그 글</span><span class="v num">${D.counts.blog}<small>개</small></span><span class="t num">전체 ${fmt(D.totals.blog)}개</span></div>
+      </div>
+      <div class="method">${method}</div>
+    </section>`));
+
+  let rv=`<section class="card"><div><div class="eyebrow">방문자 리뷰 ${D.reviews.length}개</div><h2>손님들이 남긴 말</h2></div>`;
+  if(!D.reviews.length) rv+=`<p class="sub">이번 주에는 새 방문자 리뷰가 없어요.</p>`;
+  D.reviews.forEach((r,i)=>{
+    rv+=`<article class="review ${i?"":"first"}">
+      <div class="rhead"><span class="rdate num">${esc(r.date)}</span>${stars(r.stars)}</div>
+      ${r.quote?`<p class="quote">"${esc(r.quote)}"</p>`:""}
+      <p class="sub">${esc(r.summary)}</p>
+      <div class="chips">${r.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join("")}</div>
+      ${r.flag?`<div class="flag"><b>확인</b><span>${esc(r.flag)}</span></div>`:""}
+      ${r.photo?`<div class="photos"><figure class="photo"><img src="${esc(r.photo)}" alt=""><figcaption>${esc(r.photoCap)}</figcaption></figure></div>`:""}
+    </article>`;
+  });
+  out.push(shot("02_리뷰",rv+`</section>`));
+
+  const whereLabel={in:"들어있음",tag:"태그에만",miss:"빠짐"};
+  if(!D.blogs.length) out.push(shot("03_블로그",`<section class="card"><h2>블로그 글 분석</h2><p class="sub">이번 주에는 새 블로그 글이 없어요.</p></section>`));
+  D.blogs.forEach((b,bi)=>{
+    const st=b.structure, ok=st.checks.filter(c=>c[0]).length;
+    const inc=b.searchTerms.filter(t=>t.where!=="miss").length, all=b.searchTerms.length;
+    out.push(shot(`03_블로그${D.blogs.length>1?"_"+(bi+1):""}`,`<section class="card">
+      <div><div class="eyebrow">블로그 글 ${bi+1} / ${D.blogs.length}</div><h2>블로그 글 분석</h2></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><p class="post-title">${esc(b.title)}</p>
+        <div class="meta num"><span>${esc(b.date)}</span><span>${esc(b.author)}</span></div></div>
+      ${b.sponsor?`<div class="flag"><b>협찬</b><span>${esc(b.sponsor)}</span></div>`:""}
+      <div class="block">
+        <div class="block-h"><h3>짜임새</h3><span class="pill ${st.tone}">${esc(st.grade)} · ${ok}/${st.checks.length}</span></div>
+        <div class="flow">${st.flow.map((f,k)=>`${k?"<em>›</em>":""}<span>${esc(f)}</span>`).join("")}</div>
+        <ul class="checks">${st.checks.map(c=>`<li class="${c[0]?"ok":"no"}"><span class="ic">${c[0]?"✓":"!"}</span><span>${esc(c[1])}</span></li>`).join("")}</ul>
+      </div>
+      <div class="block">
+        <div class="block-h"><h3>음식 사진</h3><span class="muted">${b.photos.length}장</span></div>
+        <div class="photos">${b.photos.map(p=>`<figure class="photo"><img src="${esc(p.src)}" alt=""><figcaption>${esc(p.cap)}</figcaption></figure>`).join("")}</div>
+        <p class="muted">사진 출처: 네이버 블로그 '${esc(b.author)}'</p>
+      </div>
+      <div class="block"><h3>한눈에 보는 내용</h3><ul class="summary">${b.summary.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="block"><h3>글에 나온 키워드</h3><div class="chips">${b.keywords.map(k=>`<span class="chip blue">${esc(k)}</span>`).join("")}</div></div>
+      <div class="block">
+        <h3>네이버 인기 검색어가 얼마나 들어갔나</h3>
+        <div class="ratio"><div class="bar"><i style="width:${all?inc/all*100:0}%"></i></div><b class="num">${all}개 중 ${inc}개</b></div>
+        <table><thead><tr><th>검색어</th><th class="n">한 달 검색</th><th class="n">이 글에</th></tr></thead>
+        <tbody>${b.searchTerms.map(t=>`<tr><td>${esc(t.kw)}</td><td class="n">${fmt(t.vol)}번</td><td class="n"><span class="where ${t.where}">${whereLabel[t.where]}${t.note?` · ${esc(t.note)}`:""}</span></td></tr>`).join("")}</tbody></table>
+        <p class="sub" style="font-size:15px">${esc(b.searchNote)}</p>
+        <p class="muted">태그에만 있는 검색어는 제목이나 본문에 있는 것보다 검색에 덜 잡혀요.</p>
+      </div>
+      <p class="muted meta"><span class="url">${esc(b.url)}</span></p>
+    </section>`));
+  });
+
+  const a=D.agency, mx=Math.max(...a.weeks.map(x=>x.n),1);
+  out.push(shot("04_업체활동",`<section class="card">
+    <div class="block-h" style="align-items:center"><div><div class="eyebrow">마케팅 업체 활동</div><h2>주별 블로그 글 수</h2></div><span class="pill ${a.tone}">${esc(a.verdict)}</span></div>
+    <div class="chart">${a.weeks.map((x,k)=>`<div class="col ${k===a.weeks.length-1?"now":""}"><span class="val num">${x.n}</span><span class="b" style="height:${Math.max(x.n/mx*100,4)}px"></span><span class="lb num">${esc(x.lb)}</span></div>`).join("")}</div>
+    <ul class="points">${a.points.map(p=>`<li><span class="pill ${p.tone}">${esc(p.tag)}</span><p>${esc(p.text)}</p></li>`).join("")}</ul>
+    <div class="ask"><b>업체에 이렇게 요청해 보세요</b><ol>${a.asks.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
+  </section>`));
+
+  const scale=s.method==="count"?SCALE_CNT:SCALE_PCT;
+  out.push(shot("05_점수기준",`<section class="card">
+    <h2>점수는 이렇게 매겨요</h2>
+    <p class="sub" style="font-size:15px">${s.method==="count"?"비교할 가게가 적을 때는 한 주 동안 올라온 새 글(리뷰+블로그) 수로 매겨요. 비교할 가게가 5곳 이상이 되면 순위(%)로 매겨요.":"같은 동네·업종 가게들과 한 주 새 글 수를 비교해서 순위(%)로 매겨요."}</p>
+    <div class="scale num">${scale.map((x,k)=>`<div class="${k+1===s.value?"on":""}"><span class="p">${x[0]}</span><span class="r">${x[1]}</span></div>`).join("")}</div>
+  </section>
+  <footer class="foot"><span>확인한 날: ${esc(D.checkedAt)}. 리뷰·블로그 수는 네이버 플레이스 기준이에요.</span><span>한 달 검색 수는 네이버 검색광고 월간 검색량(PC+모바일)이에요.</span><span>${esc(D.from)}</span></footer>`));
+
+  document.getElementById("app").innerHTML=out.join("");
+  document.title=`${D.store} 주간 리포트`;
+}
+render();
+</script>
+</body>
+</html>

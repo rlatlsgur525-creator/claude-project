@@ -38,3 +38,12 @@ miracle-shorts/studio/projects/*/media/*.webm
 !miracle-shorts/studio/library/anim/*.mp4
 miracle-shorts/studio/projects/*/mascot_*.mp4.key
 miracle-shorts/studio/projects/*/thumbs/
+
+# 고객 자료 (가게 리포트·사진) — 저장소가 공개라서 올리지 않음
+소상공인 상생 프로젝트/주간 리포트/
+소상공인 상생 프로젝트/페이지/주간 리포트 초기 시안/
+소상공인 상생 프로젝트/페이지/포트폴리오/
+소상공인 상생 프로젝트/페이지/사장님 체크리스트/img/
+소상공인 상생 프로젝트/도구/폼 예시사진/
+인스타 카드뉴스 제작/studio/matzip/posts/
+claude-config/skills/small-biz-weekly-report/references/example-draft.json

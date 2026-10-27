@@ -1,0 +1,47 @@
+{
+  "model": "sonnet",
+  "timeoutMinutes": 15,
+  "pipeline": ["research", "brief"],
+  "afterDirection": ["blog"],
+  "roles": {
+    "secretary": {
+      "name": "비서",
+      "channel": "비서실",
+      "md": "01_직원/비서.md",
+      "tools": "Read,Write,Glob,Grep",
+      "addDirs": []
+    },
+    "research": {
+      "name": "조사 직원",
+      "channel": "조사",
+      "md": "01_직원/조사직원.md",
+      "tools": "Read,Write,Glob,Grep,Bash(ego-browser:*)",
+      "addDirs": ["../블로그 자동발행", "../쓰레드 발행 직원"]
+    },
+    "brief": {
+      "name": "작성 직원",
+      "channel": "브리프",
+      "md": "01_직원/작성직원.md",
+      "tools": "Read,Write,Glob,Grep",
+      "addDirs": []
+    },
+    "blog": {
+      "name": "블로그 자동발행 AI",
+      "channel": "블로그발행",
+      "md": "01_직원/블로그발행AI.md",
+      "tools": "Read,Write,Glob,Grep",
+      "addDirs": ["../블로그 자동발행"]
+    },
+    "threads": {
+      "name": "쓰레드 AI",
+      "channel": "쓰레드",
+      "md": "01_직원/쓰레드AI.md",
+      "addDirs": ["../쓰레드 발행 직원", "C:/Users/rlatl/.claude/scheduled-tasks"],
+      "enabled": false
+    },
+    "approval": {
+      "name": "결재함",
+      "channel": "결재"
+    }
+  }
+}

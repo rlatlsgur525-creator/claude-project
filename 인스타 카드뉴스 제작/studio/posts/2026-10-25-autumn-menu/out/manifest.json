@@ -1,0 +1,28 @@
+{
+  "store": "sample-cafe",
+  "schedule": "2026-10-25T12:00:00+09:00",
+  "caption": "가을 한정 신메뉴 3종이 나왔어요 🍂\n밤 크림 라떼, 무화과 휘낭시에, 단호박 바스크 치즈케이크.\n11월 말까지만 만나볼 수 있어요.\n\n📍 연남로 12, 1층 · 월요일 휴무\n\n#연남동카페 #연남동 #홍대카페 #마포카페 #숲길커피",
+  "posts": [
+    {
+      "type": "cardnews",
+      "files": [
+        "card_01.jpg",
+        "card_02.jpg",
+        "card_03.jpg",
+        "card_04.jpg",
+        "card_05.jpg",
+        "card_06.jpg"
+      ],
+      "schedule": "2026-10-25T12:00:00+09:00"
+    },
+    {
+      "type": "reel",
+      "files": [
+        "reel.mp4"
+      ],
+      "cover": "reel_cover.jpg",
+      "seconds": 13.0,
+      "schedule": "2026-10-25T19:00:00+09:00"
+    }
+  ]
+}

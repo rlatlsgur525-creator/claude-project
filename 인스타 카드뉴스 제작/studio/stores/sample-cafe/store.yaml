@@ -1,0 +1,16 @@
+# 가게 기본 정보 — 한 번만 채워 두면 모든 게시물에 자동으로 들어갑니다.
+name: 숲길커피
+instagram: soopgil_coffee        # @ 없이
+colors:
+  primary: "#1F3A2E"             # 메인 색 (배경·태그)
+  accent: "#F2B544"              # 포인트 색
+  background: "#F7F3EC"          # 사진 카드 하단 배경
+  text: "#2B2B2B"
+address: 서울 마포구 연남로 12, 1층
+hours: 매일 10:00 - 21:00 (L.O 20:30)
+closed: 매주 월요일
+phone: 02-123-4567
+reservation: 네이버 예약 '숲길커피'
+cta: 이번 주말, 숲길에서 만나요
+# logo: stores/sample-cafe/logo.png   # 투명 PNG가 있으면 정보 카드 우측 상단에 들어갑니다
+hashtags: [연남동카페, 연남동, 홍대카페, 마포카페, 숲길커피]

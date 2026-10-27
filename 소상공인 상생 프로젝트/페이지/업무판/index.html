@@ -1,0 +1,276 @@
+<title>소상공인 프로젝트 업무판</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<style>
+/* 금융앱식 카드 스택: 위에서부터 도구 바로가기 → 오늘/이번 주 → 할 일 → 말로 시키기. 라이트 한 가지로 고정.
+   오늘·이번 주·할 일은 db에서 읽어요. 매일 9시 30분 예약 작업이 채워요. */
+:root{
+  --bg:#F2F4F6; --card:#FFFFFF; --ink:#191F28; --sub:#4E5968; --faint:#8B95A1; --line:#E5E8EB; --fill:#F2F4F6;
+  --blue:#3182F6; --blue-soft:#E8F3FF; --blue-ink:#1B64DA; --green:#03B26C; --green-soft:#E5F8EF; --orange:#F18600; --orange-soft:#FFF3E0;
+  --red:#F04452; --red-soft:#FFEEEE;
+  --font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;letter-spacing:-.01em;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.wrap{max-width:600px;margin:0 auto;padding-block:20px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:12px}
+h1,h2,h3,p{margin:0}
+h1,h2{text-wrap:balance;letter-spacing:-.03em}
+.hero{padding:24px 8px 16px;display:flex;flex-direction:column;gap:8px}
+.kicker{font-size:14px;font-weight:700;color:var(--blue)}
+.hero h1{font-size:28px;line-height:1.36;font-weight:800}
+.hero p{color:var(--sub)}
+.card{background:var(--card);border-radius:24px;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
+.label{font-size:13px;font-weight:700;color:var(--faint)}
+.card h2{font-size:21px;line-height:1.4;font-weight:800}
+.card-head{display:flex;flex-direction:column;gap:6px}
+.card-head p{font-size:15px;color:var(--sub)}
+[hidden]{display:none!important}
+
+.pill{font-size:12px;font-weight:700;padding:3px 8px;border-radius:7px;flex:none;white-space:nowrap}
+.p-done{background:var(--green-soft);color:var(--green)}
+.p-doing{background:var(--blue-soft);color:var(--blue-ink)}
+.p-todo{background:var(--fill);color:var(--faint)}
+.p-warn{background:var(--orange-soft);color:var(--orange)}
+.p-late{background:var(--red-soft);color:var(--red)}
+
+/* 오늘 / 이번 주 */
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--fill);border-radius:12px;padding:4px;gap:4px}
+.seg button{font:inherit;font-size:15px;font-weight:700;color:var(--faint);background:none;border:0;border-radius:9px;padding:9px 0;cursor:pointer;min-height:40px}
+.seg button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:16px}
+.p-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.p-top h3{font-size:19px;line-height:1.45;font-weight:800;letter-spacing:-.02em}
+.when{font-size:13px;color:var(--faint)}
+.summary{font-size:15px;color:var(--sub)}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px}
+.num-box{background:var(--fill);border-radius:16px;padding:14px}
+.num-box b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.num-box span{font-size:13px;color:var(--faint)}
+.plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.plan li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;padding:12px 0}
+.plan li+li{border-top:1px solid var(--line)}
+.dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;background:var(--blue-soft);color:var(--blue-ink)}
+.plan b{font-size:16px;display:block}
+.plan p{font-size:14px;color:var(--sub);margin-top:2px}
+.empty{background:var(--fill);border-radius:16px;padding:18px 16px;font-size:14px;color:var(--sub)}
+
+/* 할 일 */
+.todo-group{display:flex;flex-direction:column;gap:2px}
+.todo-group h3{font-size:14px;font-weight:700;color:var(--faint);margin:6px 0 4px}
+.todo{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;cursor:pointer}
+.todo input{appearance:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);margin:1px 0 0;display:grid;place-items:center;cursor:pointer;background:var(--card)}
+.todo input:checked{background:var(--blue);border-color:var(--blue)}
+.todo input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.todo input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.todo input:disabled{cursor:default}
+.t-line{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.t-text{font-size:15px}
+.todo small{display:block;font-size:13px;color:var(--faint)}
+.todo .note{display:block;font-size:13px;color:var(--blue-ink);margin-top:2px}
+.todo input:checked + span .t-text{color:var(--faint);text-decoration:line-through}
+.todo input:checked + span .pill{display:none}
+.fine{font-size:13px;color:var(--faint)}
+
+.links{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.links li+li{border-top:1px solid var(--line)}
+.links a,.links .row{display:flex;align-items:center;gap:14px;padding:14px 0;color:inherit;text-decoration:none}
+.links a:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:8px}
+.ico{width:40px;height:40px;border-radius:12px;background:var(--fill);display:grid;place-items:center;flex:none}
+.ico svg{width:22px;height:22px}
+.txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.txt b{font-size:16px;font-weight:700}
+.txt span{font-size:13px;color:var(--faint)}
+.chev{color:var(--faint);flex:none}
+.path{font-size:13px;font-family:Consolas,"SF Mono",monospace;color:var(--sub);background:var(--fill);border-radius:8px;padding:2px 6px;word-break:break-all}
+
+.says{display:flex;flex-direction:column;gap:10px}
+.say{background:var(--fill);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.say-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.say q{font-size:15px;font-weight:700;quotes:"“" "”"}
+.say p{font-size:13px;color:var(--sub)}
+.copy{font:inherit;font-size:13px;font-weight:700;color:var(--blue-ink);background:var(--blue-soft);border:0;border-radius:8px;padding:6px 10px;cursor:pointer;flex:none;min-height:32px}
+.copy:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.notes li{font-size:14px;color:var(--sub);padding-left:14px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.65em;width:5px;height:5px;border-radius:50%;background:var(--faint)}
+.notes b{color:var(--ink)}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker" id="kicker">소상공인 문제해결 프로젝트</div>
+    <h1>오늘 할 일과<br>이번 주 할 일</h1>
+    <p>매일 아침 9시 30분에 Claude가 시트를 읽고 이 판을 새로 정리해요.</p>
+  </header>
+
+  <section class="card" aria-labelledby="h-links">
+    <div class="card-head">
+      <div class="label">내가 쓰는 도구</div>
+      <h2 id="h-links">바로 열기</h2>
+    </div>
+    <ul class="links">
+      <li><a href="https://claude.ai/artifact/M85rW3y3NuevSH8b9EXVuL" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#3182F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/></svg></span><span class="txt"><b>작업 기록 페이지</b><span>사장님께 처음 보여 드리는 화면</span></span><span class="chev" aria-hidden="true">›</span></a></li>
+      <li><a href="https://claude.ai/artifact/6W8tkAm783iR4J9C3s1jQi" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#3182F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></span><span class="txt"><b>체크리스트</b><span>사장님이 고르고 보내는 화면</span></span><span class="chev" aria-hidden="true">›</span></a></li>
+      <li><a href="https://claude.ai/artifact/Jd2k9Xczra8FzDr3i8Rf28" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#3182F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><span class="txt"><b>홈페이지 시안</b><span>숙이네 밥상</span></span><span class="chev" aria-hidden="true">›</span></a></li>
+      <li><a href="https://docs.google.com/spreadsheets/d/166J4DRXby8TtlsQmXygOkjDGb5q6_DkkPJKUF-JbinQ/edit" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#03B26C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg></span><span class="txt"><b>구글 시트 · 소상공인 주간 리뷰 정리</b><span>가게목록, 리뷰 기록, 체크리스트 답(체크_가게이름 탭)</span></span><span class="chev" aria-hidden="true">›</span></a></li>
+      <li><a href="https://docs.google.com/forms/d/1rllPn_FGWz2EP9AAb75F-7UpuKAgjVqfPoY1O__ZmIs/edit" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#7B4DFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="9" cy="9" r="1"/><circle cx="9" cy="14" r="1"/><path d="M12 9h4M12 14h4"/></svg></span><span class="txt"><b>구글 폼 편집</b><span>체크리스트 답을 받는 창구</span></span><span class="chev" aria-hidden="true">›</span></a></li>
+      <li><a href="https://script.google.com/home" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#8B95A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg></span><span class="txt"><b>Apps Script</b><span>폼을 만들고 가게별 탭에 나눠 담는 스크립트</span></span><span class="chev" aria-hidden="true">›</span></a></li>
+      <li><div class="row"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#F18600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="txt"><b>주간 리포트 이미지</b><span>PC의 <span class="path">문서\소상공인 주간 리포트\날짜\가게\out</span></span></span></div></li>
+      <li><div class="row"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#F18600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-8 8"/></svg></span><span class="txt"><b>숙이네 원본·보정 사진</b><span>PC의 <span class="path">바탕 화면\소상공인\숙이네밥상</span></span></span></div></li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-flow">
+    <div class="card-head">
+      <div class="label">업무 흐름</div>
+      <h2 id="h-flow">Claude가 정리한 계획</h2>
+    </div>
+    <div class="seg" role="tablist" aria-label="기간">
+      <button type="button" role="tab" id="tab-daily" aria-controls="pane-daily" aria-selected="true">오늘</button>
+      <button type="button" role="tab" id="tab-weekly" aria-controls="pane-weekly" aria-selected="false">이번 주</button>
+    </div>
+    <div class="panel" role="tabpanel" id="pane-daily" aria-labelledby="tab-daily"></div>
+    <div class="panel" role="tabpanel" id="pane-weekly" aria-labelledby="tab-weekly" hidden></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-todo">
+    <div class="card-head">
+      <div class="label">할 일 · 체크하면 Claude도 봐요</div>
+      <h2 id="h-todo">순서대로 하나씩</h2>
+    </div>
+    <div id="todos"><div class="empty">불러오는 중이에요.</div></div>
+    <p class="fine" id="todo-fine">매일 아침 Claude가 새 할 일을 넣고, 순서와 기한을 다시 맞춰요. 내가 체크한 건 되돌리지 않아요.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-say">
+    <div class="card-head">
+      <div class="label">Claude에게 이렇게 말하면 돼요</div>
+      <h2 id="h-say">상황별 한 줄</h2>
+      <p>복사해서 Claude 대화창에 붙여 넣으세요. ○○ 부분만 바꾸면 돼요.</p>
+    </div>
+    <div class="says">
+      <div class="say"><div class="say-top"><q>가게 추가: ○○식당, 네이버 링크 ○○</q><button class="copy" type="button">복사</button></div><p>시트 가게목록 탭에 넣어 다음 주부터 주간 리포트에 들어가요.</p></div>
+      <div class="say"><div class="say-top"><q>체크리스트 새로 들어온 답 정리해 줘</q><button class="copy" type="button">복사</button></div><p>체크_가게이름 탭을 읽어 가게별로 "해주세요" 고른 작업과 필요한 정보를 정리해요.</p></div>
+      <div class="say"><div class="say-top"><q>○○식당 주간 리포트 만들어 줘</q><button class="copy" type="button">복사</button></div><p>월요일을 기다리지 않고 지난주 리포트 이미지를 바로 만들어요.</p></div>
+      <div class="say"><div class="say-top"><q>업무판 지금 다시 정리해 줘</q><button class="copy" type="button">복사</button></div><p>아침 9시 30분을 기다리지 않고 오늘 계획과 할 일을 바로 새로 맞춰요.</p></div>
+      <div class="say"><div class="say-top"><q>할 일 추가: ○○, ○월 ○일까지</q><button class="copy" type="button">복사</button></div><p>업무판 할 일에 넣고 다음 아침 정리부터 일정 계산에 같이 넣어요.</p></div>
+      <div class="say"><div class="say-top"><q>작업 기록 페이지에 ○○식당 사례 추가해 줘. 사진은 ○○ 폴더</q><button class="copy" type="button">복사</button></div><p>새 카드를 넣고 함께한 가게 숫자를 올려요. 다른 사장님께 보여도 되는 사진인지 먼저 확인하세요.</p></div>
+      <div class="say"><div class="say-top"><q>체크리스트에 질문 ○○ 추가해 줘</q><button class="copy" type="button">복사</button></div><p>구글 폼과 체크리스트를 같이 고쳐야 답이 빠지지 않아요.</p></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-notes">
+    <div class="card-head">
+      <div class="label">알아 둘 것</div>
+      <h2 id="h-notes">헷갈리기 쉬운 점</h2>
+    </div>
+    <ul class="notes">
+      <li><b>아침 정리는 Claude 앱이 켜져 있을 때 돌아요.</b> 꺼져 있었으면 앱을 켤 때 한 번 돌아요.</li>
+      <li><b>월요일 아침에는 이번 주 탭도 새로 써요.</b> 지난주 시트에 쌓인 리뷰, 신청, 가게 목록을 보고 정해요.</li>
+      <li><b>구글 폼 질문을 직접 추가하거나 지우면</b> 체크리스트의 질문 번호도 고쳐야 해요. 문구만 바꾸는 건 괜찮아요.</li>
+      <li><b>"답변 보내기" 뒤에 감사 화면 대신 폼이 뜨면</b> 구글이 한 번에 제출하는 방식을 막은 거예요. 알려 주시면 폼이 열리는 방식으로 되돌려요.</li>
+      <li><b>주간 리포트 이미지는 자동으로 보내지지 않아요.</b> 확인한 뒤 카톡으로 직접 보내요.</li>
+      <li><b>네이버·인스타는 읽기만 해요.</b> 로그인, 댓글, 메시지는 하지 않아요.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const DOW="일월화수목금토";
+function md(iso){ if(!iso) return ""; const d=new Date(iso.length<=10?iso+"T00:00:00+09:00":iso); return (d.getMonth()+1)+"월 "+d.getDate()+"일("+DOW[d.getDay()]+")"; }
+function today(){ const d=new Date(Date.now()+9*3600e3); return d.toISOString().slice(0,10); }
+function stamp(iso){ if(!iso) return ""; const d=new Date(iso); return md(iso)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+" 정리"; }
+const STATUS={ok:["p-done","일정대로"],warn:["p-warn","조금 밀렸어요"],late:["p-late","늦었어요"]};
+
+/* 오늘 / 이번 주 탭 */
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".seg button").forEach(x=>{const on=x===b;x.setAttribute("aria-selected",on);document.getElementById(x.getAttribute("aria-controls")).hidden=!on});
+}));
+
+function renderPlan(items){
+  if(!Array.isArray(items)||!items.length) return "";
+  return '<ol class="plan">'+items.map((it,i)=>'<li><span class="dot">'+(i+1)+'</span><div><b>'+esc(it.title)+'</b>'+(it.body?'<p>'+esc(it.body)+'</p>':'')+'</div></li>').join("")+'</ol>';
+}
+function renderNums(nums){
+  if(!Array.isArray(nums)||!nums.length) return "";
+  return '<div class="nums">'+nums.map(n=>'<div class="num-box"><b>'+esc(n.value)+'</b><span>'+esc(n.label)+'</span></div>').join("")+'</div>';
+}
+function renderDaily(d){
+  const el=$("#pane-daily");
+  if(!d){ el.innerHTML='<div class="empty">아직 오늘 정리가 없어요. 매일 아침 9시 30분에 채워져요.</div>'; return; }
+  const st=STATUS[d.status]||STATUS.ok;
+  el.innerHTML='<div class="p-top"><h3>'+esc(d.headline||"오늘 할 일")+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div>'
+    +'<div class="when">'+esc(stamp(d.updatedAt))+'</div>'
+    +(d.summary?'<p class="summary">'+esc(d.summary)+'</p>':'')
+    +renderNums(d.numbers)+renderPlan(d.plan);
+  if(d.date) $("#kicker").textContent="소상공인 문제해결 프로젝트 · "+md(d.date)+(d.date===today()?" 오늘":" 기준");
+}
+function renderWeekly(w){
+  const el=$("#pane-weekly");
+  if(!w){ el.innerHTML='<div class="empty">아직 이번 주 정리가 없어요. 월요일 아침 9시 30분에 지난주 시트를 보고 채워져요.</div>'; return; }
+  el.innerHTML='<div class="p-top"><h3>'+esc(w.headline||"이번 주 할 일")+'</h3>'+(w.weekOf?'<span class="pill p-doing">'+esc(md(w.weekOf))+' 주</span>':'')+'</div>'
+    +'<div class="when">'+esc(stamp(w.updatedAt))+'</div>'
+    +(w.summary?'<p class="summary">'+esc(w.summary)+'</p>':'')
+    +renderNums(w.numbers)+renderPlan(w.plan);
+}
+
+/* 할 일 */
+let canWrite=true, busy=new Set();
+function dueBadge(t){
+  if(!t.due||t.done) return "";
+  const td=today();
+  if(t.due<td) return '<span class="pill p-late">'+esc(md(t.due))+' 지남</span>';
+  if(t.due===td) return '<span class="pill p-warn">오늘까지</span>';
+  return '<span class="pill p-todo">'+esc(md(t.due))+'까지</span>';
+}
+function renderTodos(docs){
+  const box=$("#todos");
+  if(!docs.length){ box.innerHTML='<div class="empty">할 일이 비어 있어요. 내일 아침 정리 때 채워져요.</div>'; return; }
+  const groups=new Map();
+  docs.sort((a,b)=>(a.groupOrder??99)-(b.groupOrder??99)||(a.order??99)-(b.order??99));
+  docs.forEach(t=>{ const g=t.group||"기타"; if(!groups.has(g)) groups.set(g,[]); groups.get(g).push(t); });
+  box.innerHTML=[...groups].map(([g,list])=>'<div class="todo-group"><h3>'+esc(g)+'</h3>'+list.map(t=>
+    '<label class="todo"><input type="checkbox" data-id="'+esc(t.id)+'"'+(t.done?' checked':'')+(canWrite?'':' disabled')+'><span>'
+    +'<span class="t-line"><span class="t-text">'+esc(t.text)+'</span>'+dueBadge(t)+'</span>'
+    +(t.sub?'<small>'+esc(t.sub)+'</small>':'')+(t.note&&!t.done?'<span class="note">'+esc(t.note)+'</span>':'')
+    +'</span></label>').join("")+'</div>').join("");
+}
+
+(async()=>{
+  const db=await claude.use("db");
+  if(!db){
+    renderDaily(null); renderWeekly(null);
+    $("#todos").innerHTML='<div class="empty">claude.ai에 로그인한 상태로 열면 할 일이 보여요.</div>';
+    return;
+  }
+  db.doc("board/daily").onSnapshot(s=>renderDaily(s.exists?s.data():null),()=>renderDaily(null));
+  db.doc("board/weekly").onSnapshot(s=>renderWeekly(s.exists?s.data():null),()=>renderWeekly(null));
+  db.collection("todos").onSnapshot(s=>renderTodos(s.docs.map(d=>({id:d.id,...d.data()}))),
+    ()=>{$("#todos").innerHTML='<div class="empty">할 일을 불러오지 못했어요. 새로고침해 주세요.</div>'});
+  $("#todos").addEventListener("change",async e=>{
+    const cb=e.target.closest("input[data-id]"); if(!cb) return;
+    const id=cb.dataset.id; if(busy.has(id)) return; busy.add(id);
+    try{ await db.doc("todos/"+id).update({done:cb.checked,doneAt:cb.checked?new Date().toISOString():null,doneBy:cb.checked?"me":null}); }
+    catch(err){
+      cb.checked=!cb.checked;
+      if(err&&err.code==="invalid_argument"){ canWrite=false; $("#todo-fine").textContent="이 링크에서는 체크를 바꿀 수 없어요. 보기만 할 수 있어요."; document.querySelectorAll("#todos input").forEach(x=>x.disabled=true); }
+    }
+    finally{ busy.delete(id); }
+  });
+})();
+
+document.querySelectorAll(".copy").forEach(btn=>btn.addEventListener("click",()=>{
+  const q=btn.closest(".say").querySelector("q");
+  const done=()=>{btn.textContent="복사됨";setTimeout(()=>btn.textContent="복사",1500)};
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents(q);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent="선택됨"};
+  try{navigator.clipboard.writeText(q.textContent).then(done,fallback)}catch(e){fallback()}
+}));
+</script>

@@ -1,0 +1,360 @@
+<title>소상공인 체크리스트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<style>
+/* 작업 기록 페이지와 같은 금융앱식 카드 스택: 질문 하나 = 흰 카드 하나, 위에 얇은 진행 막대. 라이트 한 가지로 고정 */
+:root{
+  --bg:#F2F4F6; --card:#FFFFFF; --ink:#191F28; --sub:#4E5968; --faint:#8B95A1; --line:#E5E8EB; --fill:#F2F4F6;
+  --blue:#3182F6; --blue-soft:#E8F3FF; --blue-ink:#1B64DA; --red:#F04452;
+  --font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;letter-spacing:-.01em;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding-block:8px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:12px}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.03em}
+header{padding:24px 8px 12px;display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-size:14px;font-weight:700;color:var(--blue)}
+header h1{font-size:28px;line-height:1.36;font-weight:800}
+.lead{color:var(--sub);font-size:15px}
+section{display:flex;flex-direction:column;gap:12px}
+section>h2{font-size:20px;font-weight:800;padding:20px 8px 0}
+section>.lead{padding:0 8px}
+.q{background:var(--card);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:12px}
+.q>label,.q>.qt{font-size:17px;font-weight:700;line-height:1.45}
+.hint{color:var(--faint);font-size:14px;font-weight:500;margin-top:-6px}
+.q>div>.hint{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1.5px solid transparent;background:var(--fill);color:var(--sub);
+  font:inherit;font-size:15px;font-weight:600;padding:0 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:background .15s,color .15s}
+.chip[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue-ink);font-weight:700}
+.chip:focus-visible,.seg button:focus-visible,.btn:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+textarea,input[type=text],input[type=number]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--fill);
+  border:1.5px solid transparent;border-radius:12px;padding:13px 14px;outline:none}
+textarea:focus,input:focus{border-color:var(--blue);background:var(--card)}
+textarea::placeholder,input::placeholder{color:var(--faint)}
+textarea{min-height:104px;resize:vertical}
+.price-note{background:var(--blue-soft);color:var(--blue-ink);border-radius:16px;padding:14px 16px;font-size:15px;font-weight:500}
+.offer{background:var(--card);border-radius:20px;overflow:hidden}
+.offer-head{padding:22px 20px 20px;display:flex;flex-direction:column;gap:8px}
+.offer-head h3{font-size:19px;font-weight:800}
+.offer-head p{color:var(--sub);font-size:15px}
+.price{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.price s{color:var(--faint);font-size:14px}
+.price .free{background:var(--blue);color:#fff;font-weight:700;font-size:13px;padding:3px 9px;border-radius:8px}
+.price .paid{font-weight:700;font-size:15px}
+.price .tbd{color:var(--faint);font-size:13px;font-weight:700;background:var(--fill);padding:3px 9px;border-radius:8px}
+.price small{color:var(--faint);font-size:13px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;background:var(--fill);border-radius:14px;padding:4px}
+.seg button{font:inherit;font-size:15px;font-weight:600;min-height:44px;border-radius:10px;border:0;background:transparent;color:var(--faint);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg button.yes[aria-pressed="true"]{background:var(--blue);color:#fff}
+.offer-body{padding:4px 12px 12px;display:flex;flex-direction:column;gap:8px;background:var(--card)}
+.offer-body .q{background:var(--fill);border-radius:16px;padding:18px 16px}
+.offer-body .q .chip,.offer-body .q textarea,.offer-body .q input{background:var(--card)}
+.offer-body .q .chip[aria-pressed="true"]{background:var(--blue-soft)}
+.size{font-variant-numeric:tabular-nums;color:var(--blue-ink);font-weight:700}
+.ex{margin:4px 0 0;display:flex;flex-direction:column;gap:6px}
+.ex img{display:block;width:100%;max-width:100%;max-height:340px;object-fit:cover;border-radius:14px;background:var(--fill)}
+.ex figcaption{font-size:13px;color:var(--faint);font-weight:500}
+.ex figcaption b{color:var(--blue-ink);font-weight:700;margin-right:4px}
+.finish{background:var(--card);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.finish h2{font-size:20px;font-weight:800;padding:0}
+pre.summary{white-space:pre-wrap;word-break:keep-all;background:var(--fill);border-radius:14px;padding:16px;margin:0;font-family:var(--font);font-size:14px;color:var(--sub);line-height:1.7}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-weight:700;font-size:17px;min-height:56px;padding:0 22px;border-radius:16px;border:0;background:var(--blue);color:#fff;cursor:pointer;flex:1 1 200px;transition:transform .1s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--blue-soft);color:var(--blue-ink)}
+a.btn{display:flex;align-items:center;justify-content:center;text-decoration:none}
+a.btn[aria-disabled="true"]{background:var(--line);color:var(--faint);pointer-events:none}
+.status{min-height:1.4em;color:var(--blue-ink);font-weight:700;font-size:15px;text-align:center}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;font-size:13px;font-weight:600;color:var(--sub);
+  display:flex;flex-direction:column;gap:8px;margin-inline:-4px;padding-inline:4px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--blue);border-radius:2px;transition:width .25s}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.bar i,.chip,.btn{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">소상공인 문제해결 프로젝트</div>
+    <h1>사장님,<br>고르기만 하시면 돼요</h1>
+    <p class="lead">5분이면 끝나요. 모르는 건 건너뛰셔도 돼요.<br>다 고르시면 맨 아래 버튼으로 보내 주세요.</p>
+  </header>
+
+  <div class="progress" aria-live="polite"><span id="progText">0개 골랐어요</span><div class="bar"><i id="progBar"></i></div></div>
+
+  <section id="s-store">
+    <h2>1. 가게 이야기</h2>
+  </section>
+
+  <section id="s-offers">
+    <h2>2. 제공해드리는 서비스</h2>
+    <p class="price-note">적힌 가격은 크몽에서 비슷한 서비스가 팔리는 가격이에요. 이번 프로젝트에서는 <b>무료</b>로 해드려요. 홈페이지 제작만 유료예요.</p>
+    <p class="lead">하나씩 보시고 <b>해주세요 · 나중에 · 괜찮아요</b> 중에 골라 주세요. "해주세요"를 누르면 필요한 것만 몇 가지 더 여쭤봐요.</p>
+  </section>
+
+  <section id="s-etc">
+    <h2>3. 마지막으로 두 가지만</h2>
+  </section>
+
+  <section class="finish">
+    <h2>다 고르셨어요?</h2>
+    <p class="lead" style="margin:0">아래 내용을 확인하시고 <b>답변 보내기</b>를 누르면 끝이에요. "보내 주셔서 감사해요" 화면이 뜨면 잘 들어간 거예요.</p>
+    <pre class="summary" id="summary"></pre>
+    <p class="hint" id="sendHint" style="margin:0;color:var(--red)"></p>
+    <div class="btns">
+      <a class="btn" id="sendBtn" href="#" target="_blank" rel="noopener">답변 보내기</a>
+      <button class="btn ghost" id="copyBtn" type="button">카톡으로 보낼 내용 복사</button>
+      <button class="btn ghost" id="saveBtn" type="button" hidden>이 답변 저장</button>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </section>
+</div>
+
+<script>
+// 질문 정의: type = one(하나 고르기) | many(여러 개) | text | num
+// other: 이 보기를 고르면 직접 적는 칸이 열림
+const STORE=[
+  {id:"storeName",type:"text",q:"가게 이름을 적어 주세요",short:true},
+  {id:"quietDay",type:"many",q:"제일 한가한 요일은요?",hint:"여러 개 골라도 돼요",opts:["월","화","수","목","금","토","일"]},
+  {id:"quietTime",type:"many",q:"제일 한가한 시간은요?",opts:["아침 타임","점심 타임","저녁 타임","그 외"],other:"그 외"},
+  {id:"source",type:"many",q:"손님들은 보통 어떻게 알고 오세요?",opts:["지나가다가","단골·지인 소개","네이버 지도·검색","블로그","인스타그램","잘 모르겠어요"]},
+];
+
+// price: 크몽 비슷한 서비스 가격. free:false 는 유료, tbd:true 는 준비 중
+const OFFERS=[
+  {id:"board",title:"메뉴판 만들기",price:"33,000원",free:true,desc:"가게 메뉴판을 보기 좋게 새로 만들어 드려요.",
+    qs:[{id:"boardType",type:"many",q:"어떤 메뉴판이 필요하세요?",opts:["벽에 거는 메뉴판","테이블 메뉴판","가게 밖 입간판"]},
+        {id:"boardPhoto",type:"one",q:"지금 메뉴판 사진 원본이 있으신가요?",opts:["네","아니오"]}]},
+  {id:"photo",title:"네이버 플레이스 메뉴 사진 교체",price:"29,000원",free:true,desc:"실제 음식을 찍어서 먹음직스럽게 보정해 드려요. 네이버와 메뉴판에 같이 쓸 수 있어요.",
+    qs:[{id:"photoMenus",type:"text",q:"어떤 메뉴부터 바꿀까요?",hint:"메뉴 이름을 적어 주세요. 예: 김치찌개, 제육볶음",short:true},
+        {id:"photoTime",type:"one",q:"음식 사진은 언제 찍으면 편하세요?",opts:["장사 시작 전","한가한 시간","아무 때나 괜찮아요"]}]},
+  {id:"poster",title:"가게 포스터 만들기",price:"8,000원부터",priceNote:"장수에 따라 달라요",free:true,desc:"",
+    qs:[{id:"posterText",type:"text",q:"포스터에 넣을 글을 적어 주세요",hint:"적어 주신 그대로 들어가요. 띄어쓰기도 그대로예요."},
+        {id:"posterCount",type:"num",q:"몇 장 필요하세요?"},
+        {id:"posterWhere",type:"many",q:"어디에 붙이실 거예요?",opts:["가게 유리문·바깥","가게 안 벽","아파트·동네 게시판"]}]},
+  {id:"qr",title:"외국인 손님용 QR 메뉴판",price:"30,000원",free:true,desc:"휴대폰으로 QR을 찍으면 번역된 메뉴판이 나와요. 테이블에 세워 두는 작은 카드로 만들어 드려요.",
+    qs:[{id:"qrForeign",type:"one",q:"외국인 손님이 오시나요?",opts:["자주 와요","가끔 와요","거의 없어요"]},
+        {id:"qrLang",type:"many",q:"어느 나라 말로 할까요?",hint:"여러 개 골라도 돼요",opts:["영어","중국어","일본어","베트남어"]},
+        {id:"qrTables",type:"num",q:"테이블이 몇 개예요?",hint:"카드를 테이블 수만큼 만들어요"},
+        {id:"qrMenuPhoto",type:"one",q:"메뉴판 사진을 찍어 가도 될까요?",opts:["네","안 돼요"]}]},
+  {id:"home",title:"홈페이지 제작",price:"200,000원",free:false,desc:"가게 소개, 메뉴, 오시는 길을 담은 홈페이지를 만들어 드려요.",
+    qs:[{id:"homeWant",type:"many",q:"홈페이지에 꼭 넣고 싶은 건요?",opts:["메뉴·가격","오시는 길","전화·예약","가게 사진","사장님 이야기"]},
+        {id:"homeHave",type:"one",q:"지금 쓰는 홈페이지가 있나요?",opts:["있어요","없어요"]}]},
+  {id:"card",title:"포토카드 + 인스타 올리기",tbd:true,desc:"메뉴 사진으로 포토카드를 만들고, 먹스타그램 같은 곳에 올려 드려요. 지금 준비하고 있어요.",
+    qs:[{id:"cardInsta",type:"one",q:"가게 인스타그램이 있나요?",opts:["있어요","없는데 만들어도 돼요","없고 안 만들래요"]},
+        {id:"cardInstaId",type:"text",q:"있으시면 계정을 적어 주세요",hint:"예: @gage_insta",short:true},
+        {id:"cardFace",type:"one",q:"사장님 얼굴이나 목소리가 나와도 될까요?",opts:["얼굴·목소리 다 괜찮아요","손·음식만 나오게","안 나오게"]}]},
+];
+
+// 서비스별 예시 사진: [파일, 실제 작업이면 true, 설명]. QR 메뉴판은 아직 예시가 없음
+const EXAMPLES={
+  board:["img/board.jpg",false,"이런 느낌으로 가게 메뉴에 맞게 새로 만들어요"],
+  photo:["img/photo.jpg",true,"숙이네 밥상 생선찌개, 같은 사진의 색만 살렸어요"],
+  poster:["img/poster.jpg",true,"숙이네 밥상 갈비찜 포스터"],
+  home:["img/home.jpg",false,"메뉴, 오시는 길, 예약을 한 페이지에 담아요"],
+  card:["img/card.jpg",true,"숙이네 밥상 인스타용 카드"],
+};
+
+const ETC=[
+  {id:"agencyEnd",type:"text",q:"마케팅 업체와 계약 중이시면, 언제 끝나요?",hint:"업체가 없으면 '없음', 모르시면 '모름'이라고 적어 주세요",short:true},
+  {id:"naverWho",type:"one",q:"네이버 가게 정보는 누가 고치세요?",opts:["사장님","가족","마케팅 업체","잘 모르겠어요"]},
+];
+
+// 사장님마다 새로 작성: 열 때마다 빈 상태에서 시작하고, 브라우저에 답을 남기지 않는다
+let A={};
+
+// 답을 구글 폼 제출 주소로 바로 보낸다(누르면 제출까지 끝남). 숫자는 폼 질문 칸 번호(entry), 폼 질문을 바꾸면 같이 바꿔야 함
+// pageHistory=0,1: 폼이 2쪽이라 두 쪽을 다 지나온 것으로 제출
+const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSdyjqC33wZJC4LSE1KX1m0aCUaZ-iGK2GOxXKtQDcboOhWSnA/formResponse";
+const ENTRY={
+  storeName:1106721556,quietDay:1378873940,quietTime:1406283058,source:1133780039,
+  board:461853897,boardType:872281505,boardPhoto:1957025821,
+  photo:2147358223,photoMenus:1773556629,photoTime:683854792,
+  poster:1768973316,posterText:993980215,posterCount:1840225149,posterWhere:1908687903,
+  qr:904996357,qrForeign:1833000970,qrLang:1031323712,qrTables:1178281361,qrMenuPhoto:581182531,
+  home:1338629264,homeWant:1280685319,homeHave:1785555608,
+  card:25745294,cardInsta:1313758986,cardInstaId:1074275357,cardFace:1187983744,
+  agencyEnd:2099003342,naverWho:484676371,
+};
+function formUrl(){
+  const p=new URLSearchParams({pageHistory:"0,1"});
+  const put=q=>{
+    const v=A[q.id],e="entry."+ENTRY[q.id];
+    if(v===undefined||v===""||!ENTRY[q.id])return;
+    (Array.isArray(v)?v:[String(v)]).forEach(x=>{
+      if(q.other&&x===q.other){p.append(e,"__other_option__");p.append(e+".other_option_response",A["f-"+q.id+"-other"]||"")}
+      else p.append(e,x);
+    });
+  };
+  STORE.forEach(put);
+  const lab={yes:"해주세요",later:"나중에",no:"괜찮아요"};
+  OFFERS.forEach(o=>{
+    if(A[o.id])p.append("entry."+ENTRY[o.id],lab[A[o.id]]);
+    if(A[o.id]==="yes")o.qs.forEach(put);
+  });
+  ETC.forEach(put);
+  return FORM_URL+"?"+p.toString();
+}
+
+function el(tag,attrs={},kids=[]){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="text")n.textContent=v;else n.setAttribute(k,v)}kids.forEach(c=>c&&n.appendChild(c));return n}
+
+// id: 화면 요소 id, key: 답을 담는 이름(질문 id). key가 없으면 id를 그대로 쓴다
+function textInput(id,short,type,key=id){
+  const inp=type==="num"?el("input",{type:"number",id,min:"0",inputmode:"numeric"}):(short?el("input",{type:"text",id}):el("textarea",{id}));
+  inp.value=A[key]??"";
+  inp.addEventListener("input",()=>{A[key]=inp.value;update()});
+  return inp;
+}
+
+function renderQ(q){
+  const box=el("div",{class:"q"});
+  const fid="f-"+q.id;
+  if(q.type==="text"||q.type==="num"){
+    box.appendChild(el("label",{for:fid,text:q.q}));
+    if(q.hint)box.appendChild(el("div",{class:"hint",text:q.hint}));
+    box.appendChild(textInput(fid,q.short,q.type,q.id));
+    return box;
+  }
+  box.appendChild(el("div",{class:"qt",id:fid+"-l",text:q.q}));
+  if(q.hint)box.appendChild(el("div",{class:"hint",text:q.hint}));
+  const wrap=el("div",{class:"chips",role:"group","aria-labelledby":fid+"-l"});
+  const has=v=>q.type==="many"?(A[q.id]||[]).includes(v):A[q.id]===v;
+  let otherBox=null;
+  if(q.other){
+    otherBox=el("div",{});
+    otherBox.appendChild(el("label",{for:fid+"-other",class:"hint",text:"그 외 시간을 적어 주세요"}));
+    otherBox.appendChild(textInput(fid+"-other",true));
+  }
+  const sync=()=>{wrap.querySelectorAll(".chip").forEach((c,i)=>c.setAttribute("aria-pressed",has(q.opts[i])));if(otherBox)otherBox.hidden=!has(q.other)};
+  q.opts.forEach(o=>{
+    const b=el("button",{type:"button",class:"chip",text:o});
+    b.addEventListener("click",()=>{
+      if(q.type==="many"){const s=new Set(A[q.id]||[]);s.has(o)?s.delete(o):s.add(o);A[q.id]=q.opts.filter(x=>s.has(x))}
+      else A[q.id]=A[q.id]===o?undefined:o;
+      sync();update();
+    });
+    wrap.appendChild(b);
+  });
+  box.appendChild(wrap);
+  if(otherBox)box.appendChild(otherBox);
+  sync();
+  return box;
+}
+
+function priceRow(o){
+  const r=el("div",{class:"price"});
+  if(o.tbd){r.appendChild(el("span",{class:"tbd",text:"준비 중 · 가격 미정"}));return r}
+  if(o.free){
+    r.appendChild(el("s",{text:"크몽 기준 "+o.price}));
+    r.appendChild(el("span",{class:"free",text:"무료"}));
+  }else{
+    r.appendChild(el("span",{class:"paid",text:"크몽 기준 "+o.price}));
+    r.appendChild(el("small",{text:"유료 · 무료 제공 대상이 아니에요"}));
+  }
+  if(o.priceNote)r.appendChild(el("small",{text:o.priceNote}));
+  return r;
+}
+
+function renderOffer(o){
+  const card=el("div",{class:"offer"});
+  const head=el("div",{class:"offer-head"});
+  head.appendChild(el("h3",{text:o.title}));
+  head.appendChild(priceRow(o));
+  const p=el("p");
+  if(o.id==="poster"){p.append("유리문이나 벽에 붙일 포스터를 만들어 드려요. 크기는 ");p.appendChild(el("span",{class:"size",text:"가로 212mm × 세로 299mm"}));p.append("예요(A4보다 조금 커요).")}
+  else p.textContent=o.desc;
+  head.appendChild(p);
+  const ex=EXAMPLES[o.id];
+  if(ex){
+    const fig=el("figure",{class:"ex"});
+    fig.appendChild(el("img",{src:ex[0],alt:o.title+" 예시 사진"}));
+    const cap=el("figcaption");cap.appendChild(el("b",{text:ex[1]?"실제 작업":"예시"}));cap.append(ex[2]);
+    fig.appendChild(cap);head.appendChild(fig);
+  }
+  const seg=el("div",{class:"seg",role:"group","aria-label":o.title+" 선택"});
+  const choices=[["yes","해주세요"],["later","나중에"],["no","괜찮아요"]];
+  const body=el("div",{class:"offer-body"});
+  o.qs.forEach(q=>body.appendChild(renderQ(q)));
+  const sync=()=>{seg.querySelectorAll("button").forEach((b,i)=>b.setAttribute("aria-pressed",A[o.id]===choices[i][0]));body.hidden=A[o.id]!=="yes"};
+  choices.forEach(([v,t])=>{const b=el("button",{type:"button",class:v,text:t});b.addEventListener("click",()=>{A[o.id]=A[o.id]===v?undefined:v;sync();update()});seg.appendChild(b)});
+  head.appendChild(seg);card.appendChild(head);card.appendChild(body);sync();return card;
+}
+
+const empty=v=>v===undefined||v===""||(Array.isArray(v)&&!v.length);
+function line(q){
+  const v=A[q.id];if(empty(v))return null;
+  let s=Array.isArray(v)?v.join(", "):v;
+  if(q.other&&(Array.isArray(v)?v.includes(q.other):v===q.other)&&!empty(A["f-"+q.id+"-other"]))s+=` (${A["f-"+q.id+"-other"]})`;
+  return`- ${q.q.replace(/[?？]$/,"")}: ${s}`;
+}
+
+function buildSummary(){
+  const name=empty(A.storeName)?"":` - ${A.storeName}`;
+  const out=[`[소상공인 문제해결 프로젝트 체크리스트${name}]`,""];
+  out.push("■ 가게 이야기");STORE.filter(q=>q.id!=="storeName").forEach(q=>{const l=line(q);if(l)out.push(l)});
+  out.push("","■ 원하시는 서비스");
+  const lab={yes:"해주세요",later:"나중에",no:"괜찮아요"};
+  OFFERS.forEach(o=>{
+    out.push(`${o.title}: ${lab[A[o.id]]||"아직 안 고름"}`);
+    if(A[o.id]==="yes")o.qs.forEach(q=>{const l=line(q);if(l)out.push("  "+l)});
+  });
+  out.push("","■ 기타");ETC.forEach(q=>{const l=line(q);if(l)out.push(l)});
+  return out.join("\n");
+}
+
+function update(){
+  document.getElementById("summary").textContent=buildSummary();
+  // 폼에서 필수인 것(가게 이름, 서비스 6개 선택)이 다 있어야 보낼 수 있다
+  const missing=[];
+  if(empty(A.storeName))missing.push("가게 이름");
+  const unpicked=OFFERS.filter(o=>!A[o.id]).length;
+  if(unpicked)missing.push(`서비스 ${unpicked}개 선택`);
+  const send=document.getElementById("sendBtn"),hint=document.getElementById("sendHint");
+  send.href=missing.length?"#":formUrl();
+  send.setAttribute("aria-disabled",missing.length?"true":"false");
+  hint.hidden=!missing.length;
+  hint.textContent=missing.length?`보내려면 ${missing.join(", ")}이 더 필요해요.`:"";
+  const all=[...STORE,...ETC,...OFFERS];
+  const n=all.filter(q=>!empty(A[q.id])).length,t=all.length;
+  document.getElementById("progText").textContent=`${t}개 중 ${n}개 골랐어요`;
+  document.getElementById("progBar").style.width=(n/t*100)+"%";
+}
+
+STORE.forEach(q=>document.getElementById("s-store").appendChild(renderQ(q)));
+OFFERS.forEach(o=>document.getElementById("s-offers").appendChild(renderOffer(o)));
+ETC.forEach(q=>document.getElementById("s-etc").appendChild(renderQ(q)));
+update();
+
+const status=document.getElementById("status");
+document.getElementById("copyBtn").addEventListener("click",()=>{
+  const txt=buildSummary();
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById("summary"));const s=getSelection();s.removeAllRanges();s.addRange(r);status.textContent="글이 선택됐어요. 길게 눌러 복사해 주세요."};
+  try{navigator.clipboard.writeText(txt).then(()=>{status.textContent="복사했어요. 카톡 대화창에 붙여넣어 주세요."},fallback)}catch(e){fallback()}
+});
+
+// 로그인한 편집자가 열었을 때만 저장 버튼을 보여 줍니다(현장에서 같이 작성할 때).
+(async()=>{
+  try{
+    const db=await window.claude?.use?.("db");
+    if(!db)return;
+    const btn=document.getElementById("saveBtn");btn.hidden=false;
+    btn.addEventListener("click",async()=>{
+      btn.disabled=true;
+      try{
+        const clean=JSON.parse(JSON.stringify(A));
+        await db.collection("answers").add({storeName:A.storeName||"",answers:clean,summary:buildSummary(),savedAt:new Date().toISOString()});
+        status.textContent="저장했어요.";
+      }catch(e){status.textContent="저장하지 못했어요. 복사 버튼으로 보내 주세요."}
+      btn.disabled=false;
+    });
+  }catch(e){}
+})();
+</script>

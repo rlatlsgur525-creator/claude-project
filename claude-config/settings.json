@@ -1,0 +1,6 @@
+{
+  "model": "sonnet",
+  "autoUpdatesChannel": "latest",
+  "tui": "fullscreen",
+  "theme": "dark"
+}

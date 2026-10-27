@@ -1,0 +1,54 @@
+store: sample-cafe
+schedule: 2026-10-25T12:00:00+09:00        # 둘 다 이 시각에 게시 (따로 하려면 cardnews_schedule / reel_schedule)
+reel_schedule: 2026-10-25T19:00:00+09:00
+
+caption: |
+  가을 한정 신메뉴 3종이 나왔어요 🍂
+  밤 크림 라떼, 무화과 휘낭시에, 단호박 바스크 치즈케이크.
+  11월 말까지만 만나볼 수 있어요.
+
+  📍 연남로 12, 1층 · 월요일 휴무
+
+# ---------------- 카드뉴스 (1080x1350, 최대 10장 — 마지막에 가게 정보 카드 자동 추가)
+cardnews:
+  - layout: cover                # 사진 전체 + 큰 제목
+    photo: media/latte.jpg
+    title: "가을에만 파는\n숲길 신메뉴 3종"
+    sub: 11월 30일까지 한정 판매
+  - layout: photo                # 위 사진 + 아래 설명
+    photo: media/latte.jpg
+    title: 밤 크림 라떼
+    body: 직접 졸인 공주 밤 페이스트에 고소한 크림을 올렸어요. 따뜻하게 추천!
+  - layout: photo
+    photo: media/financier.jpg
+    title: 무화과 휘낭시에
+    body: 매일 아침 굽는 버터 휘낭시에 위에 반건조 무화과를 한가득.
+  - layout: photo
+    photo: media/cheesecake.jpg
+    title: 단호박 바스크 치즈케이크
+    body: 겉은 진하게 그을리고 속은 촉촉하게. 단호박 단맛이 은은해요.
+  - layout: text                 # 글만 있는 강조 카드
+    title: 신메뉴 + 아메리카노\n세트 1,000원 할인
+    body: 10/25(토) ~ 11/2(일) · 매장 이용 시
+
+# ---------------- 릴스 (1080x1920). 사진은 천천히 흐르는 효과, 영상은 구간을 잘라 씁니다.
+reel:
+  # bgm: bgm/acoustic.mp3        # 저작권 걱정 없는 음악 파일 경로 (없으면 원본 소리만)
+  bgm_volume: 0.35
+  keep_audio: true               # 영상 원본 소리 유지
+  clips:
+    - src: media/pour.mp4        # 영상
+      start: 0                   # 몇 초부터
+      dur: 3                     # 몇 초 동안
+      text: 가을 한정 신메뉴 나왔어요 🍂
+    - src: media/latte.jpg       # 사진
+      dur: 2.5
+      text: 밤 크림 라떼
+    - src: media/financier.jpg
+      dur: 2.5
+      text: 무화과 휘낭시에
+    - src: media/cheesecake.jpg
+      dur: 2.5
+      text: 단호박 바스크 치즈케이크
+  outro: true                    # 마지막에 가게 정보 화면
+  outro_text: 11월 30일까지만!
