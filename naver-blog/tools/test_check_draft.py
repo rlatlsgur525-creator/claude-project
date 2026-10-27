@@ -30,15 +30,12 @@ class RealDrafts(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("[사람 확인]", out)
 
-    def test_v23_publish_blocked_by_image_placeholders_only(self):
-        # 2026-10-27 사실 검증·경험 2곳 채운 뒤: 이미지 자리표시로만 막힌다
+    def test_v23_publish_passes(self):
+        # 2026-10-27 사실 검증·경험·이미지까지 채운 뒤 발행 모드 통과
         # (미확인 차단은 test_publish_unverified_fact_fails, 빈칸 차단은 test_publish_blank_fails)
         code, out = run(ROOT / "15_draft_fire_insurance_v2.3.md", "--publish")
-        self.assertEqual(code, 1)
-        f = " ".join(failed(out))
-        self.assertNotIn("빈칸", f)
-        self.assertNotIn("사실 검증표", f)
-        self.assertIn("이미지 자리표시", f)
+        self.assertEqual(code, 0, out)
+        self.assertIn("발행 전 사람 확인으로", out)
 
     def test_virtual_scenario_blocked_on_publish(self):
         code, out = run(ROOT / "17_review_drafts" / "A_storybrand.md", "--publish")
