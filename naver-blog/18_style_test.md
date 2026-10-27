@@ -56,4 +56,4 @@ Blog thumbnail, 4:3, generous empty space on the left for a title added later.
 | ④ | 수채화 | | |
 | ⑤ | 클레이 미니어처 | | |
 
-**결정:** (사용자가 고른 화풍) → `09_image_guide.md`에 고정 스타일 문장으로 반영
+**결정 (2026-10-27, 사용자):** ②·③·④를 섞는다. 사람은 ② 한국 웹툰, 가게·거리 같은 풍경은 ③ 흑백 잉크 펜화와 ④ 수채화를 섞은 느낌. 고정 스타일 문장은 `09_image_guide.md` v1.1 5번에 반영했다. 위 결과 표는 사용자가 ChatGPT에서 돌려 보고 바로 고른 것이라 칸별 기록은 비어 있다.
