@@ -1,0 +1,8 @@
+{
+  "name": "ai-work-discord-bot",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": { "start": "node bot.mjs", "sim": "node sim.mjs" },
+  "dependencies": { "discord.js": "14.18.0" }
+}
