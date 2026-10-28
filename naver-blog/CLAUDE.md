@@ -28,6 +28,8 @@
 ## 도구
 - `tools/check_draft.py` — 지침 v1.6 기계 검사 (필수/권고/정보/사람 확인, 필수 실패만 종료 코드 1)
 - `tools/test_check_draft.py` — 검사기 회귀 테스트 (외부 패키지 없음)
+- `tools/news_fetch.py` — 비즈니스 갈래 새 소식 수집 (네이버 뉴스 검색 API, 키는 `.env`에 사용자가 직접). 검색어는 `tools/news_queries.txt`
+- 주제 탐색: `.claude/skills/topic-scout` ("주제탐색"), 기준·기록은 `20_topic_scout.md`
 - `img/render.py` — HTML 도식을 PNG로 (Playwright, 860px 폭, 2배 해상도). 예: `img/four_way.html`. Playwright가 없으면 Edge headless (HANDOFF "도구")
 
 ## 사용자 성향
